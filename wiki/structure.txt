@@ -1,0 +1,22 @@
+caz.nizami.smartdirectaze
+├── SmartDirectApplication.java      # Главный класс
+│
+├── ai                               # МОДУЛЬ AI (Оллма, Промпты)
+│   ├── internal                     # Скрыто от других модулей
+│   │   ├── PromptService.java
+│   │   └── VectorStoreConfig.java
+│   └── AIService.java               # ПУБЛИЧНЫЙ API модуля
+│
+├── instagram                        # МОДУЛЬ ИНТЕГРАЦИИ
+│   ├── internal
+│   │   ├── WebhookHandler.java
+│   │   └── MetaClient.java
+│   └── InstagramEvents.java         # DTO для событий
+│
+├── sales                            # МОДУЛЬ ПРОДАЖ (Воронка)
+│   ├── internal
+│   │   └── OrderProcessor.java
+│   └── LeadRepository.java          # Публичный доступ
+│
+└── catalog                          # МОДУЛЬ ТОВАРОВ
+    └── ProductService.java

@@ -1,0 +1,79 @@
+@startuml
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam ParticipantPadding 30
+
+actor "Клиент (Instagram)" as User
+participant "Instagram Module" as Insta
+participant "AI Module (Brain)" as AI
+participant "Catalog Module" as Catalog
+participant "Sales Module" as Sales
+
+== Сценарий 1: Консультация (Q&A / RAG) ==
+
+User -> Insta : "Где вы находитесь в Баку?"
+activate Insta
+Insta -> Insta : Валидация Webhook
+Insta ->> AI : **[Event]** IncomingMessage(text, userId)
+deactivate Insta
+
+activate AI
+AI -> AI : Поиск в Vector DB (RAG)
+note right: Извлекаем адрес магазина\nиз базы знаний (AZE context)
+AI ->> Insta : **[Event]** ResponseGenerated(text: "Мы на Торговой...")
+deactivate AI
+
+activate Insta
+Insta -> User : Отправка Direct Message
+deactivate Insta
+
+== Сценарий 2: Оформление заказа (Sales Flow) ==
+
+User -> Insta : "Хочу заказать эти наушники"
+activate Insta
+Insta ->> AI : **[Event]** IncomingMessage(text, userId)
+deactivate Insta
+
+activate AI
+AI -> AI : Intent Detection: PURCHASE
+AI -> Catalog : checkAvailability(productId)
+activate Catalog
+Catalog --> AI : { available: true, price: 150 AZN }
+deactivate Catalog
+
+AI -> Sales : initOrder(userId, productId)
+activate Sales
+Sales -> Sales : Создание Lead в CRM
+Sales --> AI : { orderId: 777, payLink: "https://pay.aze/..." }
+deactivate Sales
+
+AI ->> Insta : **[Event]** ResponseGenerated(text: "Отлично! Вот ссылка на оплату...")
+deactivate AI
+
+activate Insta
+Insta -> User : Отправка сообщения с кнопкой оплаты
+deactivate Insta
+
+== Сценарий 3: Передача человеку (Human Handoff) ==
+
+User -> Insta : "Ваш бот тупой, позовите менеджера!"
+activate Insta
+Insta ->> AI : **[Event]** IncomingMessage(...)
+deactivate Insta
+
+activate AI
+AI -> AI : Sentiment Analysis: NEGATIVE
+AI ->> Sales : **[Event]** EscalationRequired(userId)
+note right: Sales модуль кидает уведомление\nв Telegram владельцу
+AI ->> Insta : **[Event]** ResponseGenerated(text: "Минутку, зову менеджера")
+deactivate AI
+
+
+activate Insta
+Insta -> User : Amidn will contact you shotrly
+deactivate Insta
+
+activate User
+User -> User: ok
+'deactivate User
+@enduml
