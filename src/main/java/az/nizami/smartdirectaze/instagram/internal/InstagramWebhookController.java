@@ -1,5 +1,6 @@
-package az.nizami.smartdirectaze.web;
+package az.nizami.smartdirectaze.instagram.internal;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,17 +11,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/stub/webhook")
-public class InstagramStubController {
+@RequestMapping("/webhooks/instagram")
+public class InstagramWebhookController {
 
-    private final String VERIFY_TOKEN = "my_secret_token_2026"; // Ваш токен
-    private final InstagramService instagramService;
+    private final String VERIFY_TOKEN;
 
-    public InstagramStubController(InstagramService instagramService) {
-        this.instagramService = instagramService;
+    public InstagramWebhookController(@Value( "${instagram.webhook.verify-token}")String verifyToken) {
+        VERIFY_TOKEN = verifyToken;
     }
 
-    // Метод для верификации Webhook со стороны Meta
+    @GetMapping(value = "/alive")
+    public ResponseEntity<String> alive() {
+           return ResponseEntity.status(HttpStatus.OK).body("<h3>Smart Direct is Here</h3>");
+    }
+
     @GetMapping
     public ResponseEntity<String> verifyWebhook(
             @RequestParam("hub.mode") String mode,
@@ -29,20 +33,18 @@ public class InstagramStubController {
 
         if ("subscribe".equals(mode) && VERIFY_TOKEN.equals(token)) {
             return ResponseEntity.ok(challenge);
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
-    // Прием сообщений
     @PostMapping
     public ResponseEntity<Void> handleIncomingMessage(@RequestBody String payload) {
-        // На этапе стаба просто печатаем в консоль, что пришло
-        System.out.println("Incoming payload: " + payload);
+        // На этапе разработки лучше просто логгировать сырой JSON
+        System.out.println("Incoming Webhook: " + payload);
         
-        // В реальности здесь нужно распарсить JSON и вытащить sender_id
-        // Для стаба просто вызываем метод ответа
-        instagramService.sendStubResponse(payload);
-        
+        // Важно: Всегда возвращаем 200 OK максимально быстро, 
+        // а обработку через ИИ выносим в отдельный поток/сервис
         return ResponseEntity.ok().build();
     }
 }

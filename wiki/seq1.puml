@@ -1,0 +1,40 @@
+@startuml
+skinparam style strictuml
+skinparam sequenceMessageAlign center
+skinparam wrapWidth 50
+
+actor "Покупатель (Müştəri)" as Buyer
+participant "Instagram \n Meta UI" as InstaUI
+participant "Meta Infrastructure\n (Webhooks)" as MetaAPI
+participant "Smart-Direct App\n (Spring Boot)" as App
+database "PostgreSQL\n Redis" as DB
+participant "AI Engine\n (LLM API)" as AI
+
+== Процесс получения сообщения ==
+
+Buyer -> InstaUI : Отправляет DM \n("Qiyməti neçəyədir?")
+InstaUI -> MetaAPI : Регистрирует входящее\n событие
+
+MetaAPI -> App : [POST] Webhook Event (JSON)
+note right: Содержит sender_id, text\n и recipient_id (ID Магазина)
+
+== Обработка в Spring Boot ==
+
+App -> App : Валидация X-Hub-Signature
+note over App: Проверка, что запрос пришел\n от Meta, а не от хакеров
+
+App -> DB : Поиск настроек магазина\n по recipient_id
+DB --> App : Контекст магазина\n (Прайс-лист, Tone of Voice)
+
+App -> AI : Prompt\n (Контекст + Сообщение клиента)
+AI --> App : Ответ ИИ ("Salam! Qiymət 50 AZN-dir.")
+
+== Отправка ответа ==
+
+App -> MetaAPI : [POST] Send API\n (Recipient ID, Message, Access Token)
+note right: Используется токен,\n выданный вашему приложению
+
+MetaAPI -> InstaUI : Доставка сообщения\n в чат
+InstaUI -> Buyer : Отображение ответа\n от имени Магазина
+
+@enduml

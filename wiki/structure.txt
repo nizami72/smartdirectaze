@@ -9,7 +9,7 @@ caz.nizami.smartdirectaze
 │
 ├── instagram                        # МОДУЛЬ ИНТЕГРАЦИИ
 │   ├── internal
-│   │   ├── WebhookHandler.java
+│   │   ├── InstagramWebhookController.java
 │   │   └── MetaClient.java
 │   └── InstagramEvents.java         # DTO для событий
 │

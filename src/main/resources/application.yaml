@@ -1,3 +1,10 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: smartdirectaze
+
+instagram:
+  webhook.verify-token: wQi4545XZ2^&44262drRyh!7854dFhGhg
+
