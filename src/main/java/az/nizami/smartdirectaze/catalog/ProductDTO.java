@@ -3,12 +3,14 @@ package az.nizami.smartdirectaze.catalog;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
 @Setter
 @Getter
+@ToString
 public class ProductDTO {
     // 1. Базовая информация (ID и Метаданные)
     private Long id;

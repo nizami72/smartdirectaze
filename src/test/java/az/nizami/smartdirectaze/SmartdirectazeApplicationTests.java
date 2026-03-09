@@ -13,7 +13,7 @@ class SmartdirectazeApplicationTests {
 
 	@Test
 	void verifyModularity() {
-		ApplicationModules.of(SmartdirectazeApplication.class).verify();
+		ApplicationModules.of(Application.class).verify();
 	}
 
 }

@@ -4,7 +4,41 @@ server:
 spring:
   application:
     name: smartdirectaze
+    http:
+      encoding:
+        force=true
+        charset=UTF-8
+    datasource:
+      url: ${DATASOURCE_URL}
+      username: ${DATASOURCE_USERNAME}
+      password: ${DATASOURCE_PASSWORD}
+    jpa:
+      show-sql: true
+      hibernate:
+        ddl-auto: update
+      properties:
+        hibernate:
+          dialect: org.hibernate.dialect.PostgreSQLDialect
 
 instagram:
-  webhook.verify-token: wQi4545XZ2^&44262drRyh!7854dFhGhg
+  webhook.verify-token: ${WEBHOOK_VERIFY_TOKEN}
+  marker:
+    access-token: ${ACCESS_TOKEN}
+    access-token2: ${ACCESS_TOKEN_2}
+  url: https://graph.instagram.com/v19.0/me/messages
+
+telegram:
+  token: ${TELEGRAM_BOT_TOKEN}
+  username: ${TELEGRAM_BOT_USERNAME}
+
+  # ID находится в URL таблицы: https://docs.google.com/spreadsheets/d/ID_ВОТ_ЗДЕСЬ/edit
+google:
+  sheets:
+    spreadsheet-id: ${SPREADSHEET_ID}
+    credentials-path: ${CREDENTIALS_PATH}
+
+app:
+  catalog:
+    sync:
+      cron: 1 * * * * ?
 
