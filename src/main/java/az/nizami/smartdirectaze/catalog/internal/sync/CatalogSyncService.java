@@ -1,6 +1,7 @@
 package az.nizami.smartdirectaze.catalog.internal.sync;
 
 import az.nizami.smartdirectaze.catalog.ProductDTO;
+import az.nizami.smartdirectaze.catalog.ProductService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -11,10 +12,12 @@ import java.util.List;
 public class CatalogSyncService {
     private final List<ProductSourceAdapter> adapters;
     private final ProductSourceAdapter adminService;
+    private final ProductService productService;
 
-    public CatalogSyncService(List<ProductSourceAdapter> adapters, ProductSourceAdapter adminService) {
+    public CatalogSyncService(List<ProductSourceAdapter> adapters, ProductSourceAdapter adminService, ProductService productService) {
         this.adapters = adapters;
         this.adminService = adminService;
+        this.productService = productService;
     }
 
     @Scheduled(cron = "${app.catalog.sync.cron}")
@@ -25,7 +28,8 @@ public class CatalogSyncService {
             .ifPresent(adapter -> {
                 List<ProductDTO> externalProducts = adapter.fetchProducts();
                 log.debug("Google sheet [{}]", externalProducts);
-                // save products in db
+
+                externalProducts.forEach(productService::saveProduct);
             });
     }
 }

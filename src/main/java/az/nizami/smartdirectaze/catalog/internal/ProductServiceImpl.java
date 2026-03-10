@@ -2,16 +2,31 @@ package az.nizami.smartdirectaze.catalog.internal;
 
 import az.nizami.smartdirectaze.catalog.ProductDTO;
 import az.nizami.smartdirectaze.catalog.ProductService;
-import org.springframework.stereotype.Component;
-import java.util.ArrayList;
-import java.util.HashMap;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
-@Component
+@Service
+@RequiredArgsConstructor
 class ProductServiceImpl implements ProductService {
+
+    private final ProductRepository productRepository;
+    private final ProductMapper productMapper;
 
     @Override
     public Optional<ProductDTO> getProductBySku(String sku) {
-        return Optional.empty();
+        return productRepository.findBySku(sku)
+                .map(productMapper::toDto);
+    }
+
+    @Override
+    @Transactional
+    public void saveProduct(ProductDTO productDTO) {
+        ProductEntity entity = productRepository.findBySku(productDTO.getSku())
+                .orElseGet(ProductEntity::new);
+        
+        productMapper.updateEntityFromDto(productDTO, entity);
+        productRepository.save(entity);
     }
 }
