@@ -38,6 +38,7 @@ google:
     credentials-path: ${CREDENTIALS_PATH}
 
 app:
+  productAliasesFilePath: ${PRODUCT_ALIASES_FILE_PATH}
   catalog:
     sync:
       cron: 1 * * * * ?

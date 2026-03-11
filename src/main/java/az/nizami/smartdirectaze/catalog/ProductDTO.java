@@ -38,6 +38,7 @@ public class ProductDTO {
 
     // 5. Категории и Бренды
     private Long categoryId;
+    private String category;
     private String brandName;
 
     // 6. Медиа
