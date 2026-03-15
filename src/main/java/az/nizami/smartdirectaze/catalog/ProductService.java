@@ -11,4 +11,6 @@ public interface ProductService {
     @Async
     @Transactional
     void synchroniseProducts();
+
+    Optional<ProductDTO> findForAiAssistant(String message);
 }

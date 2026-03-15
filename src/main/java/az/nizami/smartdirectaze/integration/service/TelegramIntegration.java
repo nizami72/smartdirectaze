@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.integration.service;
 
+import az.nizami.smartdirectaze.ai.AiService;
 import az.nizami.smartdirectaze.catalog.ProductService;
 import az.nizami.smartdirectaze.integration.dto.ChannelType;
 import lombok.extern.log4j.Log4j2;
@@ -18,22 +19,29 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 @Log4j2
 class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
+    private static final String UPDATE_CATALOG = "/update";
+
     private final String botUsername;
     private final String botToken;
     private final ProductService catalog; // Твой сервис из модуля Catalog
     private final TelegramClient telegramClient;
     private final ProductService productService;
+    private final long adminId;
+    private final AiService aiService;
 
     public TelegramIntegration(
             @Value("${telegram.token}") String botToken,
             @Value("${telegram.username}") String botUsername,
-            ProductService catalog, ProductService productService) {
+            @Value("${telegram.bot.admin.id}") long adminId,
+            ProductService catalog, ProductService productService, AiService aiService) {
 //        super(options, botToken);
         this.botUsername = botUsername;
         this.botToken = botToken;
         this.catalog = catalog;
         this.telegramClient = new OkHttpTelegramClient(botToken);
         this.productService = productService;
+        this.adminId = adminId;
+        this.aiService = aiService;
     }
 
     @Override
@@ -42,13 +50,12 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
         if (update.hasMessage() && update.getMessage().hasText()) {
             Long chatId = update.getMessage().getChatId();
             String userText = update.getMessage().getText();
+            if (userText.startsWith("/")) {
+                sendMessage(chatId, technical(userText, chatId));
+                return;
+            }
             log.debug("Message from user [{}]", userText);
-
-            productService.synchroniseProducts();
-            // ЛОГИКА: Ищем цену, если в тексте есть SKU или вопрос о цене
-            // Пока сделаем заглушку, использующую твой DTO
-            String response = "Salam! Məhsul haqqında məlumat axtarılır...";
-
+            String response = aiService.processQuery(userText);
             sendMessage(chatId, response);
         }
     }
@@ -84,6 +91,18 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
     @Override
     public LongPollingSingleThreadUpdateConsumer getUpdatesConsumer() {
         return this;
+    }
+
+    private String technical(String userText, long chatId) {
+        if (chatId == adminId) {
+            if (userText.equalsIgnoreCase(UPDATE_CATALOG)) {
+                productService.synchroniseProducts();
+                return "Catalog updated";
+            } else {
+                return "Ok";
+            }
+        }
+        return "You have no right";
     }
 
 }

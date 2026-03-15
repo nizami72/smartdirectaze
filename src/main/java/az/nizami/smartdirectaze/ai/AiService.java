@@ -1,4 +1,5 @@
 package az.nizami.smartdirectaze.ai;
 
-interface AiService {
+public interface AiService {
+    String processQuery(String userMessage);
 }

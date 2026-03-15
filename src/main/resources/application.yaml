@@ -27,6 +27,7 @@ instagram:
 telegram:
   token: ${TELEGRAM_BOT_TOKEN}
   username: ${TELEGRAM_BOT_USERNAME}
+  bot.admin.id: ${SUPER_ADMIN_ID}
 
   # ID находится в URL таблицы: https://docs.google.com/spreadsheets/d/ID_ВОТ_ЗДЕСЬ/edit
 google:
