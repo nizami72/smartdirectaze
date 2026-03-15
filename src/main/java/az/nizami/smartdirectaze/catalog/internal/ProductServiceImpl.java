@@ -13,9 +13,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 class ProductServiceImpl implements ProductService {
 
+    //<editor-fold desc="Fields">
     private final CatalogSyncService catalogSyncService;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    //</editor-fold>
 
     public void synchroniseProducts(){
         catalogSyncService.synchroniseGoogleSheetProducts();

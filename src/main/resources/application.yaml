@@ -13,6 +13,7 @@ spring:
     username: ${DATASOURCE_USERNAME}
     password: ${DATASOURCE_PASSWORD}
   jpa:
+    open-in-view: false
     show-sql: true
     hibernate:
       ddl-auto: update

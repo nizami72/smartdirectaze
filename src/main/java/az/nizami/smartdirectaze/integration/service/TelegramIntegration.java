@@ -23,7 +23,7 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
 
     private final String botUsername;
     private final String botToken;
-    private final ProductService catalog; // Твой сервис из модуля Catalog
+    private final ProductService catalog; // Your service from the Catalog module
     private final TelegramClient telegramClient;
     private final ProductService productService;
     private final long adminId;
