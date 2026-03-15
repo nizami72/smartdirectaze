@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
 @Service
 @Log4j2
 class GoogleSheetsAdapter implements ProductSourceAdapter {
 
+    //<editor-fold desc="Fields">
     @Value("${google.sheets.spreadsheet-id}")
     private String spreadsheetId;
 
@@ -31,47 +31,63 @@ class GoogleSheetsAdapter implements ProductSourceAdapter {
     private String credentialsPath;
 
     private static final String APPLICATION_NAME = "Smart-Direct AZE";
-    private static final String RANGE = "Sheet1!A1:G"; // Начинаем со второй строки, чтобы пропустить заголовки
+    private static final String RANGE = "Sheet1!A:Z";
     private final Map<String, List<String>> productAliases;
+    //</editor-fold>
 
+    //<editor-fold desc="Constructor">
     GoogleSheetsAdapter(Map<String, List<String>> productAliases) {
         this.productAliases = productAliases;
     }
+    //</editor-fold>
 
     @Override
     public List<ProductDTO> fetchProducts() {
         try {
             Sheets sheetsService = createSheetsService();
-            var response = sheetsService.spreadsheets().values()
+            var response = sheetsService
+                    .spreadsheets()
+                    .values()
                     .get(spreadsheetId, RANGE)
                     .execute();
 
-            List<List<Object>> values = response.getValues();
-            if (values == null || values.isEmpty()) {
+            List<List<Object>> googleTable = response.getValues();
+            if (googleTable == null || googleTable.isEmpty()) {
                 return Collections.emptyList();
             }
 
-            List<Object> titles = values.removeFirst();
-            return values.stream()
-                    .map(o -> this.mapToProductDTO(titles, o))
+            List<Object> googleTableTitles = googleTable.removeFirst();
+            googleTable.removeFirst();
+            return googleTable.stream()
+                    .map(googleDataRow -> this.mapToProductDTO(googleTableTitles, googleDataRow))
                     .collect(Collectors.toList());
-
         } catch (Exception e) {
-            throw new RuntimeException("Failed to fetch data from Google Sh eets", e);
+            throw new RuntimeException("Failed to fetch data from Google Sheets", e);
         }
     }
 
-    private ProductDTO mapToProductDTO(List<Object> titles, List<Object> row) {
+    private ProductDTO mapToProductDTO(List<Object> googleSheetTitles, List<Object> googleDataRow) {
         ProductDTO dto = new ProductDTO();
-        titles
-                .forEach(title -> {
-                    String key = getIndexAndKey(title.toString());
-                    if (key != null) {
-                        callSetter(dto, key, row.get(titles.indexOf(title)));
-                    } else {
-                        log.debug("Unknown column header [{}]", title);
-                    }
-                });
+        int size = googleDataRow.size();
+        for (int idx = 0; idx < size; idx++) {
+            String title = googleSheetTitles.get(idx).toString();
+            String value = googleDataRow.get(idx).toString();
+            if (title == null) continue;
+            if (value == null) value = "";
+            if (title.startsWith("title")) {
+                dto.getTitles().put(title.split("_")[1], value);
+            } else if (title.startsWith("description")) {
+                dto.getDescriptions().put(title.split("_")[1], value);
+            } else if (title.startsWith("attributes")) {
+                dto.getAttributes().add(new ProductDTO.ProductAttributeDTO(title.split("_")[1], value));
+            } else if (title.startsWith("category")) {
+                dto.getCategory().put(title.split("_")[1], value);
+            } else if (title.startsWith("unitOfMeasure")) {
+                dto.getTitles().put(title.split("_")[1], value);
+            } else {
+                callSetter(dto, title, googleDataRow.get(idx));
+            }
+        }
         return dto;
     }
 
@@ -94,7 +110,8 @@ class GoogleSheetsAdapter implements ProductSourceAdapter {
 
     public static void callSetter(Object obj, String fieldName, Object fieldValue) {
         if (obj == null || fieldName == null) return;
-
+        Class<?> targetType = null;
+        Object convertedValue = null;
         String setterName = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
 
         try {
@@ -105,14 +122,14 @@ class GoogleSheetsAdapter implements ProductSourceAdapter {
                     .findFirst()
                     .orElseThrow(() -> new NoSuchMethodException("Setter not found: " + setterName));
             // 2. Get the expected type from the setter
-            Class<?> targetType = setter.getParameterTypes()[0];
+            targetType = setter.getParameterTypes()[0];
             // 3. Convert the String fieldValue to the targetType
-            Object convertedValue = convertValue(fieldValue, targetType);
+            convertedValue = convertValue(fieldValue, targetType);
             // 4. Invoke
             setter.invoke(obj, convertedValue);
 
         } catch (Exception e) {
-            log.error("Failed to set field [{}]: {}", fieldName, e.getMessage());
+            log.error("Failed to set field [{}], target type [{}], converted value [{}], exception [{}]", fieldName, targetType, convertedValue, e.getMessage());
         }
     }
 
@@ -139,6 +156,11 @@ class GoogleSheetsAdapter implements ProductSourceAdapter {
         // Convert to Boolean / boolean
         if (targetType == Boolean.class || targetType == boolean.class) {
             return Boolean.parseBoolean(strValue) || strValue.equals("1") || strValue.equalsIgnoreCase("yes");
+        }
+
+        // Convert to Double
+        if (targetType == Double.class || targetType == double.class) {
+            return Double.parseDouble(strValue.replace(",", "."));
         }
 
         return value; // Return as-is if no conversion logic matches

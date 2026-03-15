@@ -16,9 +16,6 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 instagram:
   webhook.verify-token: ${WEBHOOK_VERIFY_TOKEN}
@@ -41,5 +38,5 @@ app:
   productAliasesFilePath: ${PRODUCT_ALIASES_FILE_PATH}
   catalog:
     sync:
-      cron: 1 * * * * ?
+      cron: 0 0 * * * ?
 

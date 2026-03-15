@@ -1,0 +1,22 @@
+Attributes
+Average rating
+Barcode
+Category
+Currency
+Description
+Dimensions
+Image
+Is available
+Main image url
+Brand
+Measurements unit
+Name
+Price
+Review count
+Sale price
+Sku
+Slug
+Stock
+Track quantity
+Vat rate
+Weight

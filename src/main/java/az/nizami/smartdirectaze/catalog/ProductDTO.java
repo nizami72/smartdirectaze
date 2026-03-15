@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +22,9 @@ public class ProductDTO {
     // 2. Локализация (Мультиязычность)
     // Используем Map (напр. {"az": "Köynək", "ru": "Рубашка"}) 
     // чтобы не переписывать базу при добавлении английского
-    private Map<String, String> titles;
-    private Map<String, String> descriptions;
+    private Map<String, String> titles = new HashMap<>();
+    private Map<String, String> descriptions = new HashMap<>();
+    private Map<String, String> category = new HashMap<>();
     private String slug; // URL-friendly название для SEO
 
     // 3. Ценообразование и Налоги (Используем BigDecimal!)
@@ -38,7 +41,6 @@ public class ProductDTO {
 
     // 5. Категории и Бренды
     private Long categoryId;
-    private String category;
     private String brandName;
 
     // 6. Медиа
@@ -47,11 +49,11 @@ public class ProductDTO {
 
     // 7. Гибкие характеристики (Атрибуты)
     // Позволяет хранить что угодно: размер, цвет, материал, вольтаж
-    private List<ProductAttributeDTO> attributes;
+    private List<ProductAttributeDTO> attributes = new ArrayList<>();
 
     // 8. Физические параметры (для логистики/доставки)
     private Double weight; // в кг
-    private DimensionsDTO dimensions; // Длина/Ширина/Высота
+    private String size;
 
     // 9. Рейтинги и Аналитика
     private Double averageRating;

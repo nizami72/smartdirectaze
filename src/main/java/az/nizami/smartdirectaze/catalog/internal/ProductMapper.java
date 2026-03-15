@@ -1,6 +1,5 @@
 package az.nizami.smartdirectaze.catalog.internal;
 
-import az.nizami.smartdirectaze.catalog.DimensionsDTO;
 import az.nizami.smartdirectaze.catalog.ProductDTO;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
@@ -8,7 +7,7 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Component
-class ProductMapper {
+public class ProductMapper {
 
     /**
      * Превращаем Entity в DTO для отдачи другим модулям
@@ -51,13 +50,7 @@ class ProductMapper {
         }
 
         dto.setWeight(entity.getWeight());
-        if (entity.getDimensions() != null) {
-            DimensionsDTO dimDto = new DimensionsDTO();
-            dimDto.setLength(entity.getDimensions().getLength());
-            dimDto.setWidth(entity.getDimensions().getWidth());
-            dimDto.setHeight(entity.getDimensions().getHeight());
-            dto.setDimensions(dimDto);
-        }
+
 
         dto.setAverageRating(entity.getAverageRating());
         dto.setReviewCount(entity.getReviewCount());
@@ -98,6 +91,7 @@ class ProductMapper {
         entity.getImageUrls().clear();
         if (dto.getImageUrls() != null) entity.getImageUrls().addAll(dto.getImageUrls());
         entity.setMainImageUrl(dto.getMainImageUrl());
+        entity.setSize(dto.getSize());
 
         // Маппинг атрибутов
         entity.getAttributes().clear();
@@ -111,17 +105,6 @@ class ProductMapper {
         }
 
         entity.setWeight(dto.getWeight());
-        if (dto.getDimensions() != null) {
-            DimensionsEmbeddable dimensions = entity.getDimensions();
-            if (dimensions == null) {
-                dimensions = new DimensionsEmbeddable();
-            }
-            dimensions.setLength(dto.getDimensions().getLength());
-            dimensions.setWidth(dto.getDimensions().getWidth());
-            dimensions.setHeight(dto.getDimensions().getHeight());
-            entity.setDimensions(dimensions);
-        }
-
         entity.setAverageRating(dto.getAverageRating());
         entity.setReviewCount(dto.getReviewCount());
     }

@@ -65,8 +65,7 @@ public class ProductEntity {
 
     // --- Физические параметры ---
     private Double weight;
-    @Embedded
-    private DimensionsEmbeddable dimensions;
+    private String size;
 
     // --- Аналитика ---
     private Double averageRating;
@@ -78,12 +77,4 @@ public class ProductEntity {
 class ProductAttributeEmbeddable {
     private String attrKey;
     private String attrValue;
-}
-
-@Embeddable
-@Getter @Setter
-class DimensionsEmbeddable {
-    private Double length;
-    private Double width;
-    private Double height;
 }

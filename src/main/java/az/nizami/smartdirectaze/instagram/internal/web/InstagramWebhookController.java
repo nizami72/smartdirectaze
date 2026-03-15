@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.instagram.internal.web;
 
+import az.nizami.smartdirectaze.catalog.ProductService;
 import az.nizami.smartdirectaze.instagram.internal.client.InstagramClient;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,10 +20,12 @@ public class InstagramWebhookController {
 
     private final String VERIFY_TOKEN;
     private final InstagramClient instagramClient;
+    private final ProductService productService;
 
-    public InstagramWebhookController(@Value("${instagram.webhook.verify-token}") String verifyToken, InstagramClient instagramClient) {
+    public InstagramWebhookController(@Value("${instagram.webhook.verify-token}") String verifyToken, InstagramClient instagramClient, ProductService productService) {
         VERIFY_TOKEN = verifyToken;
         this.instagramClient = instagramClient;
+        this.productService = productService;
     }
 
     @GetMapping(value = "/alive")
@@ -49,10 +52,7 @@ public class InstagramWebhookController {
     public ResponseEntity<Void> handleIncomingMessage(@RequestBody String payload) {
         // На этапе разработки лучше просто логгировать сырой JSON
         System.out.println("Incoming Webhook: " + payload);
-        
-        // Важно: Всегда возвращаем 200 OK максимально быстро, 
-        // а обработку через ИИ выносим в отдельный поток/сервис
-//        instagramClient.sendMessageToClient("17841405376618492", "Salam");
+        productService.synchroniseProducts();
         return ResponseEntity.ok().build();
     }
 }

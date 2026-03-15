@@ -22,16 +22,18 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
     private final String botToken;
     private final ProductService catalog; // Твой сервис из модуля Catalog
     private final TelegramClient telegramClient;
+    private final ProductService productService;
 
     public TelegramIntegration(
             @Value("${telegram.token}") String botToken,
             @Value("${telegram.username}") String botUsername,
-            ProductService catalog) {
+            ProductService catalog, ProductService productService) {
 //        super(options, botToken);
         this.botUsername = botUsername;
         this.botToken = botToken;
         this.catalog = catalog;
         this.telegramClient = new OkHttpTelegramClient(botToken);
+        this.productService = productService;
     }
 
     @Override
@@ -42,6 +44,7 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
             String userText = update.getMessage().getText();
             log.debug("Message from user [{}]", userText);
 
+            productService.synchroniseProducts();
             // ЛОГИКА: Ищем цену, если в тексте есть SKU или вопрос о цене
             // Пока сделаем заглушку, использующую твой DTO
             String response = "Salam! Məhsul haqqında məlumat axtarılır...";
