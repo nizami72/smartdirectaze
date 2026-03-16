@@ -1,5 +1,7 @@
 package az.nizami.smartdirectaze.ai;
 
+import java.util.concurrent.CompletableFuture;
+
 public interface AiService {
-    String processQuery(String userMessage);
+    CompletableFuture<AssistantResponse> processQuery(String userMessage);
 }

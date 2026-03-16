@@ -1,0 +1,71 @@
+@startuml
+autonumber
+
+skinparam maxMessageSize 150
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+
+actor "Müştəri\n(Telegram/Instagram)" as User
+box "Smart-Direct AZE Backend" #LightCyan
+    participant "Integration Module\n(TelegramIntegration)" as Integration
+    participant "AI Module\n(AiServiceImpl)" as AiService
+    participant "LangChain4j Agent\n(SmartAssistantAgent)" as Agent
+    participant "CatalogTools\n(@Tool)" as Tools
+    participant "Catalog Module\n(ProductService)" as Catalog
+end box
+database "PostgreSQL" as DB
+participant "DeepSeek API" as DeepSeek #LightGreen
+
+User -> Integration : "Qara köynək neçəyədir?"
+activate Integration
+
+Integration -> AiService : processQuery("Qara köynək neçəyədir?")
+activate AiService
+
+AiService -> Agent : chat("Qara köynək neçəyədir?")
+activate Agent
+
+note over Agent, DeepSeek: LangChain4j отправляет промпт\nи описание доступных инструментов
+Agent -> DeepSeek : POST /chat/completions\n(Prompt + Tools: searchProduct)
+activate DeepSeek
+
+DeepSeek --> Agent : Tool Call Request:\nsearchProduct(query="qara köynək")
+deactivate DeepSeek
+
+note over Agent, Tools: LangChain4j автоматически\nперехватывает запрос и вызывает твой код
+Agent -> Tools : searchProduct("qara köynək")
+activate Tools
+
+Tools -> Catalog : searchForAiAssistant("qara köynək")
+activate Catalog
+
+Catalog -> DB : SELECT p FROM ProductEntity ... LIKE %qara köynək%
+activate DB
+DB --> Catalog : List<ProductEntity>
+deactivate DB
+
+Catalog --> Tools : List<ProductDTO> (mapped)
+deactivate Catalog
+
+Tools --> Agent : Tool Execution Result (JSON)
+deactivate Tools
+
+note over Agent, DeepSeek: LangChain4j отправляет результат\nработы БД обратно в нейросеть
+Agent -> DeepSeek : POST /chat/completions\n(Tool Result Data)
+activate DeepSeek
+
+DeepSeek --> Agent : "Salam! Qara köynəyin qiyməti 45 AZN-dir."
+deactivate DeepSeek
+
+Agent --> AiService : String (Ai Response)
+deactivate Agent
+
+AiService -> AiService : Упаковка в AssistantResponse\n(сохранение логов, метрик)
+
+AiService --> Integration : AssistantResponse
+deactivate AiService
+
+Integration -> User : "Salam! Qara köynəyin qiyməti 45 AZN-dir."
+deactivate Integration
+
+@enduml

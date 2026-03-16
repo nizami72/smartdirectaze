@@ -1,34 +1,55 @@
 package az.nizami.smartdirectaze.ai.internal;
 
 import az.nizami.smartdirectaze.ai.AiService;
+import az.nizami.smartdirectaze.ai.AssistantResponse;
 import az.nizami.smartdirectaze.catalog.ProductDTO;
 import az.nizami.smartdirectaze.catalog.ProductService;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import dev.langchain4j.service.AiServices;
+import dev.langchain4j.model.chat.ChatLanguageModel;
 
+import org.springframework.scheduling.annotation.Async;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 public class AiServiceImpl implements AiService {
 
     private final ProductService productService;
+    private final ChatLanguageModel chatModel;
+    private final CatalogTools catalogTools;
+    private SmartAssistantAgent agent; // Интерфейс-агент
 
-    public String processQuery(String userMessage) {
-        // 1. Trying to find the product in the database
-        Optional<ProductDTO> productOpt = findProductInMessage(userMessage);
-
-        if (productOpt.isPresent()) {
-            ProductDTO product = productOpt.get();
-            // 2. We form a response based on data from the database
-            return formatProductInfo(product, userMessage);
-        }
-
-        // 3. If nothing is found - a standard polite answer
-        return "Salam! İstədiyiniz məhsulu tapa bilmədim. Zəhmət olmasa adını və ya SKU kodunu dəqiqləşdirin.";
+    @PostConstruct
+    public void init() {
+        // Собираем агента: Модель + Инструменты + Промпт
+        this.agent = AiServices.builder(SmartAssistantAgent.class)
+                .chatLanguageModel(chatModel)
+                .tools(catalogTools)
+                .build();
     }
 
-    private Optional<ProductDTO> findProductInMessage(String message) {
+    @Override
+    @Async
+    public CompletableFuture<AssistantResponse> processQuery(String userMessage) {
+        // 1. Отправляем в DeepSeek
+        String aiTextMessage = agent.chat(userMessage);
+
+        // 2. Упаковываем в твой DTO
+        AssistantResponse response = AssistantResponse.builder()
+                .message(aiTextMessage)
+                .responseType(AssistantResponse.ResponseType.PRODUCT_INFO)
+                .build();
+
+        return CompletableFuture.completedFuture(response);
+    }
+
+
+    private List<ProductDTO> findProductInMessage(String message) {
         // The simplest logic: search by SKU or keywords
         // In the future, there will be a call to LLM (OpenAI/Gemini) to understand the context
         return productService.findForAiAssistant(message);

@@ -41,4 +41,17 @@ app:
   catalog:
     sync:
       cron: 0 0 * * * ?
+  ai:
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY}
+  telegram:
+    rateLimit: 3
 
+# Point the OpenAI starter to DeepSeek's API
+langchain4j:
+  open-ai:
+    chat-model:
+      base-url: https://api.deepseek.com
+      api-key: ${DEEPSEEK_API_KEY}
+      model-name: deepseek-chat
+      timeout: PT60S

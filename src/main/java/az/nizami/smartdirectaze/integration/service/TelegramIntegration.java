@@ -1,6 +1,7 @@
 package az.nizami.smartdirectaze.integration.service;
 
 import az.nizami.smartdirectaze.ai.AiService;
+import az.nizami.smartdirectaze.ai.AssistantResponse;
 import az.nizami.smartdirectaze.catalog.ProductService;
 import az.nizami.smartdirectaze.integration.dto.ChannelType;
 import lombok.extern.log4j.Log4j2;
@@ -9,11 +10,15 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.api.methods.ActionType;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendChatAction;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
+
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Log4j2
@@ -46,7 +51,6 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
 
     @Override
     public void consume(Update update) {
-
         if (update.hasMessage() && update.getMessage().hasText()) {
             Long chatId = update.getMessage().getChatId();
             String userText = update.getMessage().getText();
@@ -55,11 +59,33 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
                 return;
             }
             log.debug("Message from user [{}]", userText);
-            String response = aiService.processQuery(userText);
-            sendMessage(chatId, response);
+            sendTypingStatus(chatId);
+            aiService.processQuery(userText)
+                    .thenAccept(aiResponse -> {
+                        // Успешный ответ
+                        sendMessage(chatId, aiResponse.getMessage());
+                    })
+                    .exceptionally(ex -> {
+                        // Если что-то пошло не так (ошибка сети, API и т.д.)
+                        log.error("Error processing AI query: ", ex);
+                        sendMessage(chatId, "Извините, сервис временно недоступен. Попробуйте позже.");
+                        return null;
+                    });
+
         }
     }
 
+    private void sendTypingStatus(long chatId) {
+        SendChatAction action = SendChatAction.builder()
+                .chatId(chatId)
+                .action(ActionType.TYPING.toString())
+                .build();
+        try {
+            telegramClient.execute(action);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
 
     private Integer sendMessage(long chatId, String text) {
         SendMessage sm = SendMessage.builder()
