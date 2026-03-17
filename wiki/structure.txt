@@ -1,22 +1,73 @@
-caz.nizami.smartdirectaze
-├── SmartDirectApplication.java      # Главный класс
-│
-├── ai                               # МОДУЛЬ AI (Оллма, Промпты)
-│   ├── internal                     # Скрыто от других модулей
-│   │   ├── PromptService.java
-│   │   └── VectorStoreConfig.java
-│   └── AIService.java               # ПУБЛИЧНЫЙ API модуля
-│
-├── instagram                        # МОДУЛЬ ИНТЕГРАЦИИ
-│   ├── internal
-│   │   ├── InstagramWebhookController.java
-│   │   └── MetaClient.java
-│   └── InstagramEvents.java         # DTO для событий
-│
-├── sales                            # МОДУЛЬ ПРОДАЖ (Воронка)
-│   ├── internal
-│   │   └── OrderProcessor.java
-│   └── LeadRepository.java          # Публичный доступ
-│
-└── catalog                          # МОДУЛЬ ТОВАРОВ
-    └── ProductService.java
+src/main/java/
+└── az
+    └── nizami
+        └── smartdirectaze
+            ├── Application.java
+            ├── ai
+            │   ├── AiService.java
+            │   ├── AssistantResponse.java
+            │   └── internal
+            │       ├── AiServiceImpl.java
+            │       ├── CatalogTools.java
+            │       ├── DeepSeekConfig.java
+            │       └── SmartAssistantAgent.java
+            ├── catalog
+            │   ├── ProductDTO.java
+            │   ├── ProductService.java
+            │   └── internal
+            │       ├── ProductEntity.java
+            │       ├── ProductMapper.java
+            │       ├── ProductRepository.java
+            │       ├── ProductServiceImpl.java
+            │       └── sync
+            │           ├── CatalogSyncService.java
+            │           ├── GoogleSheetsAdapter.java
+            │           ├── ProductSourceAdapter.java
+            │           └── SourceType.java
+            ├── config
+            │   └── AppConfig.java
+            ├── html
+            │   ├── ApiService.java
+            │   └── service
+            │       └── FlexibleApiService.java
+            ├── instagram
+            │   ├── InstagramEvents.java
+            │   └── internal
+            │       ├── MetaClient.java
+            │       ├── client
+            │       │   └── InstagramClient.java
+            │       ├── dto
+            │       │   ├── Entry.java
+            │       │   ├── InstagramSendRequest.java
+            │       │   ├── InstagramWebhookRequest.java
+            │       │   ├── Message.java
+            │       │   ├── MessageEdit.java
+            │       │   └── Messaging.java
+            │       └── web
+            │           └── InstagramWebhookController.java
+            ├── integration
+            │   ├── MessageSender.java
+            │   ├── dto
+            │   │   └── ChannelType.java
+            │   └── service
+            │       └── TelegramIntegration.java
+            ├── rag
+            │   ├── RagResponse.java
+            │   ├── RagService.java
+            │   ├── RequestDto.java
+            │   └── service
+            │       └── RagServiceImpl.java
+            └── web
+                ├── InstagramService.java
+                ├── InstagramStubController.java
+                └── dto
+                    ├── Attachment.java
+                    ├── Entry.java
+                    ├── InstagramWebhookPayload.java
+                    ├── Message.java
+                    ├── Messaging.java
+                    ├── Payload.java
+                    ├── Recipient.java
+                    └── Sender.java
+
+24 directories, 47 files

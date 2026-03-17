@@ -74,16 +74,16 @@ class GoogleSheetsAdapter implements ProductSourceAdapter {
             String value = googleDataRow.get(idx).toString();
             if (title == null) continue;
             if (value == null) value = "";
-            if (title.startsWith("title")) {
+            if (title.startsWith("titles")) {
                 dto.getTitles().put(title.split("_")[1], value);
-            } else if (title.startsWith("description")) {
+            } else if (title.startsWith("descriptions")) {
                 dto.getDescriptions().put(title.split("_")[1], value);
             } else if (title.startsWith("attributes")) {
                 dto.getAttributes().add(new ProductDTO.ProductAttributeDTO(title.split("_")[1], value));
             } else if (title.startsWith("category")) {
                 dto.getCategory().put(title.split("_")[1], value);
             } else if (title.startsWith("unitOfMeasure")) {
-                dto.getTitles().put(title.split("_")[1], value);
+                dto.getUnitOfMeasure().put(title.split("_")[1], value);
             } else {
                 callSetter(dto, title, googleDataRow.get(idx));
             }

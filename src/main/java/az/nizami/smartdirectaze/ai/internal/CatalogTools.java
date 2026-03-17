@@ -17,7 +17,7 @@ public class CatalogTools {
     @Tool("Search for products in the store catalog by name or SKU to get current prices and stock.")
     public List<ProductDTO> searchProduct(String query) {
         // Вызываем твой метод из модуля Catalog
-        return productService.findForAiAssistant(query);
+        return productService.searchForAiAssistant(query);
     }
 }
 

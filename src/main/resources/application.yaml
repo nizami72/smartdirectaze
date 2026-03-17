@@ -17,6 +17,7 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
+  ai.openai.api-key: ${OPENAI_API_KEY}
 
 instagram:
   webhook.verify-token: ${WEBHOOK_VERIFY_TOKEN}

@@ -25,6 +25,7 @@ public class ProductDTO {
     private Map<String, String> titles = new HashMap<>();
     private Map<String, String> descriptions = new HashMap<>();
     private Map<String, String> category = new HashMap<>();
+    private Map<String, String> unitOfMeasure = new HashMap<>();
     private String slug; // URL-friendly название для SEO
 
     // 3. Ценообразование и Налоги (Используем BigDecimal!)
@@ -37,7 +38,6 @@ public class ProductDTO {
     private Integer stockQuantity; // Остаток на складе
     private Boolean trackQuantity; // Нужно ли вообще отслеживать остаток
     private Boolean isAvailable; // Виден ли продукт клиенту
-    private String unitOfMeasure; // "шт", "кг", "литр"
 
     // 5. Категории и Бренды
     private Long categoryId;

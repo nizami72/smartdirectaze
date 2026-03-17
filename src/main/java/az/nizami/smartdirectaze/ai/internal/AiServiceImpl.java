@@ -11,8 +11,8 @@ import dev.langchain4j.service.AiServices;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -35,6 +35,7 @@ public class AiServiceImpl implements AiService {
 
     @Override
     @Async
+    @Transactional(readOnly = true)
     public CompletableFuture<AssistantResponse> processQuery(String userMessage) {
         // 1. Отправляем в DeepSeek
         String aiTextMessage = agent.chat(userMessage);
@@ -52,7 +53,7 @@ public class AiServiceImpl implements AiService {
     private List<ProductDTO> findProductInMessage(String message) {
         // The simplest logic: search by SKU or keywords
         // In the future, there will be a call to LLM (OpenAI/Gemini) to understand the context
-        return productService.findForAiAssistant(message);
+        return productService.searchForAiAssistant(message);
     }
 
     private String formatProductInfo(ProductDTO product, String originalMessage) {

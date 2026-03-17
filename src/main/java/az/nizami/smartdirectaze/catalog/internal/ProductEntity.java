@@ -34,6 +34,12 @@ public class ProductEntity {
     @Column(name = "description_text", length = 2000)
     private Map<String, String> descriptions = new HashMap<>();
 
+    @ElementCollection
+    @CollectionTable(name = "product_unit_of_measure", joinColumns = @JoinColumn(name = "product_id"))
+    @MapKeyColumn(name = "lang_code")
+    @Column(name = "unit_of_measure", length = 64)
+    private Map<String, String> unitOfMeasure = new HashMap<>();
+
     // --- Финансы ---
     private BigDecimal basePrice;
     private BigDecimal salePrice;
@@ -44,7 +50,6 @@ public class ProductEntity {
     private Integer stockQuantity;
     private Boolean trackQuantity = true;
     private Boolean isAvailable = true;
-    private String unitOfMeasure;
 
     // --- Категории ---
     private Long categoryId;

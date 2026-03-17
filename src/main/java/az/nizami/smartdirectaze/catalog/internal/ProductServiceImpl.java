@@ -25,12 +25,10 @@ class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductDTO> findForAiAssistant(String message) {
-        List<ProductEntity> product = productRepository.searchByKeyword(message);
-        if(!product.isEmpty() && product.getFirst()!=null) {
-            return List.of(productMapper.toDto(product.getFirst()));
-        }
-        return List.of();
+    public List<ProductDTO> searchForAiAssistant(String message) {
+        return productRepository.searchByKeyword(message).stream()
+                .map(productMapper::toDto)
+                .toList();
     }
 
 
