@@ -4,6 +4,8 @@ import az.nizami.smartdirectaze.ai.AiService;
 import az.nizami.smartdirectaze.ai.AssistantResponse;
 import az.nizami.smartdirectaze.catalog.ProductDTO;
 import az.nizami.smartdirectaze.catalog.ProductService;
+import dev.langchain4j.memory.chat.ChatMemoryProvider;
+import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,19 +28,25 @@ public class AiServiceImpl implements AiService {
 
     @PostConstruct
     public void init() {
+        // Создаем фабрику памяти: храним последние 10 сообщений (5 вопросов и 5 ответов)
+        ChatMemoryProvider chatMemoryProvider = memoryId ->
+                MessageWindowChatMemory.withMaxMessages(10);
+
         // Собираем агента: Модель + Инструменты + Промпт
         this.agent = AiServices.builder(SmartAssistantAgent.class)
                 .chatLanguageModel(chatModel)
                 .tools(catalogTools)
+                .chatMemoryProvider(chatMemoryProvider) // Включаем память!
                 .build();
     }
 
     @Override
     @Async
     @Transactional(readOnly = true)
-    public CompletableFuture<AssistantResponse> processQuery(String userMessage) {
+    public CompletableFuture<AssistantResponse> processQuery(String chatId, String userMessage) {
         // 1. Отправляем в DeepSeek
-        String aiTextMessage = agent.chat(userMessage);
+        // Теперь мы передаем chatId в агента
+        String aiTextMessage = agent.chat(chatId, userMessage);
 
         // 2. Упаковываем в твой DTO
         AssistantResponse response = AssistantResponse.builder()

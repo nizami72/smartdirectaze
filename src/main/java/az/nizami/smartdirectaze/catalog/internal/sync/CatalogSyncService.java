@@ -46,7 +46,7 @@ public class CatalogSyncService {
     protected void saveProduct(ProductDTO productDTO) {
         ProductEntity entity = productRepository.findBySku(productDTO.getSku())
                 .orElseGet(ProductEntity::new);
-        if(entity.getSku() == null) return;// todo check not null fields and ignore those with null
+        if(productDTO.getSku() == null) return;// todo check not null fields and ignore those with null
         productMapper.updateEntityFromDto(productDTO, entity);
         productRepository.save(entity);
     }

@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.ai.internal;
 
+import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 
@@ -19,5 +20,4 @@ public interface SmartAssistantAgent {
         4. Используй данные только из базы данных. Если товара нет в базе, вежливо скажи об этом.
         5. Не придумывай характеристики товаров, которых нет в описании.
         """)
-    String chat(@UserMessage String userMessage);
-}
+    String chat(@MemoryId String userId, @UserMessage String userMessage);}
