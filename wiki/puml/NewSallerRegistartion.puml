@@ -1,0 +1,52 @@
+@startuml
+autonumber
+skinparam maxMessageSize 150
+skinparam responseMessageBelowArrow true
+
+actor "Владелец магазина" as Owner
+participant "BotFather\n(Telegram)" as BotFather
+participant "Frontend\n(Smart Direct UI)" as UI
+participant "Backend\n(Spring Boot)" as Backend
+database "Database\n(PostgreSQL)" as DB
+participant "Telegram API" as TG
+
+== 1. Получение токена (Вне системы) ==
+Owner -> BotFather: Команда /newbot (создание бота)
+BotFather --> Owner: Выдает bot_token (напр. 12345:ABC...)
+
+== 2. Регистрация в Smart Direct ==
+Owner -> UI: Заполняет профиль магазина,\nвставляет bot_token
+UI -> Backend: POST /api/shops/register\n{ shop_name, bot_token, ... }
+
+activate Backend
+
+== 3. Валидация токена ==
+Backend -> TG: GET /bot<bot_token>/getMe\n(Проверка валидности токена)
+TG --> Backend: 200 OK (Возвращает username бота)\nили 401 Unauthorized
+
+alt Если токен невалидный
+    Backend --> UI: 400 Bad Request (Неверный токен)
+    UI --> Owner: Показывает ошибку
+end
+
+== 4. Генерация ключей ==
+Backend -> Backend: Генерирует уникальный bot_uuid\n(напр. f47ac10b-58cc-...)
+Backend -> Backend: Генерирует secret_token\n(для защиты Webhook эндпоинта)
+
+== 5. Сохранение тенанта ==
+Backend -> DB: INSERT INTO shops\n(name, bot_token, bot_uuid, secret_token)
+DB --> Backend: Возвращает tenant_id
+
+== 6. Привязка Webhook'а к Telegram ==
+Backend -> TG: POST /bot<bot_token>/setWebhook\n{\n  "url": "https://api.smart-direct.az/webhooks/telegram/<bot_uuid>",\n  "secret_token": "<secret_token>"\n}
+TG --> Backend: 200 OK ("Webhook was set")
+
+== 7. Завершение регистрации ==
+Backend -> DB: UPDATE shops\nSET webhook_active = true\nWHERE tenant_id = <tenant_id>
+DB --> Backend: OK
+
+Backend --> UI: 200 OK (Регистрация успешна)
+deactivate Backend
+
+UI --> Owner: Перенаправляет в дашборд магазина
+@enduml

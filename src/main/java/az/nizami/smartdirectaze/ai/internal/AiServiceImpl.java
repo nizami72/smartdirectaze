@@ -14,6 +14,8 @@ import dev.langchain4j.model.chat.ChatLanguageModel;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
+import org.telegram.telegrambots.meta.api.objects.Update;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -39,6 +41,15 @@ public class AiServiceImpl implements AiService {
                 .chatMemoryProvider(chatMemoryProvider) // Включаем память!
                 .build();
     }
+
+    @Override
+    @Async
+    @Transactional(readOnly = true)
+    public CompletableFuture<AssistantResponse> processQuery(String botUuid, Update update) {
+        return processQuery(botUuid, update.getMessage().getText());
+
+    }
+
 
     @Override
     @Async

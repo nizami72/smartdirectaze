@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/webhooks/instagram")
+@RequestMapping("/webhooks/instagram1")
 @Log4j2
 public class InstagramWebhookController {
 
