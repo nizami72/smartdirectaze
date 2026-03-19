@@ -1,9 +1,8 @@
-package az.nizami.smartdirectaze.integration.service;
+package az.nizami.smartdirectaze.telegram.service;
 
 import az.nizami.smartdirectaze.ai.AiService;
-import az.nizami.smartdirectaze.ai.AssistantResponse;
 import az.nizami.smartdirectaze.catalog.ProductService;
-import az.nizami.smartdirectaze.integration.dto.ChannelType;
+import az.nizami.smartdirectaze.telegram.dto.ChannelType;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,8 +16,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
-
-import java.util.concurrent.CompletableFuture;
 
 @Service
 @Log4j2

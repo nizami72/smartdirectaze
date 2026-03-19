@@ -1,4 +1,4 @@
-package az.nizami.smartdirectaze.integration.controller;
+package az.nizami.smartdirectaze.telegram.controller;
 
 import az.nizami.smartdirectaze.ai.AiService;
 import lombok.extern.log4j.Log4j2;
