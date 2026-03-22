@@ -17,7 +17,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-@Service
+//@Service
 @Log4j2
 class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
@@ -96,7 +96,6 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
             return null;
         }
     }
-
 
     public boolean supports(ChannelType type) {
         return type == ChannelType.TELEGRAM;

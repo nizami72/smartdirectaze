@@ -1,0 +1,51 @@
+@startuml
+actor TelegramUser as "Telegram User"
+participant MasterBotController as "MasterBotController"
+participant MasterBotRouter as "MasterBotRouter"
+participant AdminSessionService as "AdminSessionService"
+participant AdminStateHandler as "AdminStateHandler"
+participant StartStateHandler as "StartStateHandler"
+participant WaitingForTokenHandler as "WaitingForTokenHandler"
+participant TelegramApiClient as "TelegramApiClient"
+TelegramUser -> MasterBotController : POST /api/webhooks/master\n (JSON Update)
+activate MasterBotController
+
+MasterBotController -> MasterBotRouter : processUpdate(chatId, text)
+activate MasterBotRouter
+
+alt text is "/start"
+    MasterBotRouter -> AdminSessionService : reset(chatId)
+end
+
+MasterBotRouter -> AdminSessionService : getState(chatId)
+AdminSessionService --> MasterBotRouter : currentState (AdminState)
+
+MasterBotRouter -> AdminStateHandler : handle(chatId, text)
+activate AdminStateHandler
+
+alt currentState == START
+    AdminStateHandler -> StartStateHandler : handle(chatId, text)
+    activate StartStateHandler
+    StartStateHandler -> TelegramApiClient : sendMessage(masterBotToken,\n chatId, welcomeMessage)
+    StartStateHandler -> AdminSessionService : updateState\n(chatId, WAITING_FOR_TOKEN)
+    deactivate StartStateHandler
+else currentState == WAITING_FOR_TOKEN
+    AdminStateHandler -> WaitingForTokenHandler : handle(chatId, text)
+    activate WaitingForTokenHandler
+    WaitingForTokenHandler -> TelegramApiClient : isTokenValid(text)
+    alt token is valid
+        WaitingForTokenHandler -> TelegramApiClient : setWebhook(newBotToken,\n clientWebhookUrl)
+        WaitingForTokenHandler -> TelegramApiClient : sendMessage\n(masterBotToken, chatId, successMessage)
+        WaitingForTokenHandler -> AdminSessionService : updateState(chatId,\n WAITING_FOR_INFO)
+    else token is invalid
+        WaitingForTokenHandler -> TelegramApiClient : sendMessage(masterBotToken,\n chatId, errorMessage)
+    end
+    deactivate WaitingForTokenHandler
+end
+
+deactivate AdminStateHandler
+deactivate MasterBotRouter
+MasterBotController --> TelegramUser : 200 OK
+deactivate MasterBotController
+
+@enduml

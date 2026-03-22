@@ -64,38 +64,47 @@ public class ProductMapper {
     public void updateEntityFromDto(ProductDTO dto, ProductEntity entity) {
         if (dto == null || entity == null) return;
 
-        entity.setSku(dto.getSku());
+        if (dto.getSku() != null) entity.setSku(dto.getSku());
         entity.setBarcode(dto.getBarcode());
         entity.setSlug(dto.getSlug());
 
         // Очищаем и наполняем заново коллекции JPA
-        entity.getTitles().clear();
-        if (dto.getTitles() != null) entity.getTitles().putAll(dto.getTitles());
+        if (dto.getTitles() != null) {
+            entity.getTitles().clear();
+            entity.getTitles().putAll(dto.getTitles());
+        }
 
-        entity.getDescriptions().clear();
-        if (dto.getDescriptions() != null) entity.getDescriptions().putAll(dto.getDescriptions());
+        if (dto.getDescriptions() != null) {
+            entity.getDescriptions().clear();
+            entity.getDescriptions().putAll(dto.getDescriptions());
+        }
 
         entity.setBasePrice(dto.getBasePrice());
         entity.setSalePrice(dto.getSalePrice());
-        entity.setCurrency(dto.getCurrency());
+        if (dto.getCurrency() != null) entity.setCurrency(dto.getCurrency());
         entity.setVatRate(dto.getVatRate());
 
         entity.setStockQuantity(dto.getStockQuantity());
-        entity.setTrackQuantity(dto.getTrackQuantity());
-        entity.setIsAvailable(dto.getIsAvailable());
-        entity.setUnitOfMeasure(dto.getUnitOfMeasure());
+        if (dto.getTrackQuantity() != null) entity.setTrackQuantity(dto.getTrackQuantity());
+        if (dto.getIsAvailable() != null) entity.setIsAvailable(dto.getIsAvailable());
+        if (dto.getUnitOfMeasure() != null) {
+            entity.getUnitOfMeasure().clear();
+            entity.getUnitOfMeasure().putAll(dto.getUnitOfMeasure());
+        }
 
         entity.setCategoryId(dto.getCategoryId());
         entity.setBrandName(dto.getBrandName());
 
-        entity.getImageUrls().clear();
-        if (dto.getImageUrls() != null) entity.getImageUrls().addAll(dto.getImageUrls());
+        if (dto.getImageUrls() != null) {
+            entity.getImageUrls().clear();
+            entity.getImageUrls().addAll(dto.getImageUrls());
+        }
         entity.setMainImageUrl(dto.getMainImageUrl());
         entity.setSize(dto.getSize());
 
         // Маппинг атрибутов
-        entity.getAttributes().clear();
         if (dto.getAttributes() != null) {
+            entity.getAttributes().clear();
             dto.getAttributes().forEach(a -> {
                 ProductAttributeEmbeddable attr = new ProductAttributeEmbeddable();
                 attr.setAttrKey(a.getKey());

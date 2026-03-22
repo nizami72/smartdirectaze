@@ -7,7 +7,14 @@ import java.math.BigDecimal;
 import java.util.*;
 
 @Entity
-@Table(name = "products")
+@Table(name = "products",
+        indexes = {
+                @Index(name = "idx_product_shop_id", columnList = "shop_id")
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uc_shop_sku", columnNames = {"shop_id", "sku"})
+        }
+)
 @Getter @Setter
 public class ProductEntity {
 
@@ -15,9 +22,12 @@ public class ProductEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "shop_id", nullable = false, updatable = false)
+    private Long shopId;
+
+    @Column(nullable = false)
     private String sku;
-    
+
     private String barcode;
     private String slug;
 
@@ -60,7 +70,7 @@ public class ProductEntity {
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
     @Column(name = "image_url")
     private List<String> imageUrls = new ArrayList<>();
-    
+
     private String mainImageUrl;
 
     // --- Гибкие атрибуты ---

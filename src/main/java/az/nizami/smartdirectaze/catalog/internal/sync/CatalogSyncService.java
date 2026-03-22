@@ -26,7 +26,7 @@ public class CatalogSyncService {
     }
 
 
-    @Scheduled(cron = "${app.catalog.sync.cron}")
+//    @Scheduled(cron = "${app.catalog.sync.cron}")
     public void scheduleGoogleSheetsSynchronisation() {
         synchroniseGoogleSheetProducts();
     }

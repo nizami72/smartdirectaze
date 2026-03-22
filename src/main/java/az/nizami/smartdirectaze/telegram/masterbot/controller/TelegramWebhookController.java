@@ -1,6 +1,7 @@
-package az.nizami.smartdirectaze.telegram.controller;
+package az.nizami.smartdirectaze.telegram.masterbot.controller;
 
 import az.nizami.smartdirectaze.ai.AiService;
+import lombok.Value;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -8,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @RestController
-@RequestMapping("/webhooks/instagram1")
+@RequestMapping("${app.url.public}")
 @Log4j2
 public class TelegramWebhookController {
 

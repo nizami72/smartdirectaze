@@ -13,6 +13,8 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
     
     Optional<ProductEntity> findBySku(String sku);
 
+    List<ProductEntity> findByShopId(Long shopId);
+
     @Query(value = "SELECT DISTINCT p.* FROM products p " +
             "LEFT JOIN product_titles pt ON p.id = pt.product_id " +
             "WHERE pt.title_text ILIKE CONCAT('%', TRIM(:query), '%') " +
