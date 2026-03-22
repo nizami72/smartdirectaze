@@ -26,12 +26,66 @@
     <form th:action="@{/webhooks/inventory/add}" method="post">
         <input type="hidden" name="token" th:value="${token}">
 
+        <div class="row g-2 mb-2">
+            <div class="col-md-6">
+                <input type="text" name="name" class="form-control" placeholder="Название товара (ru)" required>
+            </div>
+            <div class="col-md-6">
+                <input type="text" name="sku" class="form-control" placeholder="Артикул (SKU)">
+            </div>
+        </div>
+
+        <div class="row g-2 mb-2">
+            <div class="col-md-4">
+                <input type="number" step="0.01" name="salePrice" class="form-control" placeholder="Цена продажи (AZN)" required>
+            </div>
+            <div class="col-md-4">
+                <input type="number" step="0.01" name="basePrice" class="form-control" placeholder="Себестоимость">
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="currency" class="form-control" placeholder="Валюта (AZN)" value="AZN">
+            </div>
+        </div>
+
         <div class="mb-2">
-            <input type="text" name="name" class="form-control" placeholder="Название товара (напр. Nike Air Force)" required>
+            <textarea name="description" class="form-control" rows="2" placeholder="Описание (ru)"></textarea>
         </div>
-        <div class="mb-3">
-            <input type="number" step="0.1" name="price" class="form-control" placeholder="Цена (AZN)" required>
+
+        <div class="row g-2 mb-2">
+            <div class="col-md-6">
+                <input type="text" name="brandName" class="form-control" placeholder="Бренд">
+            </div>
+            <div class="col-md-6">
+                <input type="text" name="barcode" class="form-control" placeholder="Штрих-код">
+            </div>
         </div>
+
+        <div class="row g-2 mb-2">
+            <div class="col-md-4">
+                <input type="number" name="stockQuantity" class="form-control" placeholder="Кол-во на складе">
+            </div>
+            <div class="col-md-4">
+                <input type="number" step="0.01" name="weight" class="form-control" placeholder="Вес (кг)">
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="size" class="form-control" placeholder="Размер">
+            </div>
+        </div>
+
+        <div class="row g-2 mb-2">
+            <div class="col-md-6">
+                <input type="text" name="mainImageUrl" class="form-control" placeholder="URL главного фото">
+            </div>
+            <div class="col-md-6">
+                <input type="text" name="unitOfMeasure" class="form-control" placeholder="Ед. измерения (шт, кг...)">
+            </div>
+        </div>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="isAvailable" id="isAvailable" checked>
+            <label class="form-check-label" for="isAvailable">Доступен для продажи</label>
+        </div>
+
         <button type="submit" class="btn btn-success w-100">+ Добавить товар</button>
     </form>
 </div>

@@ -30,10 +30,39 @@ public class InventoryController {
     @PostMapping("/webhooks/inventory/add")
     public String addProduct(@RequestParam("token") String shopToken,
                              @RequestParam("name") String name,
-                             @RequestParam("price") java.math.BigDecimal price) {
+                             @RequestParam(value = "sku", required = false) String sku,
+                             @RequestParam("salePrice") java.math.BigDecimal salePrice,
+                             @RequestParam(value = "basePrice", required = false) java.math.BigDecimal basePrice,
+                             @RequestParam(value = "currency", defaultValue = "AZN") String currency,
+                             @RequestParam(value = "description", required = false) String description,
+                             @RequestParam(value = "brandName", required = false) String brandName,
+                             @RequestParam(value = "barcode", required = false) String barcode,
+                             @RequestParam(value = "stockQuantity", required = false) Integer stockQuantity,
+                             @RequestParam(value = "weight", required = false) Double weight,
+                             @RequestParam(value = "size", required = false) String size,
+                             @RequestParam(value = "mainImageUrl", required = false) String mainImageUrl,
+                             @RequestParam(value = "unitOfMeasure", required = false) String unitOfMeasure,
+                             @RequestParam(value = "isAvailable", defaultValue = "false") Boolean isAvailable) {
         ProductDTO productDto = new ProductDTO();
         productDto.getTitles().put("ru", name);
-        productDto.setSalePrice(price);
+        productDto.setSku(sku);
+        productDto.setSalePrice(salePrice);
+        productDto.setBasePrice(basePrice);
+        productDto.setCurrency(currency);
+        if (description != null && !description.isBlank()) {
+            productDto.getDescriptions().put("ru", description);
+        }
+        productDto.setBrandName(brandName);
+        productDto.setBarcode(barcode);
+        productDto.setStockQuantity(stockQuantity);
+        productDto.setWeight(weight);
+        productDto.setSize(size);
+        productDto.setMainImageUrl(mainImageUrl);
+        if (unitOfMeasure != null && !unitOfMeasure.isBlank()) {
+            productDto.getUnitOfMeasure().put("ru", unitOfMeasure);
+        }
+        productDto.setIsAvailable(isAvailable);
+
         productService.addProduct(shopToken, productDto);
         return "redirect:/webhooks/inventory?token=" + shopToken;
     }

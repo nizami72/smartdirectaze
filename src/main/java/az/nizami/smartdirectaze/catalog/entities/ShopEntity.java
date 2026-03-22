@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.catalog.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -23,6 +24,7 @@ public class ShopEntity {
     @Column(name = "owner_chat_id", nullable = false)
     private Long ownerChatId; // Telegram ID владельца (для связи и пересылки сложных вопросов)
 
+    @JsonIgnore
     @Column(name = "bot_token", nullable = false, unique = true)
     private String botToken; // Токен, который выдал BotFather
 
@@ -36,6 +38,7 @@ public class ShopEntity {
     @Builder.Default
     private Boolean isActive = true; // Флаг включения/отключения бота (например, если не оплачена подписка)
 
+    @JsonIgnore
     @Column(name = "admin_access_token", unique = true)
     private String adminAccessToken;
 
