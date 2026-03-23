@@ -17,9 +17,13 @@ public interface ProductService {
 
     List<ProductDTO> searchForAiAssistant(String message);
 
-    List<ProductDTO> findProductDtoForShop(String botUuid);
+    List<ProductDTO> findProductDtoForShop(Long botUuid);
 
-    ProductDTO addProduct(String xShopToken, ProductDTO product);
+    ProductDTO addProduct(Long shopId, ProductDTO product);
 
-    String createShop(ShopDto shopDto);
+    ShopDto createShop(ShopDto shopDto);
+
+    boolean isShopExist(Long botUuid);
+
+    boolean isShopBelongToUser(Long shopUuid, Long currentUserId);
 }

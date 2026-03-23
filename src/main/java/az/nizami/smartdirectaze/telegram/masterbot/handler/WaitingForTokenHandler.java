@@ -59,14 +59,14 @@ public class WaitingForTokenHandler implements AdminStateHandler {
                 .botToken(newBotToken)
                 .isActive(true)
                 .build();
-        String botUuid = productService.createShop(newShopEntity);
+        ShopDto shopDto = productService.createShop(newShopEntity);
 
         // Устанавливаем вебхук для НОВОГО бота клиента
-        String clientWebhookUrl = baseUrl + "/api/webhooks/clients/" + botUuid;
+        String clientWebhookUrl = baseUrl + "/api/webhooks/clients/" + shopDto.botUuid();
         telegramClient.setWebhook(newBotToken, clientWebhookUrl);
 
         //  Формируем ссылку на ваш React-фронтенд
-        String frontendUrlForClient = String.format(frontendUrl, botUuid);
+        String frontendUrlForClient = String.format(frontendUrl, shopDto.id());
 
         // Отправляем сообщение с кнопкой
         String replyText = "✅ Бот успешно подключен!\n\n🛍 Теперь давай наполним твою витрину. Нажми на кнопку ниже, чтобы открыть панель управления товарами.";

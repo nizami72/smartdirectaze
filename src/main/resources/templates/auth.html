@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+<div id="loader">Проверка безопасности... 🔐</div>
+
+<div id="content" style="display: none;"></div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Берем криптографические данные от Telegram
+        const initData = window.Telegram.WebApp.initData;
+
+        // Берем ID магазина из URL (например, ?shopId=5)
+        const urlParams = new URLSearchParams(window.location.search);
+        const shopId = urlParams.get('shopId');
+
+        // Отправляем на наш Spring Boot для проверки
+        fetch('/webhooks/api/auth-inventory', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            // Передаем и данные телеграма, и ID магазина
+            body: `initData=${encodeURIComponent(initData)}&shopId=${shopId}`
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text(); // Получаем готовый HTML с товарами
+                } else {
+                    throw new Error('Доступ запрещен');
+                }
+            })
+            .then(html => {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                document.getElementById('content').innerHTML = html;
+
+                // Execute scripts in the injected HTML
+                const scripts = document.getElementById('content').querySelectorAll('script');
+                scripts.forEach(oldScript => {
+                    const newScript = document.createElement('script');
+                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                });
+            })
+            .catch(error => {
+                document.getElementById('loader').innerText = "❌ Ошибка: У вас нет доступа к этому магазину.";
+            });
+    });
+</script>
+</body>
+</html>

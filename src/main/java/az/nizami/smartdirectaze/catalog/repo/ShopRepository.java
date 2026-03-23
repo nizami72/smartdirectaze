@@ -10,7 +10,9 @@ import java.util.Optional;
 public interface ShopRepository extends JpaRepository<ShopEntity, Long> {
     // Этот метод будет использоваться контроллером покупателей для поиска настроек бота по URL
     Optional<ShopEntity> findByBotUuid(String botUuid);
-    
+
+    Optional<ShopEntity> findById(Long shopId);
+
     // А этот метод пригодится, чтобы обновлять прайс-лист по запросу владельца
     Optional<ShopEntity> findByOwnerChatId(Long ownerChatId);
 

@@ -22,6 +22,7 @@ class ProductServiceImpl implements ProductService {
     private final CatalogSyncService catalogSyncService;
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final ShopMapper shopMapper;
     private final ShopRepository shopRepository;
     //</editor-fold>
 
@@ -39,19 +40,17 @@ class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductDTO> findProductDtoForShop(String botUuid) {
-
-        return shopRepository.findByBotUuid(botUuid)
-        .map(shop -> productRepository.findByShopId(shop.getId()).stream()
+    public List<ProductDTO> findProductDtoForShop(Long shopId) {
+        return productRepository.findByShopId(shopId)
+                .stream()
                 .map(productMapper::toDto)
-                .toList())
-        .orElseThrow(() -> new BotNotFoundException("Bot not found for UUID: " + botUuid));
+                .toList();
     }
 
     @Override
     @Transactional
-    public ProductDTO addProduct(String xShopToken, ProductDTO productDto) {
-        return shopRepository.findByBotUuid(xShopToken)
+    public ProductDTO addProduct(Long shopId, ProductDTO productDto) {
+        return shopRepository.findById(shopId)
                 .map(shop -> {
                     ProductEntity entity = new ProductEntity();
                     productMapper.updateEntityFromDto(productDto, entity);
@@ -62,11 +61,11 @@ class ProductServiceImpl implements ProductService {
                     ProductEntity saved = productRepository.save(entity);
                     return productMapper.toDto(saved);
                 })
-                .orElseThrow(() -> new RuntimeException("Shop not found with token: " + xShopToken));
+                .orElseThrow(() -> new RuntimeException("Shop not found with ID: " + shopId));
     }
 
     @Override
-    public String createShop(ShopDto shopDto) {
+    public ShopDto createShop(ShopDto shopDto) {
         String botUuid = UUID.randomUUID().toString();
         ShopEntity newShopEntity = ShopEntity.builder()
                 .ownerChatId(shopDto.ownerChatId())
@@ -74,8 +73,18 @@ class ProductServiceImpl implements ProductService {
                 .botUuid(botUuid)
                 .isActive(shopDto.isActive())
                 .build();
-        shopRepository.save(newShopEntity);
-        return botUuid;
+        return shopMapper.toDto(shopRepository.save(newShopEntity));
+    }
+
+    @Override
+    public boolean isShopExist(Long shopId) {
+        return shopRepository.findById(shopId).isPresent();
+    }
+
+    @Override
+    public boolean isShopBelongToUser(Long shopId, Long currentUserId) {
+        Optional<ShopEntity> shop = shopRepository.findById(shopId);
+        return shop.isPresent() && shop.get().getOwnerChatId().equals(currentUserId);
     }
 
 
