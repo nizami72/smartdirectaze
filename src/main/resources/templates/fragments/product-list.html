@@ -136,6 +136,162 @@
                 icon.style.transform = 'rotate(0deg)';
             }
         }
+
+        function editProduct(productInput) {
+            console.log('editProduct called with input:', productInput);
+            
+            let parsedProduct;
+            // Support both object and JSON string
+            if (typeof productInput === 'string') {
+                try {
+                    // Try to unescape HTML entities if any
+                    const txt = document.createElement('textarea');
+                    txt.innerHTML = productInput;
+                    const unescaped = txt.value;
+                    console.log('Unescaped JSON string:', unescaped);
+                    if (unescaped === '{}') {
+                        console.error('Received empty JSON object from server');
+                        return;
+                    }
+                    parsedProduct = JSON.parse(unescaped);
+                    console.log('Parsed product object:', parsedProduct);
+                } catch (e) {
+                    console.error('Error parsing product JSON:', e);
+                    console.log('Failed product string:', productInput);
+                    return;
+                }
+            } else {
+                parsedProduct = productInput;
+            }
+
+            if (!parsedProduct || Object.keys(parsedProduct).length === 0) {
+                console.error('Product object is empty or invalid');
+                return;
+            }
+
+            const product = parsedProduct;
+            console.log('Final product object for population:', product);
+
+            // Fill basic fields
+            const desktopForm = document.querySelector('.desktop-only form');
+            const mobileForm = document.querySelector('#addProductModal form');
+            
+            console.log('Desktop form found:', !!desktopForm);
+            console.log('Mobile form found:', !!mobileForm);
+
+            // Check if mobile (modal is likely to be used if .form-panel is hidden or on small screen)
+            const isMobile = window.innerWidth <= 768;
+            console.log('Is mobile detection:', isMobile);
+            const targetForm = isMobile ? mobileForm : desktopForm;
+            
+            if (!targetForm) {
+                console.error('Target form not found');
+                return;
+            }
+
+            // Set mode to Edit
+            const titleElement = isMobile ? document.querySelector('#addProductModal .modal-title') : document.querySelector('.form-panel h5');
+            const submitBtn = targetForm.querySelector('button[type="submit"]');
+            
+            if (titleElement) titleElement.innerText = 'Edit Product';
+            if (submitBtn) submitBtn.innerText = 'Save Product';
+            targetForm.action = '/webhooks/inventory/update';
+            
+            // Add or update productId hidden field
+            let productIdInput = targetForm.querySelector('input[name="productId"]');
+            if (!productIdInput) {
+                productIdInput = document.createElement('input');
+                productIdInput.type = 'hidden';
+                productIdInput.name = 'productId';
+                targetForm.appendChild(productIdInput);
+            }
+            productIdInput.value = product.id;
+            console.log('Set productId to:', product.id);
+
+            // Helper to safe set value
+            const setValue = (name, value) => {
+                const el = targetForm.querySelector(`[name="${name}"]`);
+                if (el) {
+                    if (el.type === 'checkbox') {
+                        el.checked = !!value;
+                    } else {
+                        el.value = value || '';
+                    }
+                }
+            };
+
+            // Populate fields
+            console.log('Populating name with:', (product.titles ? (product.titles.az || product.titles.ru || product.name) : (product.name || '')));
+            setValue('name', (product.titles ? (product.titles.az || product.titles.ru || product.name) : (product.name || '')));
+            setValue('salePrice', product.salePrice);
+            setValue('sku', product.sku);
+            setValue('description', (product.descriptions ? (product.descriptions.ru || product.descriptions.az) : ''));
+            setValue('basePrice', product.basePrice);
+            setValue('currency', product.currency || 'AZN');
+            setValue('brandName', product.brandName);
+            setValue('barcode', product.barcode);
+            setValue('stockQuantity', product.stockQuantity);
+            setValue('weight', product.weight);
+            setValue('size', product.size);
+            setValue('mainImageUrl', product.mainImageUrl);
+            
+            // Fix for Unit: descriptions in DTO but unitOfMeasure is a Map
+            const unit = product.unitOfMeasure ? (product.unitOfMeasure.ru || product.unitOfMeasure.az || '') : '';
+            setValue('unitOfMeasure', unit);
+            
+            setValue('isAvailable', product.isAvailable);
+
+            // Expand advanced settings
+            const advancedFields = targetForm.querySelector('.advanced-fields');
+            const advancedToggle = targetForm.querySelector('.advanced-toggle');
+            if (advancedFields && advancedFields.classList.contains('d-none')) {
+                toggleAdvanced(advancedToggle);
+            }
+
+            // Open modal if mobile
+            if (isMobile) {
+                const modalElement = document.getElementById('addProductModal');
+                const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+                modal.show();
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function resetAddForm() {
+            const isMobile = window.innerWidth <= 768;
+            const targetForm = isMobile ? document.querySelector('#addProductModal form') : document.querySelector('.desktop-only form');
+            
+            if (!targetForm) return;
+
+            const titleElement = isMobile ? document.querySelector('#addProductModal .modal-title') : document.querySelector('.form-panel h5');
+            const submitBtn = targetForm.querySelector('button[type="submit"]');
+            
+            if (titleElement) titleElement.innerText = 'Add New Product';
+            if (submitBtn) submitBtn.innerText = 'Save Product';
+            targetForm.action = '/webhooks/inventory/add';
+            
+            // Remove productId hidden field
+            const productIdInput = targetForm.querySelector('input[name="productId"]');
+            if (productIdInput) {
+                productIdInput.remove();
+            }
+            
+            targetForm.reset();
+            
+            // Collapse advanced if open
+            const advancedFields = targetForm.querySelector('.advanced-fields');
+            const advancedToggle = targetForm.querySelector('.advanced-toggle');
+            if (advancedFields && !advancedFields.classList.contains('d-none')) {
+                toggleAdvanced(advancedToggle);
+            }
+
+            if (isMobile) {
+                const modalElement = document.getElementById('addProductModal');
+                const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+                modal.show();
+            }
+        }
     </script>
 </div>
 
@@ -147,7 +303,7 @@
         <!-- Header/Top Action for Mobile -->
         <div class="mobile-only mb-4">
             <button class="primary-btn w-100 py-3 d-flex align-items-center justify-content-center gap-2"
-                    data-bs-toggle="modal" data-bs-target="#addProductModal">
+                    onclick="resetAddForm()">
                 <i class="fas fa-plus"></i> Add Product
             </button>
         </div>
@@ -156,7 +312,12 @@
             <!-- Left Column: Add Product Form (Desktop) -->
             <div class="col-lg-4 desktop-only">
                 <div class="form-panel shadow-sm">
-                    <h5 class="fw-bold mb-4">Add New Product</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0">Add New Product</h5>
+                        <button class="btn btn-sm btn-outline-secondary border-0" onclick="resetAddForm()" title="Clear form">
+                            <i class="fas fa-redo-alt"></i>
+                        </button>
+                    </div>
                     <form th:action="@{/webhooks/inventory/add}" method="post">
                         <input type="hidden" name="shopId" th:value="${shopId}">
                         <div th:replace="~{fragments/product-list :: productFormFields}"></div>
@@ -180,8 +341,16 @@
                                      class="product-thumb" alt="Product image">
                                 <div class="flex-grow-1 min-width-0">
                                     <div class="d-flex justify-content-between align-items-start">
-                                        <h6 class="fw-bold text-truncate mb-1" th:text="${product.titles != null ? product.titles.get('ru') : 'Unnamed'}">Product Title</h6>
-                                        <button class="btn btn-link p-0 text-muted"><i class="fas fa-edit fa-xs"></i></button>
+                                        <h6 class="fw-bold text-truncate mb-1" th:text="${product.titles != null ? (product.titles.get('ru') ?: product.titles.get('az')) : 'Unnamed'}">Product Title</h6>
+                                        <button class="btn btn-link p-0 text-muted" 
+                                                th:with="jsonString=${jsonUtil != null ? jsonUtil.toJson(product) : '{}'}"
+                                                th:attr="data-product=${jsonString != null && !jsonString.isEmpty() ? jsonString : '{}'}"
+                                                onclick="
+                                                  console.log('Button clicked. Attribute value:', this.getAttribute('data-product'));
+                                                  editProduct(this.getAttribute('data-product'))"
+                                                type="button">
+                                            <i class="fas fa-edit fa-xs"></i>
+                                        </button>
                                     </div>
                                     <div class="badge-price mb-2 d-inline-block" th:text="${product.salePrice} + ' ' + ${product.currency}">0.00 AZN</div>
 

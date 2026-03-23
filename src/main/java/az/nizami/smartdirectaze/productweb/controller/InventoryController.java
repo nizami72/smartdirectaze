@@ -2,10 +2,10 @@ package az.nizami.smartdirectaze.productweb.controller;
 
 import az.nizami.smartdirectaze.catalog.ProductDTO;
 import az.nizami.smartdirectaze.catalog.ProductService;
-import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import az.nizami.smartdirectaze.catalog.JsonUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,6 +57,34 @@ public class InventoryController {
                              @RequestParam(value = "mainImageUrl", required = false) String mainImageUrl,
                              @RequestParam(value = "unitOfMeasure", required = false) String unitOfMeasure,
                              @RequestParam(value = "isAvailable", defaultValue = "false") Boolean isAvailable) {
+        ProductDTO productDto = populateProductDto(name, sku, salePrice, basePrice, currency, description, brandName, barcode, stockQuantity, weight, size, mainImageUrl, unitOfMeasure, isAvailable);
+        productService.addProduct(shopId, productDto);
+        return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
+    }
+
+    @PostMapping("/webhooks/inventory/update")
+    public String updateProduct(@RequestParam("shopId") Long shopId,
+                                @RequestParam("productId") Long productId,
+                                @RequestParam("name") String name,
+                                @RequestParam(value = "sku", required = false) String sku,
+                                @RequestParam("salePrice") java.math.BigDecimal salePrice,
+                                @RequestParam(value = "basePrice", required = false) java.math.BigDecimal basePrice,
+                                @RequestParam(value = "currency", defaultValue = "AZN") String currency,
+                                @RequestParam(value = "description", required = false) String description,
+                                @RequestParam(value = "brandName", required = false) String brandName,
+                                @RequestParam(value = "barcode", required = false) String barcode,
+                                @RequestParam(value = "stockQuantity", required = false) Integer stockQuantity,
+                                @RequestParam(value = "weight", required = false) Double weight,
+                                @RequestParam(value = "size", required = false) String size,
+                                @RequestParam(value = "mainImageUrl", required = false) String mainImageUrl,
+                                @RequestParam(value = "unitOfMeasure", required = false) String unitOfMeasure,
+                                @RequestParam(value = "isAvailable", defaultValue = "false") Boolean isAvailable) {
+        ProductDTO productDto = populateProductDto(name, sku, salePrice, basePrice, currency, description, brandName, barcode, stockQuantity, weight, size, mainImageUrl, unitOfMeasure, isAvailable);
+        productService.updateProduct(shopId, productId, productDto);
+        return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
+    }
+
+    private ProductDTO populateProductDto(String name, String sku, java.math.BigDecimal salePrice, java.math.BigDecimal basePrice, String currency, String description, String brandName, String barcode, Integer stockQuantity, Double weight, String size, String mainImageUrl, String unitOfMeasure, Boolean isAvailable) {
         ProductDTO productDto = new ProductDTO();
         productDto.getTitles().put("az", name);
         productDto.setSku(sku);
@@ -76,9 +104,7 @@ public class InventoryController {
             productDto.getUnitOfMeasure().put("ru", unitOfMeasure);
         }
         productDto.setIsAvailable(isAvailable);
-
-        productService.addProduct(shopId, productDto);
-        return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
+        return productDto;
     }
 
     @PostMapping("/webhooks/api/auth-inventory")
@@ -105,6 +131,7 @@ public class InventoryController {
         List<ProductDTO> products = productService.findProductDtoForShop(shopId);
         model.addAttribute("products", products);
         model.addAttribute("shopId", shopId);
+        model.addAttribute("jsonUtil", new JsonUtil());
 
         // Возвращаем ТОЛЬКО кусок HTML с товарами (фрагмент), а не всю страницу целиком
         return "fragments/product-list :: inventory-content";

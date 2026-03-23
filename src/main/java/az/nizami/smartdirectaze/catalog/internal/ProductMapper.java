@@ -33,7 +33,9 @@ public class ProductMapper {
         dto.setStockQuantity(entity.getStockQuantity());
         dto.setTrackQuantity(entity.getTrackQuantity());
         dto.setIsAvailable(entity.getIsAvailable());
-        dto.setUnitOfMeasure(entity.getUnitOfMeasure());
+        if (entity.getUnitOfMeasure() != null) {
+            dto.setUnitOfMeasure(new HashMap<>(entity.getUnitOfMeasure()));
+        }
 
         dto.setCategoryId(entity.getCategoryId());
         dto.setBrandName(entity.getBrandName());

@@ -55,13 +55,29 @@ class ProductServiceImpl implements ProductService {
                     ProductEntity entity = new ProductEntity();
                     productMapper.updateEntityFromDto(productDto, entity);
                     entity.setShopId(shop.getId());
-                    if (entity.getSku() == null) {
+                    if (entity.getSku() == null || productRepository.findBySku(entity.getSku()).isPresent()) {
+
                         entity.setSku(UUID.randomUUID().toString());
                     }
                     ProductEntity saved = productRepository.save(entity);
                     return productMapper.toDto(saved);
                 })
                 .orElseThrow(() -> new RuntimeException("Shop not found with ID: " + shopId));
+    }
+
+    @Override
+    @Transactional
+    public ProductDTO updateProduct(Long shopId, Long productId, ProductDTO productDto) {
+        return productRepository.findById(productId)
+                .map(entity -> {
+                    if (!entity.getShopId().equals(shopId)) {
+                        throw new RuntimeException("Product " + productId + " does not belong to shop " + shopId);
+                    }
+                    productMapper.updateEntityFromDto(productDto, entity);
+                    ProductEntity saved = productRepository.save(entity);
+                    return productMapper.toDto(saved);
+                })
+                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
     }
 
     @Override
