@@ -17,7 +17,7 @@ public interface ProductService {
 
     List<ProductDTO> searchForAiAssistant(String message);
 
-    List<ProductDTO> findProductDtoForShop(String xShopToken);
+    List<ProductDTO> findProductDtoForShop(String botUuid);
 
     ProductDTO addProduct(String xShopToken, ProductDTO product);
 

@@ -4,7 +4,6 @@ import az.nizami.smartdirectaze.catalog.ProductDTO;
 import az.nizami.smartdirectaze.catalog.ProductService;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,11 +18,11 @@ public class InventoryController {
     private final ProductService productService;
 
     @GetMapping("/webhooks/inventory")
-    public String getProducts(@RequestParam("token") String shopToken, Model model) {
+    public String getProducts(@RequestParam("token") String botuuid, Model model) {
         log.debug("getProducts called");
-        List<ProductDTO> products = productService.findProductDtoForShop(shopToken);
+        List<ProductDTO> products = productService.findProductDtoForShop(botuuid);
         model.addAttribute("products", products);
-        model.addAttribute("token", shopToken);
+        model.addAttribute("token", botuuid);
         return "products";
     }
 
@@ -64,6 +63,6 @@ public class InventoryController {
         productDto.setIsAvailable(isAvailable);
 
         productService.addProduct(shopToken, productDto);
-        return "redirect:/webhooks/inventory?token=" + shopToken;
+        return "redirect:https://qrfood.az/webhooks/inventory?token=" + shopToken;
     }
 }

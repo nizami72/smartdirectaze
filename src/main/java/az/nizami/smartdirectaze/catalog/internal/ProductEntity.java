@@ -3,8 +3,13 @@ package az.nizami.smartdirectaze.catalog.internal;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.RandomStringUtils;
+
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "products",
@@ -15,7 +20,8 @@ import java.util.*;
                 @UniqueConstraint(name = "uc_shop_sku", columnNames = {"shop_id", "sku"})
         }
 )
-@Getter @Setter
+@Getter
+@Setter
 public class ProductEntity {
 
     @Id
@@ -85,10 +91,20 @@ public class ProductEntity {
     // --- Аналитика ---
     private Double averageRating;
     private Integer reviewCount;
+
+    @PrePersist
+    public void generateSkuIfMissing() {
+        if (this.sku == null || this.sku.isBlank()) {
+            // Простая генерация случайного 6-значного кода
+            this.sku = RandomStringUtils.randomAlphanumeric(6).toUpperCase();
+        }
+    }
+
 }
 
 @Embeddable
-@Getter @Setter
+@Getter
+@Setter
 class ProductAttributeEmbeddable {
     private String attrKey;
     private String attrValue;

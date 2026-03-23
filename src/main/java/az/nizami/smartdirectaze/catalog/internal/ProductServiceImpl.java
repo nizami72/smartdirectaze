@@ -1,6 +1,7 @@
 package az.nizami.smartdirectaze.catalog.internal;
 
 import az.nizami.smartdirectaze.ShopDto;
+import az.nizami.smartdirectaze.catalog.BotNotFoundException;
 import az.nizami.smartdirectaze.catalog.ProductDTO;
 import az.nizami.smartdirectaze.catalog.ProductService;
 import az.nizami.smartdirectaze.catalog.entities.ShopEntity;
@@ -38,12 +39,13 @@ class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductDTO> findProductDtoForShop(String xShopToken) {
-        return shopRepository.findByBotUuid(xShopToken)
-                .map(shop -> productRepository.findByShopId(shop.getId()).stream()
-                        .map(productMapper::toDto)
-                        .toList())
-                .orElse(List.of());
+    public List<ProductDTO> findProductDtoForShop(String botUuid) {
+
+        return shopRepository.findByBotUuid(botUuid)
+        .map(shop -> productRepository.findByShopId(shop.getId()).stream()
+                .map(productMapper::toDto)
+                .toList())
+        .orElseThrow(() -> new BotNotFoundException("Bot not found for UUID: " + botUuid));
     }
 
     @Override

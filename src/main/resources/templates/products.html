@@ -3,98 +3,303 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управление витриной</title>
+    <title>SaaS Shop Admin</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #F3F4F6;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #1F2937;
+        }
+
+        .primary-btn {
+            background-color: #10B981; /* Emerald Green */
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .primary-btn:hover {
+            background-color: #059669;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .product-card {
+            background: white;
+            padding: 1rem;
+            height: 100%;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-thumb {
+            width: 64px;
+            height: 64px;
+            border-radius: 8px;
+            object-fit: cover;
+            background-color: #E5E7EB;
+        }
+
+        .form-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: sticky;
+            top: 1.5rem;
+        }
+
+        /* Toggle Switch Styling */
+        .form-switch .form-check-input {
+            width: 2.5em;
+            height: 1.25em;
+            cursor: pointer;
+        }
+
+        .form-switch .form-check-input:checked {
+            background-color: #10B981;
+            border-color: #10B981;
+        }
+
+        .advanced-toggle {
+            color: #6B7280;
+            text-decoration: none;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .advanced-toggle:hover {
+            color: #374151;
+        }
+
+        .badge-price {
+            background-color: #DBEAFE;
+            color: #1E40AF;
+            font-weight: 700;
+            border-radius: 6px;
+            padding: 4px 8px;
+        }
+
+        @media (max-width: 768px) {
+            .desktop-only { display: none !important; }
+            .mobile-add-btn {
+                position: fixed;
+                bottom: 2rem;
+                right: 1.5rem;
+                z-index: 1000;
+                border-radius: 50%;
+                width: 56px;
+                height: 56px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            }
+        }
+
+        @media (min-width: 769px) {
+            .mobile-only { display: none !important; }
+        }
+    </style>
 </head>
-<body class="bg-light p-3">
+<body class="p-2 p-md-4">
 
-<div class="container bg-white p-4 rounded shadow-sm">
-    <h4 class="mb-4">📦 Товары магазина</h4>
+<div class="container-fluid max-width-1200 mx-auto">
+    <!-- Header/Top Action for Mobile -->
+    <div class="mobile-only mb-4">
+        <button class="primary-btn w-100 py-3 d-flex align-items-center justify-content-center gap-2"
+                data-bs-toggle="modal" data-bs-target="#addProductModal">
+            <i class="fas fa-plus"></i> Add Product
+        </button>
+    </div>
 
-    <ul class="list-group mb-4">
-        <li class="list-group-item d-flex justify-content-between align-items-center"
-            th:each="product : ${products}">
-            <span th:text="${product.titles != null ? product.titles.get('ru') : ''}">Название товара</span>
-            <span class="badge bg-primary rounded-pill" th:text="${product.salePrice} + ' AZN'">Цена</span>
-        </li>
-        <li class="list-group-item text-muted text-center" th:if="${products.isEmpty()}">
-            Товаров пока нет. Добавьте первый!
-        </li>
-    </ul>
-
-    <form th:action="@{/webhooks/inventory/add}" method="post">
-        <input type="hidden" name="token" th:value="${token}">
-
-        <div class="row g-2 mb-2">
-            <div class="col-md-6">
-                <input type="text" name="name" class="form-control" placeholder="Название товара (ru)" required>
-            </div>
-            <div class="col-md-6">
-                <input type="text" name="sku" class="form-control" placeholder="Артикул (SKU)">
+    <div class="row g-4">
+        <!-- Left Column: Add Product Form (Desktop) -->
+        <div class="col-lg-4 desktop-only">
+            <div class="form-panel shadow-sm">
+                <h5 class="fw-bold mb-4">Add New Product</h5>
+                <form th:action="@{/webhooks/inventory/add}" method="post">
+                    <input type="hidden" name="token" th:value="${token}">
+                    <div th:replace="~{::productFormFields}"></div>
+                    <button type="submit" class="primary-btn w-100 mt-4">Save Product</button>
+                </form>
             </div>
         </div>
 
-        <div class="row g-2 mb-2">
-            <div class="col-md-4">
-                <input type="number" step="0.01" name="salePrice" class="form-control" placeholder="Цена продажи (AZN)" required>
-            </div>
-            <div class="col-md-4">
-                <input type="number" step="0.01" name="basePrice" class="form-control" placeholder="Себестоимость">
-            </div>
-            <div class="col-md-4">
-                <input type="text" name="currency" class="form-control" placeholder="Валюта (AZN)" value="AZN">
+        <!-- Right Column: Product Inventory -->
+        <div class="col-lg-8">
+            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                📦 Inventory
+                <span class="badge bg-light text-muted border fw-normal" th:text="${products.size()}">0</span>
+            </h5>
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                <div class="col" th:each="product : ${products}">
+                    <div class="card product-card">
+                        <div class="d-flex gap-3">
+                            <img th:src="${product.mainImageUrl != null && !product.mainImageUrl.isEmpty() ? product.mainImageUrl : 'https://via.placeholder.com/64'}"
+                                 class="product-thumb" alt="Product image">
+                            <div class="flex-grow-1 min-width-0">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h6 class="fw-bold text-truncate mb-1" th:text="${product.titles != null ? product.titles.get('ru') : 'Unnamed'}">Product Title</h6>
+                                    <button class="btn btn-link p-0 text-muted"><i class="fas fa-edit fa-xs"></i></button>
+                                </div>
+                                <div class="badge-price mb-2 d-inline-block" th:text="${product.salePrice} + ' ' + ${product.currency}">0.00 AZN</div>
+
+                                <div class="form-check form-switch mt-1">
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                           th:checked="${product.isAvailable}" th:id="'stockSwitch' + ${product.id}">
+                                    <label class="form-check-label small text-muted" th:for="'stockSwitch' + ${product.id}"
+                                           th:text="${product.isAvailable ? 'In Stock' : 'Out of Stock'}">In Stock</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="col-12 text-center py-5" th:if="${products.isEmpty()}">
+                    <div class="text-muted mb-3"><i class="fas fa-box-open fa-3x opacity-25"></i></div>
+                    <p class="text-muted">No products yet. Start by adding one!</p>
+                </div>
             </div>
         </div>
-
-        <div class="mb-2">
-            <textarea name="description" class="form-control" rows="2" placeholder="Описание (ru)"></textarea>
-        </div>
-
-        <div class="row g-2 mb-2">
-            <div class="col-md-6">
-                <input type="text" name="brandName" class="form-control" placeholder="Бренд">
-            </div>
-            <div class="col-md-6">
-                <input type="text" name="barcode" class="form-control" placeholder="Штрих-код">
-            </div>
-        </div>
-
-        <div class="row g-2 mb-2">
-            <div class="col-md-4">
-                <input type="number" name="stockQuantity" class="form-control" placeholder="Кол-во на складе">
-            </div>
-            <div class="col-md-4">
-                <input type="number" step="0.01" name="weight" class="form-control" placeholder="Вес (кг)">
-            </div>
-            <div class="col-md-4">
-                <input type="text" name="size" class="form-control" placeholder="Размер">
-            </div>
-        </div>
-
-        <div class="row g-2 mb-2">
-            <div class="col-md-6">
-                <input type="text" name="mainImageUrl" class="form-control" placeholder="URL главного фото">
-            </div>
-            <div class="col-md-6">
-                <input type="text" name="unitOfMeasure" class="form-control" placeholder="Ед. измерения (шт, кг...)">
-            </div>
-        </div>
-
-        <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" name="isAvailable" id="isAvailable" checked>
-            <label class="form-check-label" for="isAvailable">Доступен для продажи</label>
-        </div>
-
-        <button type="submit" class="btn btn-success w-100">+ Добавить товар</button>
-    </form>
+    </div>
 </div>
 
+<!-- Mobile Add Product Modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Add Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form th:action="@{/webhooks/inventory/add}" method="post">
+                    <input type="hidden" name="token" th:value="${token}">
+                    <div th:replace="~{::productFormFields}"></div>
+                    <button type="submit" class="primary-btn w-100 mt-4">Save Product</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reusable Form Fields Fragment -->
+<div th:fragment="productFormFields">
+    <div class="mb-3">
+        <label class="form-label small fw-semibold text-muted">Product Name</label>
+        <input type="text" name="name" class="form-control rounded-3" placeholder="Enter name" required>
+    </div>
+    <div class="mb-3">
+        <label class="form-label small fw-semibold text-muted">Price (AZN)</label>
+        <input type="number" step="0.01" name="salePrice" class="form-control rounded-3" placeholder="0.00" required>
+    </div>
+
+    <!-- Progressive Disclosure: Advanced Settings -->
+    <div class="mt-4">
+        <div class="advanced-toggle mb-3" onclick="toggleAdvanced(this)">
+            <i class="fas fa-cog"></i>
+            <span>Advanced Settings</span>
+            <i class="fas fa-chevron-down ms-auto fa-xs transition" style="transition: transform 0.2s"></i>
+        </div>
+
+        <div class="advanced-fields d-none">
+            <div class="mb-3">
+                <label class="form-label small fw-semibold text-muted">SKU (Article)</label>
+                <input type="text" name="sku" class="form-control rounded-3" placeholder="Unique code">
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold text-muted">Description</label>
+                <textarea name="description" class="form-control rounded-3" rows="3" placeholder="Details..."></textarea>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label small fw-semibold text-muted">Cost Price</label>
+                    <input type="number" step="0.01" name="basePrice" class="form-control rounded-3" placeholder="Cost">
+                </div>
+                <div class="col-6">
+                    <label class="form-label small fw-semibold text-muted">Currency</label>
+                    <input type="text" name="currency" class="form-control rounded-3" value="AZN">
+                </div>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label small fw-semibold text-muted">Brand</label>
+                    <input type="text" name="brandName" class="form-control rounded-3" placeholder="Nike, etc.">
+                </div>
+                <div class="col-6">
+                    <label class="form-label small fw-semibold text-muted">Barcode</label>
+                    <input type="text" name="barcode" class="form-control rounded-3" placeholder="UPC/EAN">
+                </div>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-4">
+                    <label class="form-label small fw-semibold text-muted">Stock</label>
+                    <input type="number" name="stockQuantity" class="form-control rounded-3" placeholder="Qty">
+                </div>
+                <div class="col-4">
+                    <label class="form-label small fw-semibold text-muted">Weight</label>
+                    <input type="number" step="0.01" name="weight" class="form-control rounded-3" placeholder="Kg">
+                </div>
+                <div class="col-4">
+                    <label class="form-label small fw-semibold text-muted">Size</label>
+                    <input type="text" name="size" class="form-control rounded-3" placeholder="L, XL">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold text-muted">Image URL</label>
+                <input type="text" name="mainImageUrl" class="form-control rounded-3" placeholder="https://...">
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold text-muted">Unit</label>
+                <input type="text" name="unitOfMeasure" class="form-control rounded-3" placeholder="pcs, kg">
+            </div>
+            <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" name="isAvailable" id="isAvailableMain" checked>
+                <label class="form-check-label small" for="isAvailableMain">Available for sale</label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // Сообщаем Telegram, что страница загружена
     if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.ready();
         window.Telegram.WebApp.expand();
+    }
+
+    function toggleAdvanced(btn) {
+        const fields = btn.nextElementSibling;
+        const icon = btn.querySelector('.fa-chevron-down');
+        if (fields.classList.contains('d-none')) {
+            fields.classList.remove('d-none');
+            icon.style.transform = 'rotate(180deg)';
+        } else {
+            fields.classList.add('d-none');
+            icon.style.transform = 'rotate(0deg)';
+        }
     }
 </script>
 </body>

@@ -65,11 +65,8 @@ public class WaitingForTokenHandler implements AdminStateHandler {
         String clientWebhookUrl = baseUrl + "/api/webhooks/clients/" + botUuid;
         telegramClient.setWebhook(newBotToken, clientWebhookUrl);
 
-        // Генерируем безопасный токен доступа (лучше использовать UUID без дефисов или Base64)
-        String adminToken = UUID.randomUUID().toString().replace("-", "");
-
         //  Формируем ссылку на ваш React-фронтенд
-        String frontendUrlForClient = String.format(frontendUrl, adminToken);
+        String frontendUrlForClient = String.format(frontendUrl, botUuid);
 
         // Отправляем сообщение с кнопкой
         String replyText = "✅ Бот успешно подключен!\n\n🛍 Теперь давай наполним твою витрину. Нажми на кнопку ниже, чтобы открыть панель управления товарами.";
