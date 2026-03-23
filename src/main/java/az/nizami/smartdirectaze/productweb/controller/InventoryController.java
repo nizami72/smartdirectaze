@@ -84,6 +84,13 @@ public class InventoryController {
         return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
     }
 
+    @PostMapping("/webhooks/inventory/delete")
+    public String deleteProduct(@RequestParam("shopId") Long shopId,
+                                @RequestParam("productId") Long productId) {
+        productService.deleteProduct(shopId, productId);
+        return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
+    }
+
     private ProductDTO populateProductDto(String name, String sku, java.math.BigDecimal salePrice, java.math.BigDecimal basePrice, String currency, String description, String brandName, String barcode, Integer stockQuantity, Double weight, String size, String mainImageUrl, String unitOfMeasure, Boolean isAvailable) {
         ProductDTO productDto = new ProductDTO();
         productDto.getTitles().put("az", name);

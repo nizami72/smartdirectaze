@@ -197,6 +197,17 @@
             if (submitBtn) submitBtn.innerText = 'Save Product';
             targetForm.action = '/webhooks/inventory/update';
             
+            // Show action buttons (Cancel, Delete)
+            const actionButtons = targetForm.querySelector('.action-buttons');
+            if (actionButtons) {
+                actionButtons.classList.remove('d-none');
+                const deleteBtn = actionButtons.querySelector('.delete-btn');
+                if (deleteBtn) {
+                    deleteBtn.classList.remove('d-none');
+                    deleteBtn.onclick = () => deleteProduct(product.id);
+                }
+            }
+            
             // Add or update productId hidden field
             let productIdInput = targetForm.querySelector('input[name="productId"]');
             if (!productIdInput) {
@@ -271,6 +282,18 @@
             if (submitBtn) submitBtn.innerText = 'Save Product';
             targetForm.action = '/webhooks/inventory/add';
             
+            // Handle action buttons
+            const actionButtons = targetForm.querySelector('.action-buttons');
+            if (actionButtons) {
+                if (isMobile) {
+                    actionButtons.classList.add('d-none');
+                } else {
+                    actionButtons.classList.remove('d-none');
+                    const deleteBtn = actionButtons.querySelector('.delete-btn');
+                    if (deleteBtn) deleteBtn.classList.add('d-none'); // Hide delete in add mode
+                }
+            }
+            
             // Remove productId hidden field
             const productIdInput = targetForm.querySelector('input[name="productId"]');
             if (productIdInput) {
@@ -289,7 +312,57 @@
             if (isMobile) {
                 const modalElement = document.getElementById('addProductModal');
                 const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+                if (actionButtons) {
+                    // Always show Cancel in mobile modal if it's open
+                    actionButtons.classList.remove('d-none');
+                    const deleteBtn = actionButtons.querySelector('.delete-btn');
+                    if (deleteBtn) deleteBtn.classList.add('d-none');
+                }
                 modal.show();
+            }
+        }
+
+        function deleteProduct(productId) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+            
+            const shopId = document.querySelector('input[name="shopId"]').value;
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/webhooks/inventory/delete';
+            
+            const shopIdInput = document.createElement('input');
+            shopIdInput.type = 'hidden';
+            shopIdInput.name = 'shopId';
+            shopIdInput.value = shopId;
+            form.appendChild(shopIdInput);
+            
+            const productIdInput = document.createElement('input');
+            productIdInput.type = 'hidden';
+            productIdInput.name = 'productId';
+            productIdInput.value = productId;
+            form.appendChild(productIdInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function cancelForm() {
+            const isMobile = window.innerWidth <= 768;
+            const targetForm = isMobile ? document.querySelector('#addProductModal form') : document.querySelector('.desktop-only form');
+            
+            if (isMobile) {
+                const modalElement = document.getElementById('addProductModal');
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) modal.hide();
+            }
+            
+            // Reset form fields and state
+            resetAddForm();
+            // In case resetAddForm showed the modal again (it does for mobile), we might need to hide it if we truly want to close
+            if (isMobile) {
+                 const modalElement = document.getElementById('addProductModal');
+                 const modal = bootstrap.Modal.getInstance(modalElement);
+                 if (modal) modal.hide();
             }
         }
     </script>
@@ -321,7 +394,15 @@
                     <form th:action="@{/webhooks/inventory/add}" method="post">
                         <input type="hidden" name="shopId" th:value="${shopId}">
                         <div th:replace="~{fragments/product-list :: productFormFields}"></div>
-                        <button type="submit" class="primary-btn w-100 mt-4">Save Product</button>
+                        <div class="action-buttons d-flex gap-2 mt-4">
+                            <button type="submit" class="primary-btn flex-grow-1">Save Product</button>
+                            <button type="button" class="btn btn-outline-danger delete-btn d-none" title="Delete product">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button type="button" class="btn btn-light" onclick="cancelForm()" title="Cancel">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -387,7 +468,15 @@
                     <form th:action="@{/webhooks/inventory/add}" method="post">
                         <input type="hidden" name="shopId" th:value="${shopId}">
                         <div th:replace="~{fragments/product-list :: productFormFields}"></div>
-                        <button type="submit" class="primary-btn w-100 mt-4">Save Product</button>
+                        <div class="action-buttons d-flex gap-2 mt-4">
+                            <button type="submit" class="primary-btn flex-grow-1">Save Product</button>
+                            <button type="button" class="btn btn-outline-danger delete-btn d-none" title="Delete product">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button type="button" class="btn btn-light" onclick="cancelForm()" title="Cancel">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>

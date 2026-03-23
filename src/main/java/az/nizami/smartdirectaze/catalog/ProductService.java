@@ -23,6 +23,8 @@ public interface ProductService {
 
     ProductDTO updateProduct(Long shopId, Long productId, ProductDTO productDto);
 
+    void deleteProduct(Long shopId, Long productId);
+
     ShopDto createShop(ShopDto shopDto);
 
     boolean isShopExist(Long botUuid);

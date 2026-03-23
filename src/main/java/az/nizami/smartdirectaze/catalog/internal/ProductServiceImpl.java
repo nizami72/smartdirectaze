@@ -81,6 +81,18 @@ class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
+    public void deleteProduct(Long shopId, Long productId) {
+        productRepository.findById(productId)
+                .ifPresent(entity -> {
+                    if (!entity.getShopId().equals(shopId)) {
+                        throw new RuntimeException("Product " + productId + " does not belong to shop " + shopId);
+                    }
+                    productRepository.delete(entity);
+                });
+    }
+
+    @Override
     public ShopDto createShop(ShopDto shopDto) {
         String botUuid = UUID.randomUUID().toString();
         ShopEntity newShopEntity = ShopEntity.builder()
