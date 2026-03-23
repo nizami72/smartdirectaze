@@ -19,9 +19,9 @@ public interface ProductService {
 
     List<ProductDTO> findProductDtoForShop(Long botUuid);
 
-    ProductDTO addProduct(Long shopId, ProductDTO product);
+    ProductDTO addProduct(Long shopId, ProductDTO product, org.springframework.web.multipart.MultipartFile photo);
 
-    ProductDTO updateProduct(Long shopId, Long productId, ProductDTO productDto);
+    ProductDTO updateProduct(Long shopId, Long productId, ProductDTO productDto, org.springframework.web.multipart.MultipartFile photo);
 
     void deleteProduct(Long shopId, Long productId);
 
@@ -30,4 +30,6 @@ public interface ProductService {
     boolean isShopExist(Long botUuid);
 
     boolean isShopBelongToUser(Long shopUuid, Long currentUserId);
+
+    byte[] loadProductPhoto(Long shopId, Long productId, String filename);
 }

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class JsonUtil {
     private static final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
@@ -17,8 +19,7 @@ public class JsonUtil {
             System.out.println("[DEBUG_LOG] toJson input: " + obj + " | output: " + json);
             return json;
         } catch (JsonProcessingException e) {
-            System.err.println("[DEBUG_LOG] Error in toJson: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error in toJson:  [{}]", e.getMessage());
             return "{}";
         }
     }

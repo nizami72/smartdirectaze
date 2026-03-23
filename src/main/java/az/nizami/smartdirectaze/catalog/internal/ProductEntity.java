@@ -92,6 +92,9 @@ public class ProductEntity {
     private Double averageRating;
     private Integer reviewCount;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
     @PrePersist
     public void generateSkuIfMissing() {
         if (this.sku == null || this.sku.isBlank()) {

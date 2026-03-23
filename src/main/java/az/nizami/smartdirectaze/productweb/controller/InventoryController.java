@@ -6,9 +6,12 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import az.nizami.smartdirectaze.catalog.JsonUtil;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
@@ -56,9 +59,10 @@ public class InventoryController {
                              @RequestParam(value = "size", required = false) String size,
                              @RequestParam(value = "mainImageUrl", required = false) String mainImageUrl,
                              @RequestParam(value = "unitOfMeasure", required = false) String unitOfMeasure,
-                             @RequestParam(value = "isAvailable", defaultValue = "false") Boolean isAvailable) {
+                             @RequestParam(value = "isAvailable", defaultValue = "false") Boolean isAvailable,
+                             @RequestParam(value = "photo", required = false) org.springframework.web.multipart.MultipartFile photo) {
         ProductDTO productDto = populateProductDto(name, sku, salePrice, basePrice, currency, description, brandName, barcode, stockQuantity, weight, size, mainImageUrl, unitOfMeasure, isAvailable);
-        productService.addProduct(shopId, productDto);
+        productService.addProduct(shopId, productDto, photo);
         return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
     }
 
@@ -78,9 +82,10 @@ public class InventoryController {
                                 @RequestParam(value = "size", required = false) String size,
                                 @RequestParam(value = "mainImageUrl", required = false) String mainImageUrl,
                                 @RequestParam(value = "unitOfMeasure", required = false) String unitOfMeasure,
-                                @RequestParam(value = "isAvailable", defaultValue = "false") Boolean isAvailable) {
+                                @RequestParam(value = "isAvailable", defaultValue = "false") Boolean isAvailable,
+                                @RequestParam(value = "photo", required = false) org.springframework.web.multipart.MultipartFile photo) {
         ProductDTO productDto = populateProductDto(name, sku, salePrice, basePrice, currency, description, brandName, barcode, stockQuantity, weight, size, mainImageUrl, unitOfMeasure, isAvailable);
-        productService.updateProduct(shopId, productId, productDto);
+        productService.updateProduct(shopId, productId, productDto, photo);
         return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
     }
 
@@ -142,6 +147,29 @@ public class InventoryController {
 
         // Возвращаем ТОЛЬКО кусок HTML с товарами (фрагмент), а не всю страницу целиком
         return "fragments/product-list :: inventory-content";
+    }
+
+    @GetMapping("/webhooks/api/products/photo/{shopId}/{productId}/{filename}")
+    public ResponseEntity<byte[]> getProductPhoto(@PathVariable("shopId") Long shopId,
+                                                  @PathVariable("productId") Long productId,
+                                                  @PathVariable("filename") String filename) {
+        byte[] image = productService.loadProductPhoto(shopId, productId, filename);
+        if (image == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        MediaType mediaType = MediaType.IMAGE_JPEG;
+        if (filename.toLowerCase().endsWith(".png")) {
+            mediaType = MediaType.IMAGE_PNG;
+        } else if (filename.toLowerCase().endsWith(".webp")) {
+            mediaType = MediaType.parseMediaType("image/webp");
+        } else if (filename.toLowerCase().endsWith(".gif")) {
+            mediaType = MediaType.IMAGE_GIF;
+        }
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .body(image);
     }
 
 }

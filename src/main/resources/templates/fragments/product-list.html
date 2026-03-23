@@ -244,6 +244,9 @@
             setValue('stockQuantity', product.stockQuantity);
             setValue('weight', product.weight);
             setValue('size', product.size);
+
+            // Handle mainImageUrl: if it's just a filename, it shouldn't be put into the URL field as is if it's expected to be a full URL
+            // But let's keep it for now as it was.
             setValue('mainImageUrl', product.mainImageUrl);
             
             // Fix for Unit: descriptions in DTO but unitOfMeasure is a Map
@@ -391,7 +394,7 @@
                             <i class="fas fa-redo-alt"></i>
                         </button>
                     </div>
-                    <form th:action="@{/webhooks/inventory/add}" method="post">
+                    <form th:action="@{/webhooks/inventory/add}" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="shopId" th:value="${shopId}">
                         <div th:replace="~{fragments/product-list :: productFormFields}"></div>
                         <div class="action-buttons d-flex gap-2 mt-4">
@@ -418,7 +421,7 @@
                     <div class="col" th:each="product : ${products}">
                         <div class="card product-card">
                             <div class="d-flex gap-3">
-                                <img th:src="${product.mainImageUrl != null && !product.mainImageUrl.isEmpty() ? product.mainImageUrl : 'https://via.placeholder.com/64'}"
+                                <img th:src="${product.mainImageUrl != null && !product.mainImageUrl.isEmpty() ? (product.mainImageUrl.startsWith('http') ? product.mainImageUrl : '/webhooks/api/products/photo/' + shopId + '/' + product.id + '/' + product.mainImageUrl) : 'https://via.placeholder.com/64'}"
                                      class="product-thumb" alt="Product image">
                                 <div class="flex-grow-1 min-width-0">
                                     <div class="d-flex justify-content-between align-items-start">
@@ -465,7 +468,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <form th:action="@{/webhooks/inventory/add}" method="post">
+                    <form th:action="@{/webhooks/inventory/add}" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="shopId" th:value="${shopId}">
                         <div th:replace="~{fragments/product-list :: productFormFields}"></div>
                         <div class="action-buttons d-flex gap-2 mt-4">
@@ -547,6 +550,10 @@
                     <label class="form-label small fw-semibold text-muted">Size</label>
                     <input type="text" name="size" class="form-control rounded-3" placeholder="L, XL">
                 </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold text-muted">Product Photo</label>
+                <input type="file" name="photo" class="form-control rounded-3" accept="image/*">
             </div>
             <div class="mb-3">
                 <label class="form-label small fw-semibold text-muted">Image URL</label>

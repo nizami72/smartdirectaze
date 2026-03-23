@@ -51,6 +51,9 @@ app:
   url:
     public: ${APPLICATION_PUBLIC_URL}
     frontend: https://qrfood.az/webhooks/inventory?shopId=%s
+  product:
+    folder:
+      photo: /home/nizami/projects/java/smartdirectaze/photo
 
 # Point the OpenAI starter to DeepSeek's API
 langchain4j:

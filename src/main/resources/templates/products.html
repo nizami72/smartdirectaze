@@ -156,7 +156,7 @@
                 <div class="col" th:each="product : ${products}">
                     <div class="card product-card">
                         <div class="d-flex gap-3">
-                            <img th:src="${product.mainImageUrl != null && !product.mainImageUrl.isEmpty() ? product.mainImageUrl : 'https://via.placeholder.com/64'}"
+                            <img th:src="${product.mainImageUrl != null && !product.mainImageUrl.isEmpty() ? (product.mainImageUrl.startsWith('http') ? product.mainImageUrl : '/webhooks/api/products/photo/' + shopId + '/' + product.id + '/' + product.mainImageUrl) : 'https://via.placeholder.com/64'}"
                                  class="product-thumb" alt="Product image">
                             <div class="flex-grow-1 min-width-0">
                                 <div class="d-flex justify-content-between align-items-start">
