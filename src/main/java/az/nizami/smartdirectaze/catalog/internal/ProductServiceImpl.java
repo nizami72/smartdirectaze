@@ -134,4 +134,10 @@ class ProductServiceImpl implements ProductService {
         return fileStorageService.loadProductPhoto(shopId, productId, filename);
     }
 
+    @Override
+    public Optional<ShopDto> findByBotUuid(String botUuid) {
+        Optional<ShopEntity> shop = shopRepository.findByBotUuid(botUuid);
+        return shop.map(shopMapper::toDto);
+    }
+
 }

@@ -1,12 +1,12 @@
 package az.nizami.smartdirectaze.catalog;
 
 import az.nizami.smartdirectaze.ShopDto;
-import az.nizami.smartdirectaze.catalog.entities.ShopEntity;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public interface ProductService {
@@ -32,4 +32,6 @@ public interface ProductService {
     boolean isShopBelongToUser(Long shopUuid, Long currentUserId);
 
     byte[] loadProductPhoto(Long shopId, Long productId, String filename);
+
+    Optional<ShopDto> findByBotUuid(String botUuid);
 }

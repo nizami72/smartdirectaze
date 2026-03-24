@@ -17,7 +17,7 @@ public class WaitingForTokenHandler implements AdminStateHandler {
     private final TelegramApiClient telegramClient;
     private final AdminSessionService sessionService;
     private final String masterBotToken;
-    private final String baseUrl;
+    private final String clientWebHookUrl;
     private final String frontendUrl;
     private final ProductService productService;
     //</editor-fold>
@@ -26,13 +26,13 @@ public class WaitingForTokenHandler implements AdminStateHandler {
     public WaitingForTokenHandler(TelegramApiClient telegramClient,
                                   AdminSessionService sessionService,
                                   @Value("${telegram.token}") String masterBotToken,
-                                  @Value("${telegram.webhook.base-url}") String baseUrl,
+                                  @Value("${app.url.public}") String clientWebHookUrl,
                                   @Value("${app.url.frontend}") String frontendUrl,
-                                   ProductService productService) {
+                                  ProductService productService) {
         this.telegramClient = telegramClient;
         this.sessionService = sessionService;
         this.masterBotToken = masterBotToken;
-        this.baseUrl = baseUrl;
+        this.clientWebHookUrl = clientWebHookUrl;
         this.frontendUrl = frontendUrl;
         this.productService = productService;
     }
@@ -62,8 +62,7 @@ public class WaitingForTokenHandler implements AdminStateHandler {
         ShopDto shopDto = productService.createShop(newShopEntity);
 
         // Устанавливаем вебхук для НОВОГО бота клиента
-        String clientWebhookUrl = baseUrl + "/api/webhooks/clients/" + shopDto.botUuid();
-        telegramClient.setWebhook(newBotToken, clientWebhookUrl);
+        telegramClient.setWebhook(newBotToken, clientWebHookUrl + "/" + shopDto.botUuid());
 
         //  Формируем ссылку на ваш React-фронтенд
         String frontendUrlForClient = String.format(frontendUrl, shopDto.id());

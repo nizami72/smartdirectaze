@@ -49,7 +49,9 @@ app:
   telegram:
     rateLimit: 3
   url:
-    public: ${APPLICATION_PUBLIC_URL}
+    component:
+      webhook: /webhooks
+    public: https://qrfood.az/webhooks
     frontend: https://qrfood.az/webhooks/inventory?shopId=%s
   product:
     folder:
