@@ -4,7 +4,6 @@ import az.nizami.smartdirectaze.catalog.AdminSessionService;
 import az.nizami.smartdirectaze.catalog.AdminState;
 import az.nizami.smartdirectaze.telegram.masterbot.handler.AdminStateHandler;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

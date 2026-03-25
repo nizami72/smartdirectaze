@@ -34,4 +34,6 @@ public interface ProductService {
     byte[] loadProductPhoto(Long shopId, Long productId, String filename);
 
     Optional<ShopDto> findByBotUuid(String botUuid);
+
+    Optional<ShopDto> findByOwnerChatId(Long ownerChatId);
 }

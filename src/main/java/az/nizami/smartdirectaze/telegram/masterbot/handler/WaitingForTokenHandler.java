@@ -52,7 +52,6 @@ public class WaitingForTokenHandler implements AdminStateHandler {
             return;
         }
 
-        // TODO: Сохранить магазин в БД (Shop entity)
         // Сохраняем новый магазин в базу с помощью Builder
         ShopDto newShopEntity = ShopDto.builder()
                 .ownerChatId(chatId)
@@ -71,6 +70,7 @@ public class WaitingForTokenHandler implements AdminStateHandler {
         String replyText = "✅ Бот успешно подключен!\n\n🛍 Теперь давай наполним твою витрину. Нажми на кнопку ниже, чтобы открыть панель управления товарами.";
         telegramClient.sendWebAppButton(masterBotToken, chatId, replyText, "Управление товарами 📦", frontendUrlForClient);
 
-        sessionService.updateState(chatId, AdminState.WAITING_FOR_INFO);
+//        sessionService.updateState(chatId, AdminState.WAITING_FOR_INFO); // todo rethink to make inventory controller through handler`
+        sessionService.updateState(chatId, AdminState.READY);
     }
 }

@@ -140,4 +140,10 @@ class ProductServiceImpl implements ProductService {
         return shop.map(shopMapper::toDto);
     }
 
+    @Override
+    public Optional<ShopDto> findByOwnerChatId(Long ownerChatId) {
+        Optional<ShopEntity> optionalShopEntity = shopRepository.findByOwnerChatId(ownerChatId);
+        return optionalShopEntity.map(shopMapper::toDto);
+    }
+
 }
