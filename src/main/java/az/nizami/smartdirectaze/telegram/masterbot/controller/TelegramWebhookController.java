@@ -1,6 +1,6 @@
 package az.nizami.smartdirectaze.telegram.masterbot.controller;
 
-import az.nizami.smartdirectaze.ShopDto;
+import az.nizami.smartdirectaze.catalog.ShopDto;
 import az.nizami.smartdirectaze.ai.AiService;
 import az.nizami.smartdirectaze.catalog.ProductService;
 import lombok.extern.log4j.Log4j2;

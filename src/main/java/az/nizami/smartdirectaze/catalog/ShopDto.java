@@ -1,4 +1,4 @@
-package az.nizami.smartdirectaze;
+package az.nizami.smartdirectaze.catalog;
 
 import lombok.Builder;
 

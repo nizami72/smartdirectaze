@@ -1,9 +1,8 @@
-package az.nizami.smartdirectaze.catalog.internal;
+package az.nizami.smartdirectaze.telegram.masterbot.service;
 
-import az.nizami.smartdirectaze.catalog.AdminSessionService;
-import az.nizami.smartdirectaze.catalog.entities.AdminSessionEntity;
-import az.nizami.smartdirectaze.catalog.repo.AdminSessionRepository;
-import az.nizami.smartdirectaze.catalog.AdminState;
+import az.nizami.smartdirectaze.telegram.masterbot.repo.AdminSessionRepository;
+import az.nizami.smartdirectaze.telegram.masterbot.entity.AdminSessionEntity;
+import az.nizami.smartdirectaze.telegram.dto.AdminState;
 import org.springframework.stereotype.Service;
 
 @Service

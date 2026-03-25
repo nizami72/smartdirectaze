@@ -1,6 +1,8 @@
 package az.nizami.smartdirectaze.catalog.internal;
 
 import az.nizami.smartdirectaze.catalog.ProductDTO;
+import az.nizami.smartdirectaze.catalog.entities.ProductAttributeEmbeddableEntity;
+import az.nizami.smartdirectaze.catalog.entities.ProductEntity;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -67,6 +69,7 @@ public class ProductMapper {
         if (dto == null || entity == null) return;
 
         if (dto.getSku() != null) entity.setSku(dto.getSku());
+        entity.setShopId(dto.getShopId());
         entity.setBarcode(dto.getBarcode());
         entity.setSlug(dto.getSlug());
 
@@ -108,7 +111,7 @@ public class ProductMapper {
         if (dto.getAttributes() != null) {
             entity.getAttributes().clear();
             dto.getAttributes().forEach(a -> {
-                ProductAttributeEmbeddable attr = new ProductAttributeEmbeddable();
+                ProductAttributeEmbeddableEntity attr = new ProductAttributeEmbeddableEntity();
                 attr.setAttrKey(a.getKey());
                 attr.setAttrValue(a.getValue());
                 entity.getAttributes().add(attr);

@@ -1,4 +1,6 @@
-package az.nizami.smartdirectaze.catalog;
+package az.nizami.smartdirectaze.telegram.masterbot.service;
+
+import az.nizami.smartdirectaze.telegram.dto.AdminState;
 
 public interface AdminSessionService {
 

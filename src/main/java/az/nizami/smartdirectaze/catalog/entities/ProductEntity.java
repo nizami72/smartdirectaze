@@ -1,4 +1,4 @@
-package az.nizami.smartdirectaze.catalog.internal;
+package az.nizami.smartdirectaze.catalog.entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -82,7 +82,7 @@ public class ProductEntity {
     // --- Гибкие атрибуты ---
     @ElementCollection
     @CollectionTable(name = "product_attributes", joinColumns = @JoinColumn(name = "product_id"))
-    private List<ProductAttributeEmbeddable> attributes = new ArrayList<>();
+    private List<ProductAttributeEmbeddableEntity> attributes = new ArrayList<>();
 
     // --- Физические параметры ---
     private Double weight;
@@ -103,12 +103,4 @@ public class ProductEntity {
         }
     }
 
-}
-
-@Embeddable
-@Getter
-@Setter
-class ProductAttributeEmbeddable {
-    private String attrKey;
-    private String attrValue;
 }

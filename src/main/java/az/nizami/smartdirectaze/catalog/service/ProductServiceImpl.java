@@ -1,10 +1,13 @@
-package az.nizami.smartdirectaze.catalog.internal;
+package az.nizami.smartdirectaze.catalog.service;
 
-import az.nizami.smartdirectaze.ShopDto;
-import az.nizami.smartdirectaze.catalog.BotNotFoundException;
+import az.nizami.smartdirectaze.catalog.ShopDto;
 import az.nizami.smartdirectaze.catalog.ProductDTO;
 import az.nizami.smartdirectaze.catalog.ProductService;
+import az.nizami.smartdirectaze.catalog.entities.ProductEntity;
 import az.nizami.smartdirectaze.catalog.entities.ShopEntity;
+import az.nizami.smartdirectaze.catalog.internal.ProductMapper;
+import az.nizami.smartdirectaze.catalog.internal.ProductRepository;
+import az.nizami.smartdirectaze.catalog.internal.ShopMapper;
 import az.nizami.smartdirectaze.catalog.internal.sync.CatalogSyncService;
 import az.nizami.smartdirectaze.catalog.repo.ShopRepository;
 import lombok.RequiredArgsConstructor;
@@ -144,6 +147,15 @@ class ProductServiceImpl implements ProductService {
     public Optional<ShopDto> findByOwnerChatId(Long ownerChatId) {
         Optional<ShopEntity> optionalShopEntity = shopRepository.findByOwnerChatId(ownerChatId);
         return optionalShopEntity.map(shopMapper::toDto);
+    }
+
+    @Override
+    public void loadProducts(List<ProductDTO> products) {
+        products.forEach(p -> {
+            ProductEntity entity = new ProductEntity();
+            productMapper.updateEntityFromDto(p, entity);
+            productRepository.save(entity);
+        });
     }
 
 }

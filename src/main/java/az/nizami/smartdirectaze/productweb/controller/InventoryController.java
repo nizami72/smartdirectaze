@@ -1,12 +1,11 @@
 package az.nizami.smartdirectaze.productweb.controller;
 
-import az.nizami.smartdirectaze.catalog.AdminState;
 import az.nizami.smartdirectaze.catalog.ProductDTO;
 import az.nizami.smartdirectaze.catalog.ProductService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import az.nizami.smartdirectaze.catalog.JsonUtil;
+import az.nizami.smartdirectaze.catalog.util.JsonUtil;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;

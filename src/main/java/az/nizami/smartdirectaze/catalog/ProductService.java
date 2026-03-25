@@ -1,6 +1,5 @@
 package az.nizami.smartdirectaze.catalog;
 
-import az.nizami.smartdirectaze.ShopDto;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -36,4 +35,6 @@ public interface ProductService {
     Optional<ShopDto> findByBotUuid(String botUuid);
 
     Optional<ShopDto> findByOwnerChatId(Long ownerChatId);
+
+    void loadProducts(List<ProductDTO> products);
 }

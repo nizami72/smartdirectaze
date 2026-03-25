@@ -1,4 +1,4 @@
-package az.nizami.smartdirectaze.catalog;
+package az.nizami.smartdirectaze.catalog.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

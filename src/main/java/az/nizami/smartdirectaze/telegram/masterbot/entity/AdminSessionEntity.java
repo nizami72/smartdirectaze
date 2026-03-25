@@ -1,6 +1,6 @@
-package az.nizami.smartdirectaze.catalog.entities;
+package az.nizami.smartdirectaze.telegram.masterbot.entity;
 
-import az.nizami.smartdirectaze.catalog.AdminState;
+import az.nizami.smartdirectaze.telegram.dto.AdminState;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UpdateTimestamp;

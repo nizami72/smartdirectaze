@@ -1,4 +1,4 @@
-package az.nizami.smartdirectaze.catalog.internal;
+package az.nizami.smartdirectaze.catalog.service;
 
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.RandomStringUtils;

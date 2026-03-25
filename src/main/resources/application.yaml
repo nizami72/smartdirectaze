@@ -56,6 +56,8 @@ app:
   product:
     folder:
       photo: /home/nizami/projects/java/smartdirectaze/photo
+  seeder:
+    product-count: 100 # Укажите здесь нужное количество товаров
 
 # Point the OpenAI starter to DeepSeek's API
 langchain4j:

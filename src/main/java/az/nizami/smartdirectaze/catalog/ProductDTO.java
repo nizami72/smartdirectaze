@@ -14,6 +14,9 @@ import java.util.Map;
 @Getter
 @ToString
 public class ProductDTO {
+
+    Long shopId;
+
     // 1. Базовая информация (ID и Метаданные)
     private Long id;
     private String sku; // Артикул (Stock Keeping Unit) - критично для бизнеса

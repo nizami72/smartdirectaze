@@ -1,6 +1,6 @@
-package az.nizami.smartdirectaze.catalog.repo;
+package az.nizami.smartdirectaze.telegram.masterbot.repo;
 
-import az.nizami.smartdirectaze.catalog.entities.AdminSessionEntity;
+import az.nizami.smartdirectaze.telegram.masterbot.entity.AdminSessionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

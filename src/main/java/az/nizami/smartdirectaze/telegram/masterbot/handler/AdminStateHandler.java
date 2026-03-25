@@ -1,6 +1,6 @@
 package az.nizami.smartdirectaze.telegram.masterbot.handler;
 
-import az.nizami.smartdirectaze.catalog.AdminState;
+import az.nizami.smartdirectaze.telegram.dto.AdminState;
 
 public interface AdminStateHandler {
     AdminState getHandledState();

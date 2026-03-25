@@ -1,6 +1,6 @@
 package az.nizami.smartdirectaze.catalog.internal;
 
-import az.nizami.smartdirectaze.ShopDto;
+import az.nizami.smartdirectaze.catalog.ShopDto;
 import az.nizami.smartdirectaze.catalog.entities.ShopEntity;
 import org.springframework.stereotype.Component;
 

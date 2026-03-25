@@ -1,7 +1,7 @@
 package az.nizami.smartdirectaze.telegram.masterbot.handler;
 
-import az.nizami.smartdirectaze.ShopDto;
-import az.nizami.smartdirectaze.catalog.AdminState;
+import az.nizami.smartdirectaze.catalog.ShopDto;
+import az.nizami.smartdirectaze.telegram.dto.AdminState;
 import az.nizami.smartdirectaze.catalog.ProductService;
 import az.nizami.smartdirectaze.telegram.masterbot.TelegramApiClient;
 import org.springframework.beans.factory.annotation.Value;

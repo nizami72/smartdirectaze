@@ -1,11 +1,10 @@
 package az.nizami.smartdirectaze.catalog.internal.sync;
 
 import az.nizami.smartdirectaze.catalog.ProductDTO;
-import az.nizami.smartdirectaze.catalog.internal.ProductEntity;
+import az.nizami.smartdirectaze.catalog.entities.ProductEntity;
 import az.nizami.smartdirectaze.catalog.internal.ProductMapper;
 import az.nizami.smartdirectaze.catalog.internal.ProductRepository;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
