@@ -5,7 +5,7 @@ import az.nizami.smartdirectaze.catalog.ProductService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import az.nizami.smartdirectaze.catalog.util.JsonUtil;
+import az.nizami.smartdirectaze.catalog.JsonUtil;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -93,6 +93,39 @@ public class InventoryController {
     public String deleteProduct(@RequestParam("shopId") Long shopId,
                                 @RequestParam("productId") Long productId) {
         productService.deleteProduct(shopId, productId);
+        return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
+    }
+
+    @PostMapping("/webhooks/inventory/delivery-config")
+    public String updateDeliveryConfig(@RequestParam("shopId") Long shopId,
+                                       @RequestParam(value = "deliveryZonesBaku", required = false) String deliveryZonesBaku,
+                                       @RequestParam(value = "freeDeliveryThreshold", required = false) java.math.BigDecimal freeDeliveryThreshold,
+                                       @RequestParam(value = "regionalDeliveryCost", required = false) java.math.BigDecimal regionalDeliveryCost,
+                                       @RequestParam(value = "regionsDeliveryInfo", required = false) String regionsDeliveryInfo,
+                                       @RequestParam(value = "processingTimeRules", required = false) String processingTimeRules,
+                                       @RequestParam(value = "deliveryWorkingHours", required = false) String deliveryWorkingHours,
+                                       @RequestParam(value = "collectPhone", defaultValue = "false") Boolean collectPhone,
+                                       @RequestParam(value = "collectAddress", defaultValue = "false") Boolean collectAddress,
+                                       @RequestParam(value = "collectLandmark", defaultValue = "false") Boolean collectLandmark,
+                                       @RequestParam(value = "collectLocation", defaultValue = "false") Boolean collectLocation,
+                                       @RequestParam(value = "courierWaitingTime", required = false) Integer courierWaitingTime,
+                                       @RequestParam(value = "fittingAllowed", defaultValue = "false") Boolean fittingAllowed,
+                                       @RequestParam(value = "refusalFee", required = false) java.math.BigDecimal refusalFee) {
+        log.info("Received delivery configuration for shop [{}]:", shopId);
+        log.info(" - Delivery Zones Baku: {}", deliveryZonesBaku);
+        log.info(" - Free Delivery Threshold: {}", freeDeliveryThreshold);
+        log.info(" - Regional Delivery Cost: {}", regionalDeliveryCost);
+        log.info(" - Regions Delivery Info: {}", regionsDeliveryInfo);
+        log.info(" - Processing Time Rules: {}", processingTimeRules);
+        log.info(" - Delivery Working Hours: {}", deliveryWorkingHours);
+        log.info(" - Collect Phone: {}", collectPhone);
+        log.info(" - Collect Address: {}", collectAddress);
+        log.info(" - Collect Landmark: {}", collectLandmark);
+        log.info(" - Collect Location: {}", collectLocation);
+        log.info(" - Courier Waiting Time: {} min", courierWaitingTime);
+        log.info(" - Fitting Allowed: {}", fittingAllowed);
+        log.info(" - Refusal Fee: {}", refusalFee);
+
         return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
     }
 

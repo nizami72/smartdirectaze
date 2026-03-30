@@ -119,67 +119,194 @@
         @media (min-width: 769px) {
             .mobile-only { display: none !important; }
         }
+        .nav-pills .nav-link.active {
+            background-color: #10B981;
+        }
+        .nav-pills .nav-link {
+            color: #6B7280;
+        }
     </style>
 </head>
 <body class="p-2 p-md-4">
 
 <div class="container-fluid max-width-1200 mx-auto">
-    <!-- Header/Top Action for Mobile -->
-    <div class="mobile-only mb-4">
-        <button class="primary-btn w-100 py-3 d-flex align-items-center justify-content-center gap-2"
-                data-bs-toggle="modal" data-bs-target="#addProductModal">
-            <i class="fas fa-plus"></i> Add Product
-        </button>
-    </div>
+    <ul class="nav nav-pills mb-4" id="productTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold px-4 py-2 rounded-pill" id="inventory-tab" data-bs-toggle="pill" data-bs-target="#inventory-content-pane" type="button" role="tab" aria-controls="inventory-content-pane" aria-selected="true">
+                <i class="fas fa-boxes me-2"></i> Products
+            </button>
+        </li>
+        <li class="nav-item ms-2" role="presentation">
+            <button class="nav-link fw-bold px-4 py-2 rounded-pill" id="delivery-tab" data-bs-toggle="pill" data-bs-target="#delivery-content-pane" type="button" role="tab" aria-controls="delivery-content-pane" aria-selected="false">
+                <i class="fas fa-truck me-2"></i> Delivery
+            </button>
+        </li>
+    </ul>
 
-    <div class="row g-4">
-        <!-- Left Column: Add Product Form (Desktop) -->
-        <div class="col-lg-4 desktop-only">
-            <div class="form-panel shadow-sm">
-                <h5 class="fw-bold mb-4">Add New Product</h5>
-                <form th:action="@{/webhooks/inventory/add}" method="post">
-                    <input type="hidden" name="token" th:value="${token}">
-                    <div th:replace="~{::productFormFields}"></div>
-                    <button type="submit" class="primary-btn w-100 mt-4">Save Product</button>
-                </form>
+    <div class="tab-content" id="productTabsContent">
+        <!-- Tab 1: Product Inventory -->
+        <div class="tab-pane fade show active" id="inventory-content-pane" role="tabpanel" aria-labelledby="inventory-tab">
+            <!-- Header/Top Action for Mobile -->
+            <div class="mobile-only mb-4">
+                <button class="primary-btn w-100 py-3 d-flex align-items-center justify-content-center gap-2"
+                        data-bs-toggle="modal" data-bs-target="#addProductModal">
+                    <i class="fas fa-plus"></i> Add Product
+                </button>
             </div>
-        </div>
 
-        <!-- Right Column: Product Inventory -->
-        <div class="col-lg-8">
-            <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                📦 Inventory
-                <span class="badge bg-light text-muted border fw-normal" th:text="${products.size()}">0</span>
-            </h5>
-
-            <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
-                <div class="col" th:each="product : ${products}">
-                    <div class="card product-card">
-                        <div class="d-flex gap-3">
-                            <img th:src="${product.mainImageUrl != null && !product.mainImageUrl.isEmpty() ? (product.mainImageUrl.startsWith('http') ? product.mainImageUrl : '/webhooks/api/products/photo/' + shopId + '/' + product.id + '/' + product.mainImageUrl) : 'https://via.placeholder.com/64'}"
-                                 class="product-thumb" alt="Product image">
-                            <div class="flex-grow-1 min-width-0">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <h6 class="fw-bold text-truncate mb-1" th:text="${product.titles != null ? product.titles.get('ru') : 'Unnamed'}">Product Title</h6>
-                                    <button class="btn btn-link p-0 text-muted"><i class="fas fa-edit fa-xs"></i></button>
-                                </div>
-                                <div class="badge-price mb-2 d-inline-block" th:text="${product.salePrice} + ' ' + ${product.currency}">0.00 AZN</div>
-
-                                <div class="form-check form-switch mt-1">
-                                    <input class="form-check-input" type="checkbox" role="switch"
-                                           th:checked="${product.isAvailable}" th:id="'stockSwitch' + ${product.id}">
-                                    <label class="form-check-label small text-muted" th:for="'stockSwitch' + ${product.id}"
-                                           th:text="${product.isAvailable ? 'In Stock' : 'Out of Stock'}">In Stock</label>
-                                </div>
-                            </div>
-                        </div>
+            <div class="row g-4">
+                <!-- Left Column: Add Product Form (Desktop) -->
+                <div class="col-lg-4 desktop-only">
+                    <div class="form-panel shadow-sm">
+                        <h5 class="fw-bold mb-4">Add New Product</h5>
+                        <form th:action="@{/webhooks/inventory/add}" method="post">
+                            <input type="hidden" name="token" th:value="${token}">
+                            <div th:replace="~{::productFormFields}"></div>
+                            <button type="submit" class="primary-btn w-100 mt-4">Save Product</button>
+                        </form>
                     </div>
                 </div>
 
-                <!-- Empty State -->
-                <div class="col-12 text-center py-5" th:if="${products.isEmpty()}">
-                    <div class="text-muted mb-3"><i class="fas fa-box-open fa-3x opacity-25"></i></div>
-                    <p class="text-muted">No products yet. Start by adding one!</p>
+                <!-- Right Column: Product Inventory -->
+                <div class="col-lg-8">
+                    <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
+                        📦 Inventory
+                        <span class="badge bg-light text-muted border fw-normal" th:text="${products.size()}">0</span>
+                    </h5>
+
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                        <div class="col" th:each="product : ${products}">
+                            <div class="card product-card">
+                                <div class="d-flex gap-3">
+                                    <img th:src="${product.mainImageUrl != null && !product.mainImageUrl.isEmpty() ? (product.mainImageUrl.startsWith('http') ? product.mainImageUrl : '/webhooks/api/products/photo/' + shopId + '/' + product.id + '/' + product.mainImageUrl) : 'https://via.placeholder.com/64'}"
+                                         class="product-thumb" alt="Product image">
+                                    <div class="flex-grow-1 min-width-0">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <h6 class="fw-bold text-truncate mb-1" th:text="${product.titles != null ? product.titles.get('ru') : 'Unnamed'}">Product Title</h6>
+                                            <button class="btn btn-link p-0 text-muted"><i class="fas fa-edit fa-xs"></i></button>
+                                        </div>
+                                        <div class="badge-price mb-2 d-inline-block" th:text="${product.salePrice} + ' ' + ${product.currency}">0.00 AZN</div>
+
+                                        <div class="form-check form-switch mt-1">
+                                            <input class="form-check-input" type="checkbox" role="switch"
+                                                   th:checked="${product.isAvailable}" th:id="'stockSwitch' + ${product.id}">
+                                            <label class="form-check-label small text-muted" th:for="'stockSwitch' + ${product.id}"
+                                                   th:text="${product.isAvailable ? 'In Stock' : 'Out of Stock'}">In Stock</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div class="col-12 text-center py-5" th:if="${products.isEmpty()}">
+                            <div class="text-muted mb-3"><i class="fas fa-box-open fa-3x opacity-25"></i></div>
+                            <p class="text-muted">No products yet. Start by adding one!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Delivery Instructions -->
+        <div class="tab-pane fade" id="delivery-content-pane" role="tabpanel" aria-labelledby="delivery-tab">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="form-panel shadow-sm">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-truck me-2 text-success"></i> Delivery Instructions</h5>
+                        <form th:action="@{/webhooks/inventory/delivery-config}" method="post">
+                            <input type="hidden" name="shopId" th:value="${shopId}">
+
+                            <!-- Section 1: Basic Terms -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">1. Basic Terms (Geography & Prices)</h6>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-muted">Delivery Zones in Baku</label>
+                                    <textarea name="deliveryZonesBaku" class="form-control rounded-3" rows="2" placeholder='Example: "City Center (Sabail, Nasimi) - 3 AZN. Outskirts (Ahmedli, Bakikhanov) - 5 AZN."'></textarea>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold text-muted">Free Delivery Threshold (AZN)</label>
+                                        <input type="number" step="0.01" name="freeDeliveryThreshold" class="form-control rounded-3" placeholder="50.00">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold text-muted">Standard Regional Cost (AZN)</label>
+                                        <input type="number" step="0.01" name="regionalDeliveryCost" class="form-control rounded-3" value="5.00">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-muted">Regions Delivery Info</label>
+                                    <textarea name="regionsDeliveryInfo" class="form-control rounded-3" rows="2" placeholder='Example: "We deliver by Azerpost (5 AZN, 2-3 days) or via shared buses/service 166."'></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Timing -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">2. Timing (When to expect?)</h6>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-muted">Processing Time Rules</label>
+                                    <textarea name="processingTimeRules" class="form-control rounded-3" rows="2" placeholder='Example: "If order is placed before 5:00 PM, we deliver today. If later, tomorrow before lunch."'></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold text-muted">Delivery Working Hours/Days</label>
+                                    <input type="text" name="deliveryWorkingHours" class="form-control rounded-3" placeholder='Example: "10:00 AM to 8:00 PM. No delivery on Sundays."'>
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Data Collection -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">3. AI Data Collection (Required Fields)</h6>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" name="collectPhone" id="collectPhone" checked>
+                                            <label class="form-check-label small fw-semibold" for="collectPhone">Phone number (+994)</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" name="collectAddress" id="collectAddress" checked>
+                                            <label class="form-check-label small fw-semibold" for="collectAddress">Exact address (Street, etc.)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" name="collectLandmark" id="collectLandmark" checked>
+                                            <label class="form-check-label small fw-semibold" for="collectLandmark">Metro/Landmark</label>
+                                        </div>
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" name="collectLocation" id="collectLocation" checked>
+                                            <label class="form-check-label small fw-semibold" for="collectLocation">WhatsApp Location</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 4: Trying & Returns -->
+                            <div class="mb-4">
+                                <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">4. "Trying and Returns" Policy</h6>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold text-muted">Waiting Time (Min)</label>
+                                        <input type="number" name="courierWaitingTime" class="form-control rounded-3" placeholder="15">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold text-muted">Fitting Allowed?</label>
+                                        <select name="fittingAllowed" class="form-select rounded-3">
+                                            <option value="true">Yes</option>
+                                            <option value="false">No</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label small fw-semibold text-muted">Refusal Fee (AZN)</label>
+                                        <input type="number" step="0.01" name="refusalFee" class="form-control rounded-3" placeholder="3.00">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="primary-btn w-100 py-3 mt-2 shadow-sm">
+                                <i class="fas fa-save me-2"></i> Save Delivery Instructions
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
