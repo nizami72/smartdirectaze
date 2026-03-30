@@ -21,8 +21,8 @@ public class ShopEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // Внутренний ID тенанта
 
-    @Column(name = "owner_chat_id", nullable = false)
-    private Long ownerChatId; // Telegram ID владельца (для связи и пересылки сложных вопросов)
+    @Column(name = "owner_id", nullable = false)
+    private Long ownerId; // Telegram ID владельца (для связи и пересылки сложных вопросов)
 
     @JsonIgnore
     @Column(name = "bot_token", nullable = false, unique = true)

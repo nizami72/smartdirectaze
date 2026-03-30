@@ -36,7 +36,7 @@ public class ReadyStateHandler implements AdminStateHandler {
     @Override
     public void handle(Long chatId, String text) {
         // 1. Находим магазин по ID владельца
-        Optional<ShopDto> shopOpt = productService.findByOwnerChatId(chatId);
+        Optional<ShopDto> shopOpt = productService.findByOwnerId(chatId);
 
         if (shopOpt.isEmpty()) {
             telegramClient.sendMessage(masterBotToken, chatId, "❌ Магазин не найден. Напиши /start для новой регистрации.");

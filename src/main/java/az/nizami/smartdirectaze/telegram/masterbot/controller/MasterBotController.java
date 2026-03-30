@@ -1,22 +1,36 @@
 package az.nizami.smartdirectaze.telegram.masterbot.controller;
 
+import az.nizami.smartdirectaze.telegram.masterbot.TelegramApiClient;
 import az.nizami.smartdirectaze.telegram.masterbot.service.MasterBotRouter;
-import com.fasterxml.jackson.databind.JsonNode;
+import az.nizami.smartdirectaze.user.UserService;
+import az.nizami.smartdirectaze.user.Role;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 @RestController
 @RequestMapping("/webhooks/")
 @Log4j2
 public class MasterBotController {
 
+    //<editor-fold desc="Fields">
     private final MasterBotRouter router;
+    private final UserService userService;
+    private final TelegramApiClient telegramClient;
+    @Value("${telegram.token}")
+    private String masterBotToken;
+    //</editor-fold>
 
-    public MasterBotController(MasterBotRouter router) {
+    //<editor-fold desc="Constructor">
+    public MasterBotController(MasterBotRouter router, UserService userService, TelegramApiClient telegramClient) {
         this.router = router;
+        this.userService = userService;
+        this.telegramClient = telegramClient;
     }
+    //</editor-fold>
 
     @GetMapping(value = "/alive")
     public ResponseEntity<String> alive() {
@@ -25,16 +39,21 @@ public class MasterBotController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> receiveUpdate(@RequestBody JsonNode update) {
+    public ResponseEntity<Void> receiveUpdate(@RequestBody Update update) {
+        log.debug("Telegram receive update called.");
+        if (update.getMessage() == null || update.getMessage().getText() == null) {
+            log.error("Invalid update received: {}", update);
+            return ResponseEntity.ok().build();
+        }
 
-        // Парсим JSON. В реальном проекте лучше использовать готовые DTO (например из библиотеки telegrambots)
+        Long chatId = update.getMessage().getChatId();
+        Long userId = update.getMessage().getFrom().getId();
+        Role userRole = userService.findUserRole(userId);
+        String reply;
+
         try {
-            log.debug("Telegram receive update called.");
-            if (update.has("message") && update.get("message").has("text")) {
-                Long chatId = update.get("message").get("chat").get("id").asLong();
-                String text = update.get("message").get("text").asText();
-                router.processUpdate(chatId, text);
-            }
+            reply = router.processUpdate(update);
+            telegramClient.sendMessage(masterBotToken, update.getMessage().getChatId(), reply);
         } catch (Exception e) {
             log.error("Ошибка при обработке апдейта от Telegram [{}]", update, e);
         }

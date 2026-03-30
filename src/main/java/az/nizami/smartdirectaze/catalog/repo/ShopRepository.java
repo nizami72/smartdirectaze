@@ -16,7 +16,7 @@ public interface ShopRepository extends JpaRepository<ShopEntity, Long> {
     Optional<ShopEntity> findByBotUuidAndBotToken(String botUuid, String botToken);
 
     // А этот метод пригодится, чтобы обновлять прайс-лист по запросу владельца
-    Optional<ShopEntity> findByOwnerChatId(Long ownerChatId);
+    Optional<ShopEntity> findByOwnerId(Long ownerChatId);
 
     Optional<ShopEntity> findByAdminAccessToken(String adminAccessToken);
 }

@@ -113,7 +113,7 @@ class ProductServiceImpl implements ProductService {
     public ShopDto createShop(ShopDto shopDto) {
         String botUuid = UUID.randomUUID().toString();
         ShopEntity newShopEntity = ShopEntity.builder()
-                .ownerChatId(shopDto.ownerChatId())
+                .ownerId(shopDto.ownerId())
                 .botToken(shopDto.botToken())
                 .botUuid(botUuid)
                 .isActive(shopDto.isActive())
@@ -129,7 +129,7 @@ class ProductServiceImpl implements ProductService {
     @Override
     public boolean isShopBelongToUser(Long shopId, Long currentUserId) {
         Optional<ShopEntity> shop = shopRepository.findById(shopId);
-        return shop.isPresent() && shop.get().getOwnerChatId().equals(currentUserId);
+        return shop.isPresent() && shop.get().getOwnerId().equals(currentUserId);
     }
 
     @Override
@@ -144,8 +144,8 @@ class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Optional<ShopDto> findByOwnerChatId(Long ownerChatId) {
-        Optional<ShopEntity> optionalShopEntity = shopRepository.findByOwnerChatId(ownerChatId);
+    public Optional<ShopDto> findByOwnerId(Long ownerId) {
+        Optional<ShopEntity> optionalShopEntity = shopRepository.findByOwnerId(ownerId);
         return optionalShopEntity.map(shopMapper::toDto);
     }
 

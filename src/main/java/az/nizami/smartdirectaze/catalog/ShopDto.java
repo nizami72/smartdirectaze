@@ -5,7 +5,7 @@ import lombok.Builder;
 @Builder
 public record ShopDto(
         Long id,
-        Long ownerChatId,
+        Long ownerId,
         String botToken,
         String botUuid,
         Boolean isActive,

@@ -11,7 +11,7 @@ public class ShopMapper {
     public ShopDto toDto(ShopEntity entity) {
         return ShopDto.builder()
                 .id(entity.getId())
-                .ownerChatId(entity.getOwnerChatId())
+                .ownerId(entity.getOwnerId())
                 .botToken(entity.getBotToken())
                 .botUuid(entity.getBotUuid())
                 .isActive(entity.getIsActive())

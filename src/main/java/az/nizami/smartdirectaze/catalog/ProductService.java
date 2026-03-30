@@ -34,7 +34,7 @@ public interface ProductService {
 
     Optional<ShopDto> findByBotUuid(String botUuid);
 
-    Optional<ShopDto> findByOwnerChatId(Long ownerChatId);
+    Optional<ShopDto> findByOwnerId(Long ownerId);
 
     void loadProducts(List<ProductDTO> products);
 }
