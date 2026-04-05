@@ -51,6 +51,36 @@ public class ShopEntity {
     @Column(name = "zones_text", columnDefinition = "TEXT")
     private String zonesText;
 
+    @Column(name = "regions_delivery_info", columnDefinition = "TEXT")
+    private String regionsDeliveryInfo;
+
+    @Column(name = "processing_time_rules", columnDefinition = "TEXT")
+    private String processingTimeRules;
+
+    @Column(name = "delivery_working_hours", columnDefinition = "TEXT")
+    private String deliveryWorkingHours;
+
+    @Column(name = "collect_phone")
+    private Boolean collectPhone;
+
+    @Column(name = "collect_address")
+    private Boolean collectAddress;
+
+    @Column(name = "collect_landmark")
+    private Boolean collectLandmark;
+
+    @Column(name = "collect_location")
+    private Boolean collectLocation;
+
+    @Column(name = "courier_waiting_time")
+    private Integer courierWaitingTime;
+
+    @Column(name = "fitting_allowed")
+    private Boolean fittingAllowed;
+
+    @Column(name = "refusal_fee")
+    private java.math.BigDecimal refusalFee;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

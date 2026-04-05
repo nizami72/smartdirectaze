@@ -1,11 +1,9 @@
 package az.nizami.smartdirectaze.productweb.controller;
 
-import az.nizami.smartdirectaze.catalog.ProductDTO;
-import az.nizami.smartdirectaze.catalog.ProductService;
+import az.nizami.smartdirectaze.catalog.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import az.nizami.smartdirectaze.catalog.JsonUtil;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -16,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -98,7 +97,8 @@ public class InventoryController {
 
     @PostMapping("/webhooks/inventory/delivery-config")
     public String updateDeliveryConfig(@RequestParam("shopId") Long shopId,
-                                       @RequestParam(value = "deliveryZonesBaku", required = false) String deliveryZonesBaku,
+                                       @RequestParam(value = "zoneNames", required = false) List<String> zoneNames,
+                                       @RequestParam(value = "zonePrices", required = false) List<java.math.BigDecimal> zonePrices,
                                        @RequestParam(value = "freeDeliveryThreshold", required = false) java.math.BigDecimal freeDeliveryThreshold,
                                        @RequestParam(value = "regionalDeliveryCost", required = false) java.math.BigDecimal regionalDeliveryCost,
                                        @RequestParam(value = "regionsDeliveryInfo", required = false) String regionsDeliveryInfo,
@@ -112,8 +112,22 @@ public class InventoryController {
                                        @RequestParam(value = "fittingAllowed", defaultValue = "false") Boolean fittingAllowed,
                                        @RequestParam(value = "refusalFee", required = false) java.math.BigDecimal refusalFee) {
         log.info("Received delivery configuration for shop [{}]:", shopId);
-        // ... log entries ...
-        productService.updateDeliveryConfig(shopId, regionalDeliveryCost, freeDeliveryThreshold, deliveryZonesBaku);
+
+        List<DeliveryZoneDto> zones = new java.util.ArrayList<>();
+        if (zoneNames != null && zonePrices != null) {
+            for (int i = 0; i < Math.min(zoneNames.size(), zonePrices.size()); i++) {
+                String name = zoneNames.get(i);
+                BigDecimal price = zonePrices.get(i);
+                if (name != null && !name.isBlank()) {
+                    zones.add(new DeliveryZoneDto(name, price));
+                }
+            }
+        }
+
+        productService.updateDeliveryConfig(shopId, regionalDeliveryCost, freeDeliveryThreshold, zones,
+                regionsDeliveryInfo, processingTimeRules, deliveryWorkingHours,
+                collectPhone, collectAddress, collectLandmark, collectLocation,
+                courierWaitingTime, fittingAllowed, refusalFee);
 
         return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
     }
@@ -163,7 +177,9 @@ public class InventoryController {
 
         // 4. Всё отлично! Достаем товары и рендерим фрагмент Thymeleaf
         List<ProductDTO> products = productService.findProductDtoForShop(shopId);
+        ShopDto shop = productService.getShopById(shopId);
         model.addAttribute("products", products);
+        model.addAttribute("shop", shop);
         model.addAttribute("shopId", shopId);
         model.addAttribute("jsonUtil", new JsonUtil());
 

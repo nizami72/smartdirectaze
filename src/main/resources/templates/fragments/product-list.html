@@ -145,6 +145,53 @@
             }
         }
 
+        function initDeliveryZones() {
+            const container = document.getElementById('delivery-zones-container');
+            const addBtn = document.getElementById('add-zone-btn');
+
+            if (addBtn && container) {
+                // Ensure we don't attach multiple listeners if called multiple times
+                if (addBtn.dataset.initialized) return;
+                addBtn.dataset.initialized = "true";
+
+                addBtn.addEventListener('click', function() {
+                    const newRow = document.createElement('div');
+                    newRow.className = 'row g-2 mb-2 zone-row';
+                    newRow.innerHTML = `
+                        <div class="col-7">
+                            <input type="text" name="zoneNames" class="form-control rounded-3" placeholder="Zone name (e.g. City Center)">
+                        </div>
+                        <div class="col-3">
+                            <input type="number" step="0.01" name="zonePrices" class="form-control rounded-3" placeholder="Price">
+                        </div>
+                        <div class="col-2">
+                            <button type="button" class="btn btn-outline-danger w-100 rounded-3 remove-zone-btn"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+                    container.appendChild(newRow);
+                });
+
+                container.addEventListener('click', function(e) {
+                    if (e.target.closest('.remove-zone-btn')) {
+                        const rows = container.querySelectorAll('.zone-row');
+                        if (rows.length > 1) {
+                            e.target.closest('.zone-row').remove();
+                        } else {
+                            // Clear inputs if it's the last row instead of removing it
+                            const row = e.target.closest('.zone-row');
+                            row.querySelectorAll('input').forEach(input => input.value = '');
+                        }
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initDeliveryZones);
+        // Also call it immediately if it's being executed as part of an AJAX update
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            initDeliveryZones();
+        }
+
         function editProduct(productInput) {
             console.log('editProduct called with input:', productInput);
             
@@ -497,21 +544,48 @@
                                     <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">1. Basic Terms (Geography & Prices)</h6>
                                     <div class="mb-3">
                                         <label class="form-label small fw-semibold text-muted">Delivery Zones in Baku</label>
-                                        <textarea name="deliveryZonesBaku" class="form-control rounded-3" rows="2" placeholder='Example: "City Center (Sabail, Nasimi) - 3 AZN. Outskirts (Ahmedli, Bakikhanov) - 5 AZN."'></textarea>
+                                        <div id="delivery-zones-container">
+                                            <div th:each="zone, iterStat : ${shop?.zones}" class="row g-2 mb-2 zone-row">
+                                                <div class="col-7">
+                                                    <input type="text" name="zoneNames" class="form-control rounded-3" placeholder="Zone name (e.g. City Center)" th:value="${zone.name}">
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="number" step="0.01" name="zonePrices" class="form-control rounded-3" placeholder="Price" th:value="${zone.price}">
+                                                </div>
+                                                <div class="col-2">
+                                                    <button type="button" class="btn btn-outline-danger w-100 rounded-3 remove-zone-btn"><i class="fas fa-trash"></i></button>
+                                                </div>
+                                            </div>
+                                            <!-- Empty row if no zones exist -->
+                                            <div th:if="${#lists.isEmpty(shop?.zones)}" class="row g-2 mb-2 zone-row">
+                                                <div class="col-7">
+                                                    <input type="text" name="zoneNames" class="form-control rounded-3" placeholder="Zone name (e.g. City Center)">
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="number" step="0.01" name="zonePrices" class="form-control rounded-3" placeholder="Price">
+                                                </div>
+                                                <div class="col-2">
+                                                    <button type="button" class="btn btn-outline-danger w-100 rounded-3 remove-zone-btn"><i class="fas fa-trash"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" id="add-zone-btn" class="btn btn-sm btn-outline-success mt-1 rounded-pill">
+                                            <i class="fas fa-plus me-1"></i> Add Zone
+                                        </button>
                                     </div>
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-6">
                                             <label class="form-label small fw-semibold text-muted">Free Delivery Threshold (AZN)</label>
-                                            <input type="number" step="0.01" name="freeDeliveryThreshold" class="form-control rounded-3" placeholder="50.00">
+                                            <input type="number" step="0.01" name="freeDeliveryThreshold" class="form-control rounded-3" placeholder="50.00" th:value="${shop?.freeDeliveryThreshold}">
                                         </div>
                                         <div class="col-md-6">
                                             <label class="form-label small fw-semibold text-muted">Standard Regional Cost (AZN)</label>
-                                            <input type="number" step="0.01" name="regionalDeliveryCost" class="form-control rounded-3" value="5.00">
+                                            <input type="number" step="0.01" name="regionalDeliveryCost" class="form-control rounded-3" th:value="${shop?.deliveryPrice ?: 5.00}">
                                         </div>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label small fw-semibold text-muted">Regions Delivery Info</label>
-                                        <textarea name="regionsDeliveryInfo" class="form-control rounded-3" rows="2" placeholder='Example: "We deliver by Azerpost (5 AZN, 2-3 days) or via shared buses/service 166."'></textarea>
+                                        <textarea name="regionsDeliveryInfo" class="form-control rounded-3" rows="2" placeholder='Example: "We deliver by Azerpost (5 AZN, 2-3 days) or via shared buses/service 166."' th:text="${shop?.regionsDeliveryInfo}"></textarea>
                                     </div>
                                 </div>
 
@@ -520,11 +594,11 @@
                                     <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">2. Timing (When to expect?)</h6>
                                     <div class="mb-3">
                                         <label class="form-label small fw-semibold text-muted">Processing Time Rules</label>
-                                        <textarea name="processingTimeRules" class="form-control rounded-3" rows="2" placeholder='Example: "If order is placed before 5:00 PM, we deliver today. If later, tomorrow before lunch."'></textarea>
+                                        <textarea name="processingTimeRules" class="form-control rounded-3" rows="2" placeholder='Example: "If order is placed before 5:00 PM, we deliver today. If later, tomorrow before lunch."' th:text="${shop?.processingTimeRules}"></textarea>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label small fw-semibold text-muted">Delivery Working Hours/Days</label>
-                                        <input type="text" name="deliveryWorkingHours" class="form-control rounded-3" placeholder='Example: "10:00 AM to 8:00 PM. No delivery on Sundays."'>
+                                        <input type="text" name="deliveryWorkingHours" class="form-control rounded-3" placeholder='Example: "10:00 AM to 8:00 PM. No delivery on Sundays."' th:value="${shop?.deliveryWorkingHours}">
                                     </div>
                                 </div>
 
@@ -534,21 +608,21 @@
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <div class="form-check form-switch mb-2 d-flex align-items-center">
-                                                <input class="form-check-input" type="checkbox" name="collectPhone" id="collectPhone" checked>
+                                                <input class="form-check-input" type="checkbox" name="collectPhone" id="collectPhone" th:checked="${shop?.collectPhone}">
                                                 <label class="form-check-label small fw-semibold ps-2" for="collectPhone">Phone number (+994)</label>
                                             </div>
                                             <div class="form-check form-switch mb-2 d-flex align-items-center">
-                                                <input class="form-check-input" type="checkbox" name="collectAddress" id="collectAddress" checked>
+                                                <input class="form-check-input" type="checkbox" name="collectAddress" id="collectAddress" th:checked="${shop?.collectAddress}">
                                                 <label class="form-check-label small fw-semibold ps-2" for="collectAddress">Exact address (Street, etc.)</label>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-check form-switch mb-2 d-flex align-items-center">
-                                                <input class="form-check-input" type="checkbox" name="collectLandmark" id="collectLandmark" checked>
+                                                <input class="form-check-input" type="checkbox" name="collectLandmark" id="collectLandmark" th:checked="${shop?.collectLandmark}">
                                                 <label class="form-check-label small fw-semibold ps-2" for="collectLandmark">Metro/Landmark</label>
                                             </div>
                                             <div class="form-check form-switch mb-2 d-flex align-items-center">
-                                                <input class="form-check-input" type="checkbox" name="collectLocation" id="collectLocation" checked>
+                                                <input class="form-check-input" type="checkbox" name="collectLocation" id="collectLocation" th:checked="${shop?.collectLocation}">
                                                 <label class="form-check-label small fw-semibold ps-2" for="collectLocation">WhatsApp Location</label>
                                             </div>
                                         </div>
@@ -561,18 +635,18 @@
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-4">
                                             <label class="form-label small fw-semibold text-muted">Waiting Time (Min)</label>
-                                            <input type="number" name="courierWaitingTime" class="form-control rounded-3" placeholder="15">
+                                            <input type="number" name="courierWaitingTime" class="form-control rounded-3" placeholder="15" th:value="${shop?.courierWaitingTime}">
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small fw-semibold text-muted">Fitting Allowed?</label>
                                             <select name="fittingAllowed" class="form-select rounded-3">
-                                                <option value="true">Yes</option>
-                                                <option value="false">No</option>
+                                                <option value="true" th:selected="${shop?.fittingAllowed == true}">Yes</option>
+                                                <option value="false" th:selected="${shop?.fittingAllowed == false}">No</option>
                                             </select>
                                         </div>
                                         <div class="col-md-4">
                                             <label class="form-label small fw-semibold text-muted">Refusal Fee (AZN)</label>
-                                            <input type="number" step="0.01" name="refusalFee" class="form-control rounded-3" placeholder="3.00">
+                                            <input type="number" step="0.01" name="refusalFee" class="form-control rounded-3" placeholder="3.00" th:value="${shop?.refusalFee}">
                                         </div>
                                     </div>
                                 </div>

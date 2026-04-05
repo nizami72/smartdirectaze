@@ -1,8 +1,6 @@
 package az.nizami.smartdirectaze.catalog.service;
 
-import az.nizami.smartdirectaze.catalog.ShopDto;
-import az.nizami.smartdirectaze.catalog.ProductDTO;
-import az.nizami.smartdirectaze.catalog.ProductService;
+import az.nizami.smartdirectaze.catalog.*;
 import az.nizami.smartdirectaze.catalog.entities.ProductEntity;
 import az.nizami.smartdirectaze.catalog.entities.ShopEntity;
 import az.nizami.smartdirectaze.catalog.internal.ProductMapper;
@@ -13,6 +11,8 @@ import az.nizami.smartdirectaze.catalog.repo.ShopRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -167,12 +167,28 @@ class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public void updateDeliveryConfig(Long shopId, java.math.BigDecimal deliveryPrice, java.math.BigDecimal freeDeliveryThreshold, String zonesText) {
+    public void updateDeliveryConfig(Long shopId,
+                                     BigDecimal deliveryPrice,
+                                     BigDecimal freeDeliveryThreshold,
+                                     List<DeliveryZoneDto> zones,
+                                     String regionsDeliveryInfo, String processingTimeRules, String deliveryWorkingHours,
+                                     Boolean collectPhone, Boolean collectAddress, Boolean collectLandmark, Boolean collectLocation,
+                                     Integer courierWaitingTime, Boolean fittingAllowed, java.math.BigDecimal refusalFee) {
         ShopEntity shop = shopRepository.findById(shopId)
                 .orElseThrow(() -> new RuntimeException("Shop not found with ID: " + shopId));
         shop.setDeliveryPrice(deliveryPrice);
         shop.setFreeDeliveryThreshold(freeDeliveryThreshold);
-        shop.setZonesText(zonesText);
+        shop.setZonesText(JsonUtil.toJson(zones));
+        shop.setRegionsDeliveryInfo(regionsDeliveryInfo);
+        shop.setProcessingTimeRules(processingTimeRules);
+        shop.setDeliveryWorkingHours(deliveryWorkingHours);
+        shop.setCollectPhone(collectPhone);
+        shop.setCollectAddress(collectAddress);
+        shop.setCollectLandmark(collectLandmark);
+        shop.setCollectLocation(collectLocation);
+        shop.setCourierWaitingTime(courierWaitingTime);
+        shop.setFittingAllowed(fittingAllowed);
+        shop.setRefusalFee(refusalFee);
         shopRepository.save(shop);
     }
 

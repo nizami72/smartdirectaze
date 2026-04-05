@@ -1,6 +1,5 @@
 package az.nizami.smartdirectaze.catalog;
 
-import az.nizami.smartdirectaze.catalog.util.JsonUtil;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -11,7 +10,6 @@ public class JsonUtilTest {
 
     @Test
     public void testProductDtoSerialization() {
-        JsonUtil jsonUtil = new JsonUtil();
         ProductDTO dto = new ProductDTO();
         dto.setId(1L);
         dto.setSku("SKU123");
@@ -27,7 +25,7 @@ public class JsonUtilTest {
         // Add attributes
         dto.getAttributes().add(new ProductDTO.ProductAttributeDTO("Color", "Red"));
 
-        String json = jsonUtil.toJson(dto);
+        String json = JsonUtil.toJson(dto);
         System.out.println("[DEBUG_LOG] Serialized JSON: " + json);
         
         assertNotNull(json);

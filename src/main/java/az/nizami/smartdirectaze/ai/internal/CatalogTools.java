@@ -30,7 +30,9 @@ public class CatalogTools {
                 "AZN",
                 shop.freeDeliveryThreshold() != null ? shop.freeDeliveryThreshold() : "0",
                 "AZN",
-                shop.zonesText() != null ? shop.zonesText() : "Not specified");
+                shop.zones() != null ? shop.zones().stream()
+                        .map(z -> z.name() + " (" + z.price() + " AZN)")
+                        .collect(java.util.stream.Collectors.joining(", ")) : "Not specified");
     }
 }
 
