@@ -4,6 +4,7 @@ import az.nizami.smartdirectaze.ai.AiService;
 import az.nizami.smartdirectaze.ai.AssistantResponse;
 import az.nizami.smartdirectaze.catalog.ProductDTO;
 import az.nizami.smartdirectaze.catalog.ProductService;
+import az.nizami.smartdirectaze.util.HtmlUtils;
 import dev.langchain4j.memory.chat.ChatMemoryProvider;
 import dev.langchain4j.memory.chat.MessageWindowChatMemory;
 import jakarta.annotation.PostConstruct;
@@ -62,10 +63,13 @@ public class AiServiceImpl implements AiService {
 
         // 2. Send it to Agent
         String aiTextMessage = agent.chat(botUuid, shopId, userMessage);
+        
+        // 2.1 Convert Markdown to HTML for Telegram
+        String htmlMessage = HtmlUtils.convertMdToTelegramHtml(aiTextMessage);
 
         // 3. Wrap in DTO
         AssistantResponse response = AssistantResponse.builder()
-                .message(aiTextMessage)
+                .message(htmlMessage)
                 .responseType(AssistantResponse.ResponseType.PRODUCT_INFO)
                 .build();
 
