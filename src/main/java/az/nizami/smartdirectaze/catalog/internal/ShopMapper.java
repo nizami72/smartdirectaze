@@ -17,6 +17,9 @@ public class ShopMapper {
                 .isActive(entity.getIsActive())
                 .knowledgeBase(entity.getKnowledgeBase())
                 .adminAccessToken(entity.getAdminAccessToken())
+                .deliveryPrice(entity.getDeliveryPrice())
+                .freeDeliveryThreshold(entity.getFreeDeliveryThreshold())
+                .zonesText(entity.getZonesText())
                 .build();
 
 

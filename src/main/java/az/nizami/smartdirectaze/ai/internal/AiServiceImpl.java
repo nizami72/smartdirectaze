@@ -54,12 +54,16 @@ public class AiServiceImpl implements AiService {
     @Override
     @Async
     @Transactional(readOnly = true)
-    public CompletableFuture<AssistantResponse> processQuery(String chatId, String userMessage) {
-        // 1. Отправляем в DeepSeek
-        // Теперь мы передаем chatId в агента
-        String aiTextMessage = agent.chat(chatId, userMessage);
+    public CompletableFuture<AssistantResponse> processQuery(String botUuid, String userMessage) {
+        // 1. Get shopId from botUuid
+        Long shopId = productService.findByBotUuid(botUuid)
+                .map(az.nizami.smartdirectaze.catalog.ShopDto::id)
+                .orElseThrow(() -> new RuntimeException("Shop not found for botUuid: " + botUuid));
 
-        // 2. Упаковываем в твой DTO
+        // 2. Send it to Agent
+        String aiTextMessage = agent.chat(botUuid, shopId, userMessage);
+
+        // 3. Wrap in DTO
         AssistantResponse response = AssistantResponse.builder()
                 .message(aiTextMessage)
                 .responseType(AssistantResponse.ResponseType.PRODUCT_INFO)

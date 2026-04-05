@@ -10,6 +10,9 @@ public record ShopDto(
         String botUuid,
         Boolean isActive,
         String knowledgeBase,
-        String adminAccessToken
+        String adminAccessToken,
+        java.math.BigDecimal deliveryPrice,
+        java.math.BigDecimal freeDeliveryThreshold,
+        String zonesText
 ) {
 }

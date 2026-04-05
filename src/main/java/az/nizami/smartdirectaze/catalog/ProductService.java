@@ -37,4 +37,8 @@ public interface ProductService {
     Optional<ShopDto> findByOwnerId(Long ownerId);
 
     void loadProducts(List<ProductDTO> products);
+
+    ShopDto getShopById(Long shopId);
+
+    void updateDeliveryConfig(Long shopId, java.math.BigDecimal deliveryPrice, java.math.BigDecimal freeDeliveryThreshold, String zonesText);
 }

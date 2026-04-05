@@ -112,19 +112,8 @@ public class InventoryController {
                                        @RequestParam(value = "fittingAllowed", defaultValue = "false") Boolean fittingAllowed,
                                        @RequestParam(value = "refusalFee", required = false) java.math.BigDecimal refusalFee) {
         log.info("Received delivery configuration for shop [{}]:", shopId);
-        log.info(" - Delivery Zones Baku: {}", deliveryZonesBaku);
-        log.info(" - Free Delivery Threshold: {}", freeDeliveryThreshold);
-        log.info(" - Regional Delivery Cost: {}", regionalDeliveryCost);
-        log.info(" - Regions Delivery Info: {}", regionsDeliveryInfo);
-        log.info(" - Processing Time Rules: {}", processingTimeRules);
-        log.info(" - Delivery Working Hours: {}", deliveryWorkingHours);
-        log.info(" - Collect Phone: {}", collectPhone);
-        log.info(" - Collect Address: {}", collectAddress);
-        log.info(" - Collect Landmark: {}", collectLandmark);
-        log.info(" - Collect Location: {}", collectLocation);
-        log.info(" - Courier Waiting Time: {} min", courierWaitingTime);
-        log.info(" - Fitting Allowed: {}", fittingAllowed);
-        log.info(" - Refusal Fee: {}", refusalFee);
+        // ... log entries ...
+        productService.updateDeliveryConfig(shopId, regionalDeliveryCost, freeDeliveryThreshold, deliveryZonesBaku);
 
         return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
     }

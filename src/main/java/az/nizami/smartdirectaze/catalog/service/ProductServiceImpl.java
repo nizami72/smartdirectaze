@@ -158,4 +158,22 @@ class ProductServiceImpl implements ProductService {
         });
     }
 
+    @Override
+    public ShopDto getShopById(Long shopId) {
+        return shopRepository.findById(shopId)
+                .map(shopMapper::toDto)
+                .orElseThrow(() -> new RuntimeException("Shop not found with ID: " + shopId));
+    }
+
+    @Override
+    @Transactional
+    public void updateDeliveryConfig(Long shopId, java.math.BigDecimal deliveryPrice, java.math.BigDecimal freeDeliveryThreshold, String zonesText) {
+        ShopEntity shop = shopRepository.findById(shopId)
+                .orElseThrow(() -> new RuntimeException("Shop not found with ID: " + shopId));
+        shop.setDeliveryPrice(deliveryPrice);
+        shop.setFreeDeliveryThreshold(freeDeliveryThreshold);
+        shop.setZonesText(zonesText);
+        shopRepository.save(shop);
+    }
+
 }

@@ -42,6 +42,15 @@ public class ShopEntity {
     @Column(name = "admin_access_token", unique = true)
     private String adminAccessToken;
 
+    @Column(name = "delivery_price")
+    private java.math.BigDecimal deliveryPrice;
+
+    @Column(name = "free_delivery_threshold")
+    private java.math.BigDecimal freeDeliveryThreshold;
+
+    @Column(name = "zones_text", columnDefinition = "TEXT")
+    private String zonesText;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

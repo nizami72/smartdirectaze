@@ -63,7 +63,7 @@ public class TelegramWebhookController {
         TelegramClient dynamicTelegramClient = new OkHttpTelegramClient(botTokenOp.get().botToken());
 
         // 5. Асинхронная обработка AI
-        aiService.processQuery(String.valueOf(chatId), userMessage)
+        aiService.processQuery(String.valueOf(botUuid), userMessage)
                 .thenAccept(aiResponse -> {
                     sendMessage(dynamicTelegramClient, chatId, aiResponse.getMessage());
                 })

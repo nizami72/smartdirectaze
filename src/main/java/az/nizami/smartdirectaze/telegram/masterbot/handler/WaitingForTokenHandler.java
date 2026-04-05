@@ -58,7 +58,7 @@ public class WaitingForTokenHandler implements AdminStateHandler {
                 .build();
         ShopDto shopDto = productService.createShop(newShopEntity);
 
-        // Устанавливаем вебхук для НОВОГО бота клиента
+        // MARK: Set up webhook for a new shop, uuid is used to identify the shop
         telegramClient.setWebhook(newBotToken, clientWebHookUrl + "/" + shopDto.botUuid());
 
         //  Формируем ссылку на ваш React-фронтенд
