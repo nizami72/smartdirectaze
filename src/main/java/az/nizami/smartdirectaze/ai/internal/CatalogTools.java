@@ -1,8 +1,6 @@
 package az.nizami.smartdirectaze.ai.internal;
 
-import az.nizami.smartdirectaze.catalog.ProductDTO;
-import az.nizami.smartdirectaze.catalog.ProductService;
-import az.nizami.smartdirectaze.catalog.ShopDto;
+import az.nizami.smartdirectaze.catalog.*;
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +13,8 @@ import java.util.List;
 public class CatalogTools {
 
     private final ProductService productService;
+    private final OrderService orderService;
+    private final NotificationService notificationService;
 
     @Tool("Search for products in the store catalog by name or SKU to get current prices and stock.")
     public List<ProductDTO> searchProduct(String query) {
