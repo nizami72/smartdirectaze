@@ -25,6 +25,10 @@ public record ShopDto(
         Boolean collectLocation,
         Integer courierWaitingTime,
         Boolean fittingAllowed,
-        java.math.BigDecimal refusalFee
+        java.math.BigDecimal refusalFee,
+        String tryingReturnsPolicy,
+        String workingHours,
+        String address,
+        List<PaymentMethod> paymentMethods
 ) {
 }

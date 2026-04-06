@@ -81,6 +81,18 @@ public class ShopEntity {
     @Column(name = "refusal_fee")
     private java.math.BigDecimal refusalFee;
 
+    @Column(name = "trying_returns_policy", columnDefinition = "TEXT")
+    private String tryingReturnsPolicy;
+
+    @Column(name = "working_hours", columnDefinition = "TEXT")
+    private String workingHours;
+
+    @Column(name = "address", columnDefinition = "TEXT")
+    private String address;
+
+    @Column(name = "payment_methods", columnDefinition = "TEXT")
+    private String paymentMethodsJson;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

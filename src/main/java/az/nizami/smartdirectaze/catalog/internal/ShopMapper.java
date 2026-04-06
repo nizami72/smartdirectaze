@@ -2,6 +2,7 @@ package az.nizami.smartdirectaze.catalog.internal;
 
 import az.nizami.smartdirectaze.catalog.DeliveryZoneDto;
 import az.nizami.smartdirectaze.catalog.JsonUtil;
+import az.nizami.smartdirectaze.catalog.PaymentMethod;
 import az.nizami.smartdirectaze.catalog.ShopDto;
 import az.nizami.smartdirectaze.catalog.entities.ShopEntity;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ public class ShopMapper {
         if (entity == null) return null;
 
         List<DeliveryZoneDto> zones = JsonUtil.fromJson(entity.getZonesText(), JsonUtil.getListType(DeliveryZoneDto.class));
+        List<PaymentMethod> paymentMethods = JsonUtil.fromJson(entity.getPaymentMethodsJson(), JsonUtil.getListType(PaymentMethod.class));
 
         return ShopDto.builder()
                 .id(entity.getId())
@@ -38,6 +40,10 @@ public class ShopMapper {
                 .courierWaitingTime(entity.getCourierWaitingTime())
                 .fittingAllowed(entity.getFittingAllowed())
                 .refusalFee(entity.getRefusalFee())
+                .tryingReturnsPolicy(entity.getTryingReturnsPolicy())
+                .workingHours(entity.getWorkingHours())
+                .address(entity.getAddress())
+                .paymentMethods(paymentMethods)
                 .build();
     }
 }

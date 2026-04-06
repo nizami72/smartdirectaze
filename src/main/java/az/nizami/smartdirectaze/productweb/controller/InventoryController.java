@@ -110,7 +110,11 @@ public class InventoryController {
                                        @RequestParam(value = "collectLocation", defaultValue = "false") Boolean collectLocation,
                                        @RequestParam(value = "courierWaitingTime", required = false) Integer courierWaitingTime,
                                        @RequestParam(value = "fittingAllowed", defaultValue = "false") Boolean fittingAllowed,
-                                       @RequestParam(value = "refusalFee", required = false) java.math.BigDecimal refusalFee) {
+                                       @RequestParam(value = "refusalFee", required = false) java.math.BigDecimal refusalFee,
+                                       @RequestParam(value = "tryingReturnsPolicy", required = false) String tryingReturnsPolicy,
+                                       @RequestParam(value = "workingHours", required = false) String workingHours,
+                                       @RequestParam(value = "address", required = false) String address,
+                                       @RequestParam(value = "paymentMethods", required = false) List<PaymentMethod> paymentMethods) {
         log.info("Received delivery configuration for shop [{}]:", shopId);
 
         List<DeliveryZoneDto> zones = new java.util.ArrayList<>();
@@ -127,7 +131,8 @@ public class InventoryController {
         productService.updateDeliveryConfig(shopId, regionalDeliveryCost, freeDeliveryThreshold, zones,
                 regionsDeliveryInfo, processingTimeRules, deliveryWorkingHours,
                 collectPhone, collectAddress, collectLandmark, collectLocation,
-                courierWaitingTime, fittingAllowed, refusalFee);
+                courierWaitingTime, fittingAllowed, refusalFee, tryingReturnsPolicy,
+                workingHours, address, paymentMethods);
 
         return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
     }

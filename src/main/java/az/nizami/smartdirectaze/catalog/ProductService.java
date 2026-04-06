@@ -43,5 +43,6 @@ public interface ProductService {
     void updateDeliveryConfig(Long shopId, java.math.BigDecimal deliveryPrice, java.math.BigDecimal freeDeliveryThreshold, java.util.List<DeliveryZoneDto> zones,
                               String regionsDeliveryInfo, String processingTimeRules, String deliveryWorkingHours,
                               Boolean collectPhone, Boolean collectAddress, Boolean collectLandmark, Boolean collectLocation,
-                              Integer courierWaitingTime, Boolean fittingAllowed, java.math.BigDecimal refusalFee);
+                              Integer courierWaitingTime, Boolean fittingAllowed, java.math.BigDecimal refusalFee,
+                              String tryingReturnsPolicy, String workingHours, String address, List<PaymentMethod> paymentMethods);
 }
