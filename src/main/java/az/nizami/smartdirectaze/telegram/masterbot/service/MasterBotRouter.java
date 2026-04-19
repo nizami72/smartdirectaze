@@ -49,7 +49,8 @@ public class MasterBotRouter {
             boolean ifShopExist = productService.isShopExist(id);
             if (ifShopExist) {
                 try {
-                    fakeDataService.generateFakeData(Long.parseLong(text.split("_")[1]));
+                    fakeDataService.generateFakeShopFromJson(id);
+                    fakeDataService.generateFakeData(id);
                     return "Fake data generated";
                 } catch (Exception e) {
                     log.error("Failed to load fake data for chat [{}]", ownerId, e);

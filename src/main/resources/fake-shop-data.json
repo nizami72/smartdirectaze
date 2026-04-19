@@ -1,0 +1,31 @@
+[
+  {
+    "knowledgeBase": "Welcome to Fake Shop! We sell high-quality fake products. Delivery is available throughout the city. We accept cash and cards.",
+    "deliveryPrice": 5.00,
+    "freeDeliveryThreshold": 50.00,
+    "zones": [
+      {
+        "name": "Downtown",
+        "price": 3.00
+      },
+      {
+        "name": "Suburbs",
+        "price": 10.00
+      }
+    ],
+    "regionsDeliveryInfo": "Delivery to regions is via post, takes 2-3 days.",
+    "processingTimeRules": "Orders are processed within 1 hour.",
+    "deliveryWorkingHours": "10:00 - 22:00",
+    "collectPhone": true,
+    "collectAddress": true,
+    "collectLandmark": true,
+    "collectLocation": false,
+    "courierWaitingTime": 15,
+    "fittingAllowed": true,
+    "refusalFee": 2.00,
+    "tryingReturnsPolicy": "You can try items for 15 minutes. Returns are free if you buy something.",
+    "workingHours": "09:00 - 21:00",
+    "address": "123 Fake Street, Faketown",
+    "paymentMethods": ["CASH", "CARD"]
+  }
+]
