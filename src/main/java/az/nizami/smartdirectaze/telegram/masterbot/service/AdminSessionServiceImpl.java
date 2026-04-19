@@ -27,6 +27,19 @@ public class AdminSessionServiceImpl implements AdminSessionService {
         repository.save(session);
     }
 
+    public void updateTempData(Long chatId, String tempData) {
+        AdminSessionEntity session = repository.findById(chatId).orElse(new AdminSessionEntity());
+        session.setChatId(chatId);
+        session.setTempData(tempData);
+        repository.save(session);
+    }
+
+    public String getTempData(Long chatId) {
+        return repository.findById(chatId)
+                .map(AdminSessionEntity::getTempData)
+                .orElse(null);
+    }
+
     public void reset(Long chatId) {
         repository.findById(chatId).ifPresent(session -> {
             session.setState(AdminState.START);

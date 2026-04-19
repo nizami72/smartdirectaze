@@ -8,6 +8,7 @@ import java.util.List;
 public record ShopDto(
         Long id,
         Long ownerId,
+        String shopName,
         String botToken,
         String botUuid,
         Boolean isActive,

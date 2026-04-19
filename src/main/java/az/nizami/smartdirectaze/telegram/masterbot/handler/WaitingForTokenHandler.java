@@ -50,25 +50,10 @@ public class WaitingForTokenHandler implements AdminStateHandler {
             return;
         }
 
-        // Сохраняем новый магазин в базу с помощью Builder
-        ShopDto newShopEntity = ShopDto.builder()
-                .ownerId(chatId)
-                .botToken(newBotToken)
-                .isActive(true)
-                .build();
-        ShopDto shopDto = productService.createShop(newShopEntity);
+        // Сохраняем токен в сессии и запрашиваем название магазина
+        sessionService.updateTempData(chatId, newBotToken);
+        sessionService.updateState(chatId, AdminState.WAITING_FOR_SHOP_NAME);
 
-        // MARK: Set up webhook for a new shop, uuid is used to identify the shop
-        telegramClient.setWebhook(newBotToken, clientWebHookUrl + "/" + shopDto.botUuid());
-
-        //  Формируем ссылку на ваш React-фронтенд
-        String frontendUrlForClient = String.format(frontendUrl, shopDto.id());
-
-        // Отправляем сообщение с кнопкой
-        String replyText = "✅ Бот успешно подключен!\n\n🛍 Теперь давай наполним твою витрину. Нажми на кнопку ниже, чтобы открыть панель управления товарами.";
-        telegramClient.sendWebAppButton(masterBotToken, chatId, replyText, "Управление товарами 📦", frontendUrlForClient);
-
-//        sessionService.updateState(chatId, AdminState.WAITING_FOR_INFO); // todo rethink to make inventory controller through handler`
-        sessionService.updateState(chatId, AdminState.READY);
+        telegramClient.sendMessage(masterBotToken, chatId, "✅ Токен принят! Теперь введи название твоего магазина.");
     }
 }

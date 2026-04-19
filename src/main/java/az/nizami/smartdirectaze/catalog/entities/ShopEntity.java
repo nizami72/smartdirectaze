@@ -28,6 +28,9 @@ public class ShopEntity {
     @Column(name = "bot_token", nullable = false, unique = true)
     private String botToken; // Токен, который выдал BotFather
 
+    @Column(name = "shop_name")
+    private String shopName;
+
     @Column(name = "bot_uuid", nullable = false, unique = true)
     private String botUuid; // Тот самый UUID для Webhook URL
 

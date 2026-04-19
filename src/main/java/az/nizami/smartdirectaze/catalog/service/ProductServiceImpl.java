@@ -115,6 +115,7 @@ class ProductServiceImpl implements ProductService {
         ShopEntity newShopEntity = ShopEntity.builder()
                 .ownerId(shopDto.ownerId())
                 .botToken(shopDto.botToken())
+                .shopName(shopDto.shopName())
                 .botUuid(botUuid)
                 .isActive(shopDto.isActive())
                 .build();

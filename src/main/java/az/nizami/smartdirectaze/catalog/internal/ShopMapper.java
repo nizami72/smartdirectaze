@@ -23,6 +23,7 @@ public class ShopMapper {
                 .id(entity.getId())
                 .ownerId(entity.getOwnerId())
                 .botToken(entity.getBotToken())
+                .shopName(entity.getShopName())
                 .botUuid(entity.getBotUuid())
                 .isActive(entity.getIsActive())
                 .knowledgeBase(entity.getKnowledgeBase())

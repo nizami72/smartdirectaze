@@ -6,5 +6,7 @@ public interface AdminSessionService {
 
     AdminState getState(Long chatId);
     void updateState(Long chatId, AdminState state);
+    void updateTempData(Long chatId, String tempData);
+    String getTempData(Long chatId);
     void reset(Long chatId);
 }

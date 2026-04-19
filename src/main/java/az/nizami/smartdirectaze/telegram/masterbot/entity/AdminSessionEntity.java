@@ -23,6 +23,9 @@ public class AdminSessionEntity {
     @Column(name = "state", nullable = false)
     private AdminState state; // Наш Enum (START, WAITING_FOR_TOKEN, и т.д.)
 
+    @Column(name = "temp_data", columnDefinition = "TEXT")
+    private String tempData;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt; // Полезно, чтобы удалять "зависшие" сессии через cron job
