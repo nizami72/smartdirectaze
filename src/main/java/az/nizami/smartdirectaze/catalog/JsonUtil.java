@@ -16,7 +16,6 @@ public class JsonUtil {
     public static String toJson(Object obj) {
         try {
             String json = objectMapper.writeValueAsString(obj);
-            System.out.println("[DEBUG_LOG] toJson input: " + obj + " | output: " + json);
             return json;
         } catch (JsonProcessingException e) {
             log.error("Error in toJson:  [{}]", e.getMessage());

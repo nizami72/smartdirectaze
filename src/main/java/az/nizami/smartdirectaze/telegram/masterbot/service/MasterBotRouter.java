@@ -65,8 +65,14 @@ public class MasterBotRouter {
 
         AdminState currentState = sessionService.getState(ownerId);
         AdminStateHandler handler = handlers.get(currentState);
-        if (handler != null) {
-            handler.handle(ownerId, text);
+        try {
+            if (handler != null) {
+                handler.handle(ownerId, text);
+            }
+        } catch (Exception e) {
+            String er = "Failed to handle message";
+            log.error("{} for chat [{}]", er, ownerId, e);
+            return er;
         }
         return "Done";
     }

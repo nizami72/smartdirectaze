@@ -7,6 +7,9 @@ import az.nizami.smartdirectaze.telegram.masterbot.TelegramApiClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -34,21 +37,22 @@ public class ReadyStateHandler implements AdminStateHandler {
     }
 
     @Override
-    public void handle(Long chatId, String text) {
+    public void handle(Long ownerId, String text) {
         // 1. Находим магазин по ID владельца
-        Optional<ShopDto> shopOpt = productService.findByOwnerId(chatId);
+        List<ShopDto> shopDtos = productService.findShopsByOwnerId(ownerId);
 
-        if (shopOpt.isEmpty()) {
-            telegramClient.sendMessage(masterBotToken, chatId, "❌ Магазин не найден. Напиши /start для новой регистрации.");
-            // Здесь можно сбросить стейт в START
-            return;
+        if (shopDtos == null || shopDtos.isEmpty()) {
+        telegramClient.sendMessage(masterBotToken, ownerId,
+            "❌ Магазины не найдены. Напиши /start для новой регистрации.");
+        return;
+    }
+        String replyMessage = "📦 Управление витринами\nВыбери магазин:";
+        // Формируем набор кнопок: Название -> URL
+        Map<String, String> buttons = new LinkedHashMap<>();
+        for (ShopDto shopDto : shopDtos) {
+            String url = String.format(frontendUrl, shopDto.id());
+            buttons.put(shopDto.shopName() + " ⚙️", url);
         }
-
-        // 2. Формируем безопасную ссылку (как мы делали в предыдущем шаге)
-        String frontendUrlForClient = String.format(frontendUrl, shopOpt.get().id());
-
-        // 3. Отправляем сообщение с Inline-кнопкой Web App
-        String replyMessage = "📦 Управление витриной\n\nЗдесь ты можешь добавлять товары, менять цены и указывать наличие.";
-        telegramClient.sendWebAppButton(masterBotToken, chatId, replyMessage, "Открыть панель ⚙️", frontendUrlForClient);
+        telegramClient.sendWebAppButtons(masterBotToken, ownerId, replyMessage, buttons);
     }
 }

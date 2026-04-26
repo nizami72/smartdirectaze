@@ -26,11 +26,11 @@ public class StartStateHandler implements AdminStateHandler {
     }
 
     @Override
-    public void handle(Long chatId, String text) {
+    public void handle(Long ownerId, String text) {
         String reply = "Привет! Я Мастер-бот Smart Direct. 🚀\n" +
                 "Пришли мне токен твоего бота от @BotFather, и я превращу его в AI-продавца.";
         
-        telegramClient.sendMessage(masterBotToken, chatId, reply);
-        sessionService.updateState(chatId, AdminState.WAITING_FOR_TOKEN);
+        telegramClient.sendMessage(masterBotToken, ownerId, reply);
+        sessionService.updateState(ownerId, AdminState.WAITING_FOR_TOKEN);
     }
 }

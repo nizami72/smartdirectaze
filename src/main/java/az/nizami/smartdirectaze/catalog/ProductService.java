@@ -36,6 +36,10 @@ public interface ProductService {
 
     Optional<ShopDto> findByOwnerId(Long ownerId);
 
+    List<Long> findShopIdsByOwnerId(Long ownerId);
+
+    List<ShopDto> findShopsByOwnerId(Long ownerId);
+
     void loadProducts(List<ProductDTO> products);
 
     ShopDto getShopById(Long shopId);

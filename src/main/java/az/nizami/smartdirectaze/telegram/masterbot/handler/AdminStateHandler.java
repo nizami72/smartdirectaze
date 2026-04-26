@@ -4,5 +4,5 @@ import az.nizami.smartdirectaze.telegram.dto.AdminState;
 
 public interface AdminStateHandler {
     AdminState getHandledState();
-    void handle(Long chatId, String text);
+    void handle(Long ownerId, String text);
 }

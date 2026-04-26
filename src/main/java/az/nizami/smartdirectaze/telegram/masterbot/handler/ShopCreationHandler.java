@@ -39,17 +39,17 @@ public class ShopCreationHandler implements AdminStateHandler {
     }
 
     @Override
-    public void handle(Long chatId, String text) {
+    public void handle(Long ownerId, String text) {
         String secret = text.trim();
 
         if (!checkSecretValid(secret)) {
-            telegramClient.sendMessage(masterBotToken, chatId, "❌ The secret is not valid, get info form admin.");
+            telegramClient.sendMessage(masterBotToken, ownerId, "❌ The secret is not valid, get info form admin.");
             return;
         }
 
         // Сохраняем новый магазин в базу с помощью Builder
         ShopDto newShopEntity = ShopDto.builder()
-                .ownerId(chatId)
+                .ownerId(ownerId)
                 .botToken(secret)
                 .isActive(true)
                 .build();
@@ -60,9 +60,9 @@ public class ShopCreationHandler implements AdminStateHandler {
 
         // Отправляем сообщение с кнопкой
         String replyText = "✅ New shop created!\n\n🛍 Теперь давай наполним твою витрину. Нажми на кнопку ниже, чтобы открыть панель управления товарами.";
-        telegramClient.sendWebAppButton(masterBotToken, chatId, replyText, "Управление товарами 📦", frontendUrlForClient);
+        telegramClient.sendWebAppButton(masterBotToken, ownerId, replyText, "Управление товарами 📦", frontendUrlForClient);
 
-        sessionService.updateState(chatId, AdminState.READY);
+        sessionService.updateState(ownerId, AdminState.READY);
     }
 
     private boolean checkSecretValid(String secret) {

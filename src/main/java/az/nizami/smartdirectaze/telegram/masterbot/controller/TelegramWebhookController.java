@@ -56,7 +56,7 @@ public class TelegramWebhookController {
         Optional<ShopDto> botTokenOp = productService.findByBotUuid(botUuid);
         if (botTokenOp.isEmpty()) {
             log.error("Bot token not found for UUID [{}]", botUuid);
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.ok().build();
         }
 
         // 4. Создаем клиент именно для этого бота

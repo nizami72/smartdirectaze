@@ -38,19 +38,19 @@ public class WaitingForShopNameHandler implements AdminStateHandler {
     }
 
     @Override
-    public void handle(Long chatId, String text) {
+    public void handle(Long ownerId, String text) {
         String shopName = text.trim();
-        String botToken = sessionService.getTempData(chatId);
+        String botToken = sessionService.getTempData(ownerId);
 
         if (botToken == null) {
-            telegramClient.sendMessage(masterBotToken, chatId, "❌ Произошла ошибка: токен не найден. Начни регистрацию заново с команды /register_new_shop");
-            sessionService.reset(chatId);
+            telegramClient.sendMessage(masterBotToken, ownerId, "❌ Произошла ошибка: токен не найден. Начни регистрацию заново с команды /register_new_shop");
+            sessionService.reset(ownerId);
             return;
         }
 
         // Сохраняем новый магазин в базу
         ShopDto newShopDto = ShopDto.builder()
-                .ownerId(chatId)
+                .ownerId(ownerId)
                 .botToken(botToken)
                 .shopName(shopName)
                 .isActive(true)
@@ -65,8 +65,8 @@ public class WaitingForShopNameHandler implements AdminStateHandler {
 
         // Отправляем сообщение с кнопкой
         String replyText = String.format("✅ Магазин «%s» успешно создан и бот подключен!\n\n🛍 Теперь давай наполним твою витрину. Нажми на кнопку ниже, чтобы открыть панель управления товарами.", shopName);
-        telegramClient.sendWebAppButton(masterBotToken, chatId, replyText, "Управление товарами 📦", frontendUrlForClient);
+        telegramClient.sendWebAppButton(masterBotToken, ownerId, replyText, "Управление товарами 📦", frontendUrlForClient);
 
-        sessionService.updateState(chatId, AdminState.READY);
+        sessionService.updateState(ownerId, AdminState.READY);
     }
 }

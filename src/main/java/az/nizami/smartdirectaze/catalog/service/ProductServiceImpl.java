@@ -94,7 +94,7 @@ class ProductServiceImpl implements ProductService {
                     ProductEntity saved = productRepository.save(entity);
                     return productMapper.toDto(saved);
                 })
-                .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
+                .orElse (null);
     }
 
     @Override
@@ -148,6 +148,17 @@ class ProductServiceImpl implements ProductService {
     public Optional<ShopDto> findByOwnerId(Long ownerId) {
         Optional<ShopEntity> optionalShopEntity = shopRepository.findByOwnerId(ownerId);
         return optionalShopEntity.map(shopMapper::toDto);
+    }
+
+    @Override
+    public List<Long> findShopIdsByOwnerId(Long ownerId) {
+        return shopRepository.findShopIdsByOwnerId(ownerId);
+    }
+
+    @Override
+    public List<ShopDto> findShopsByOwnerId(Long ownerId) {
+        List<ShopEntity> d = shopRepository.findShopsByOwnerId(ownerId);
+        return d.stream().map(shopMapper::toDto).toList();
     }
 
     @Override

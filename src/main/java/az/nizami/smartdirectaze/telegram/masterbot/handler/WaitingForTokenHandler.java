@@ -42,18 +42,18 @@ public class WaitingForTokenHandler implements AdminStateHandler {
     }
 
     @Override
-    public void handle(Long chatId, String text) {
+    public void handle(Long ownerId, String text) {
         String newBotToken = text.trim();
 
         if (!telegramClient.isTokenValid(newBotToken)) {
-            telegramClient.sendMessage(masterBotToken, chatId, "❌ Неверный токен. Проверь и отправь еще раз.");
+            telegramClient.sendMessage(masterBotToken, ownerId, "❌ Неверный токен. Проверь и отправь еще раз.");
             return;
         }
 
         // Сохраняем токен в сессии и запрашиваем название магазина
-        sessionService.updateTempData(chatId, newBotToken);
-        sessionService.updateState(chatId, AdminState.WAITING_FOR_SHOP_NAME);
+        sessionService.updateTempData(ownerId, newBotToken);
+        sessionService.updateState(ownerId, AdminState.WAITING_FOR_SHOP_NAME);
 
-        telegramClient.sendMessage(masterBotToken, chatId, "✅ Токен принят! Теперь введи название твоего магазина.");
+        telegramClient.sendMessage(masterBotToken, ownerId, "✅ Токен принят! Теперь введи название твоего магазина.");
     }
 }

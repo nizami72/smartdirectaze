@@ -84,7 +84,9 @@ public class InventoryController {
                                 @RequestParam(value = "isAvailable", defaultValue = "false") Boolean isAvailable,
                                 @RequestParam(value = "photo", required = false) org.springframework.web.multipart.MultipartFile photo) {
         ProductDTO productDto = populateProductDto(name, sku, salePrice, basePrice, currency, description, brandName, barcode, stockQuantity, weight, size, mainImageUrl, unitOfMeasure, isAvailable);
-        productService.updateProduct(shopId, productId, productDto, photo);
+        ProductDTO dto = productService.updateProduct(shopId, productId, productDto, photo);
+        if(dto == null) log.error("Product not found for shopId: {}, productId: {}", shopId, productId);
+        else log.info("Product updated for shopId: {}, productId: {}", shopId, productId);
         return "redirect:https://qrfood.az/webhooks/inventory?shopId=" + shopId;
     }
 
