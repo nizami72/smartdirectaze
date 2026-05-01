@@ -41,3 +41,4 @@ build/
 /.env
 /smart-direct-admin/
 /photo/
+/http/http-client.private.env.json
