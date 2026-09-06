@@ -1,0 +1,24 @@
+
+
+### Set webhook for master bot
+    https://api.telegram.org/bot{{master_token}}/setWebhook?url=https://qrfood.az/webhooks/t/master
+
+### Set webhook for mrket 1
+    https://api.telegram.org/bot{{market1_token}}/setWebhook?url=https://qrfood.az/webhooks/t/market/
+
+### Set webhook for mrket 2
+    https://api.telegram.org/bot{{market2_token}}/setWebhook?url=https://qrfood.az/webhooks/t/market
+
+### Test
+POST https://qrfood.az/webhooks/t/market/324j234k23j4kj
+Content-Type: application/json
+
+{
+  "update_id": "4578665"
+}
+
+###
+GET https://api.telegram.org/bot{{market1_token}}/getWebhookInfo
+
+###
+https://api.telegram.org/bot{{market1_token}}/setWebhook?url=https://qrfood.az/webhooks/t/market&drop_pending_updates=true

@@ -1,0 +1,93 @@
+server:
+  port: 8080
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  application:
+    name: smartdirectaze
+    http:
+      encoding:
+        force=true
+        charset=UTF-8
+  datasource:
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+    hikari.leak-detection-threshold: 2000
+
+  jpa:
+    open-in-view: false
+#    show-sql: true
+    hibernate:
+      ddl-auto: update
+  ai.openai.api-key: ${OPENAI_API_KEY}
+
+instagram:
+  webhook.verify-token: ${WEBHOOK_VERIFY_TOKEN}
+  marker:
+    access-token: ${ACCESS_TOKEN}
+    access-token2: ${ACCESS_TOKEN_2}
+  url: https://graph.instagram.com/v19.0/me/messages
+
+telegram:
+  token: ${SD_TELEGRAM_BOT_TOKEN}
+  username: ${SD_TELEGRAM_BOT_USERNAME}
+  bot.admin.id: ${SD_TELEGRAM_ADMIN_ID}
+  webhook.base-url: ${SD_TELEGRAM_WEBHOOK_URL}
+
+  # ID находится в URL таблицы: https://docs.google.com/spreadsheets/d/ID_ВОТ_ЗДЕСЬ/edit
+google:
+  sheets:
+    spreadsheet-id: ${SPREADSHEET_ID}
+    credentials-path: ${CREDENTIALS_PATH}
+
+app:
+  productAliasesFilePath: ${PRODUCT_ALIASES_FILE_PATH}
+  catalog:
+    sync:
+      cron: 0 0 * * * ?
+  ai:
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY}
+  telegram:
+    rateLimit: 3
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration: 86400000 # 24 hours
+  url:
+    component:
+      webhook:
+          t: /webhooks/t
+          w: /webhooks/w
+          i: /webhooks/i
+      master: /master
+      market: /market
+      alive: /alive
+    auth:
+      register: /api/v1/auth/register
+    greenApi:
+      url:
+        greenBase: https://7107.api.greenapi.com/waInstance
+        qrCode:    ${app.url.greenApi.url.greenBase}${WHATSAPP_INSTANCE_ID}/qr/${WHATSAPP_TOKEN}
+        settings:  ${app.url.greenApi.url.greenBase}${WHATSAPP_INSTANCE_ID}/getSettings/${WHATSAPP_TOKEN}
+        logout:    ${app.url.greenApi.url.greenBase}${WHATSAPP_INSTANCE_ID}/logout/${WHATSAPP_TOKEN}
+        state:     ${app.url.greenApi.url.greenBase}${WHATSAPP_INSTANCE_ID}/getStateInstance/${WHATSAPP_TOKEN}
+
+    public: https://qrfood.az/webhooks
+    frontend: https://qrfood.az/webhooks/inventory?shopId=%s
+  product:
+    folder:
+      photo: /home/nizami/projects/java/smartdirectaze/photo
+  seeder:
+    product-count: 100 # Укажите здесь нужное количество товаров
+
+# Point the OpenAI starter to DeepSeek's API
+langchain4j:
+  open-ai:
+    chat-model:
+      base-url: https://api.deepseek.com
+      api-key: ${DEEPSEEK_API_KEY}
+      model-name: deepseek-chat
+      timeout: PT60S

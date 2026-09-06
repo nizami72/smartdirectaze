@@ -1,0 +1,72 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+
+instagram:
+  url: http://localhost
+  marker:
+    access-token2: dummy
+    access-token: dummy
+  webhook:
+    verify-token: dummy
+
+app:
+  productAliasesFilePath: product_aliaces.txt
+  catalog:
+    sync:
+      cron: "0 0 * * * ?"
+  ai:
+    deepseek:
+      api-key: dummy
+  telegram:
+    rateLimit: 3
+  url:
+    component:
+      webhook:
+        t: /webhooks/t
+        w: /webhooks/w
+        i: /webhooks/i
+      master: /master
+      market: /market
+      alive: /alive
+    auth:
+      register: /api/v1/auth/register
+    public: http://localhost
+    frontend: http://localhost
+  product:
+    folder:
+      photo: dummy
+  seeder:
+    product-count: 10
+
+telegram:
+  token: dummy
+  username: dummy
+  bot:
+    admin:
+      id: 0
+  webhook:
+    base-url: http://localhost
+
+google:
+  sheets:
+    spreadsheet-id: dummy
+    credentials-path: dummy
+
+ai:
+  openai:
+    api-key: dummy
+langchain4j:
+  open-ai:
+    chat-model:
+      api-key: dummy
+      base-url: http://localhost
+      model-name: dummy
+      timeout: PT60S

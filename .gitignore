@@ -42,3 +42,6 @@ build/
 /smart-direct-admin/
 /photo/
 /http/http-client.private.env.json
+/backend/tmp.env
+/backend/src/main/resources/smart-direct-aze-17905ea606ad.json
+/backend/.env

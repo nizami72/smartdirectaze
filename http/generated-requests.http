@@ -1,2 +1,10 @@
 ###
 GET https://api.telegram.org/bot{{token}}/setWebhook?url=https://qrfood.az/webhooks/
+
+
+###
+GET https://api.green-api.com/waInstance{{whatsappInstance}}/getStateInstance/{{whatsappToken}}
+
+
+###
+GET https://7107.api.greenapi.com/waInstance{{whatsappInstance}}/qr/{{whatsappToken}}

@@ -1,0 +1,47 @@
+@startuml
+actor User
+participant "Frontend" as UI
+participant "AuthService" as Auth
+participant "ShopController" as ShopCtrl
+participant "CatalogItemController" as CatalogCtrl
+participant "AiChannelController" as ChannelCtrl
+participant "UserService" as UserSvc
+database "Database" as DB
+
+== Step 1: Account Creation ==
+User -> UI: Register/Login
+UI -> Auth: authenticate(LoginRequest)
+Auth -> DB: findByEmail(email)
+DB --> Auth: UserEntity
+Auth --> UI: LoginResponse(JWT, step)
+note right: Initial step: ACCOUNT_CREATED
+
+== Step 2: Shop Creation ==
+User -> UI: Enter Shop Details
+UI -> ShopCtrl: createShop(ShopCreateDto)
+ShopCtrl -> UserSvc: updateRegistrationStep(ownerId, SHOP_CREATED)
+UserSvc -> DB: UPDATE user SET step = 'SHOP_CREATED'
+ShopCtrl -> DB: SAVE ShopEntity
+ShopCtrl --> UI: ShopResponseDto(step: SHOP_CREATED)
+
+== Step 3: Catalog Filling ==
+User -> UI: Add Products
+UI -> CatalogCtrl: addCatalogItem(CatalogItemRequestDto)
+CatalogCtrl -> UserSvc: updateRegistrationStep(ownerId, CATALOG_FILLED)
+UserSvc -> DB: UPDATE user SET step = 'CATALOG_FILLED'
+CatalogCtrl -> DB: SAVE ProductEntity
+CatalogCtrl --> UI: ProductDTO
+
+== Step 4: Channel Configuration & Completion ==
+User -> UI: Connect Telegram/WhatsApp
+UI -> ChannelCtrl: connectTelegram / initWhatsApp
+ChannelCtrl -> DB: SAVE Channel info
+
+User -> UI: Click "Complete Onboarding"
+UI -> ChannelCtrl: completeOnboarding(shopId)
+ChannelCtrl -> UserSvc: updateRegistrationStep(userId, COMPLETED)
+UserSvc -> DB: UPDATE user SET step = 'COMPLETED'
+ChannelCtrl --> UI: 200 OK
+
+UI -> User: Show Dashboard
+@enduml

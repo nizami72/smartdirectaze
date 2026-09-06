@@ -1,0 +1,85 @@
+@startuml
+
+title Application Navigation Flow - MVP
+
+'left to right direction
+
+skinparam shadowing false
+
+' =========================
+' PAGES
+' =========================
+
+rectangle "Registration Page" as Registration
+
+rectangle "Login Page" as Login
+
+rectangle "My Businesses Page\n\nEMPTY STATE\n\nNo businesses yet\n\n[ Create Business ]" as MyBusinessesEmpty
+
+rectangle "My Businesses Page\n\nEXISTING BUSINESSES\n\nBusiness cards\n\n[ Open ]\n\n+ Create Business" as MyBusinesses
+
+rectangle "Choose Business Page" as ChooseBusiness
+
+rectangle "Business Creation Page" as CreateBusiness
+
+rectangle "Business Dashboard" as BusinessDashboard
+
+
+' =========================
+' ACTIONS
+' =========================
+
+usecase "Submit Registration" as SubmitRegistration
+
+usecase "Submit Login" as SubmitLogin
+
+usecase "Create Business" as CreateFirstBusiness
+
+usecase "Open Business" as OpenBusiness
+
+usecase "Create Another Business" as CreateAnotherBusiness
+
+
+' =========================
+' REGISTRATION
+' =========================
+
+Registration --> SubmitRegistration
+SubmitRegistration --> MyBusinessesEmpty : registration successful
+
+
+' =========================
+' LOGIN
+' =========================
+
+Login --> SubmitLogin
+SubmitLogin --> MyBusinesses : login successful
+
+
+' =========================
+' EMPTY STATE
+' =========================
+
+MyBusinessesEmpty --> CreateFirstBusiness
+
+CreateFirstBusiness --> ChooseBusiness
+
+ChooseBusiness --> CreateBusiness
+
+CreateBusiness --> MyBusinesses
+
+
+' =========================
+' EXISTING BUSINESSES
+' =========================
+
+MyBusinesses --> OpenBusiness
+
+OpenBusiness --> BusinessDashboard
+
+MyBusinesses --> CreateAnotherBusiness
+
+CreateAnotherBusiness --> ChooseBusiness
+
+
+@enduml

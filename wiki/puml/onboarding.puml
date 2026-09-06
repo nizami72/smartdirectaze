@@ -1,0 +1,111 @@
+@startuml
+autonumber
+skinparam BoxPadding 10
+skinparam ParticipantPadding 10
+
+actor "Shop Owner" as User
+participant "Frontend (Admin Panel)" as FE
+participant "Backend API" as BE
+database "Database" as DB
+participant "Green-API" as WhatsAppAPI
+participant "Telegram API" as TGAPI
+
+== Screen 1: Account Registration (ACCOUNT_CREATED) ==
+
+User -> FE: Enter data (Name, Email, Phone, Password)
+User -> FE: Click "Create Account"
+FE -> BE: POST /api/v1/auth/register\n(Name, Email, Phone, Password)
+activate BE
+
+BE -> DB: Check Email and create record in User\n(registration_step = 'ACCOUNT_CREATED')
+activate DB
+DB --> BE: User created
+deactivate DB
+
+BE --> FE: Return JWT Token
+deactivate BE
+
+FE -> FE: Save token to localStorage
+FE -> FE: Redirect to Screen 2
+
+== Screen 2: Shop Profile Creation (SHOP_CREATED) ==
+
+User -> FE: Enter shop data (Name, Address, Hours, Delivery)
+User -> FE: Click "Save and Continue"
+FE -> BE: POST /api/v1/shops\nBearer Token + (Name, Address, Hours, Delivery)
+activate BE
+
+BE -> DB: Create Shop entity (linked to User)
+activate DB
+DB --> BE: Shop created
+deactivate DB
+
+BE -> DB: Update User (registration_step = 'SHOP_CREATED')
+activate DB
+DB --> BE: Success
+deactivate DB
+
+BE --> FE: HTTP 201 Created / Success
+deactivate BE
+
+FE -> FE: Redirect to Screen 3
+
+== Screen 3: Communication Channels Connection (CHANNELS_CONFIGURED) ==
+
+alt Case A: Connect WhatsApp via Green-API
+    User -> FE: Click "Connect WhatsApp"
+    FE -> BE: Request WhatsApp session initialization
+    BE -> WhatsAppAPI: Request QR Code
+    WhatsAppAPI --> BE: QR Code / Link
+    BE --> FE: Display QR Code + Spinner
+
+    User -> WhatsAppAPI: Scan QR Code with phone
+    WhatsAppAPI -> BE: Webhook: Session authorized
+    activate BE
+    BE -> DB: Create WhatsAppConfig
+    BE --> FE: [WebSocket/Polling] Status: Connected
+    deactivate BE
+    FE -> FE: UI: Green checkmark "Active +994..."
+end
+
+alt Case B: Connect Telegram Bot
+    User -> FE: Enter Telegram Bot Token and click "Activate Token"
+    FE -> BE: POST /api/v1/channels/telegram (Token)
+    activate BE
+
+    BE -> TGAPI: GET /getMe (Token validation)
+    TGAPI --> BE: Response (Bot name, validity)
+
+    alt Token is valid
+        BE -> DB: Create TelegramConfig
+        BE --> FE: HTTP 200 OK (Bot data)
+        FE -> FE: UI: Green checkmark "Active @bot_name"
+    else Token is invalid
+        BE --> FE: HTTP 400 Bad Request (Token error)
+        FE -> FE: Display error to user
+    end
+    deactivate BE
+end
+
+alt Channel Setup Completion
+    note over FE: Button is active if\nat least 1 channel is connected
+    User -> FE: Click "Complete Setup"
+    FE -> BE: PATCH /api/v1/users/status (registration_step = 'COMPLETED')
+    activate BE
+    BE -> DB: Update status to COMPLETED
+    BE --> FE: HTTP 200 OK
+    deactivate BE
+
+    FE -> FE: Redirect to Screen 4 (Main Dashboard)
+end
+
+== Screen 4: Main Dashboard (COMPLETED) ==
+
+note over FE, DB
+  User gets full access to the admin panel:
+  - "Products" tab (Catalog filling for AI)
+  - "Orders" tab (Viewing customer requests)
+  - "Integration Settings" tab (Channel management)
+end note
+
+@enduml
