@@ -58,7 +58,8 @@ const CreateShopPage = () => {
 
     setLoading(true);
     try {
-      const response = await api.post('/api/v1/shops', formData);
+      const payload = { ...formData, businessId: sessionStorage.getItem('currentBusinessId') || undefined };
+      const response = await api.post('/api/v1/shops', payload);
       if (response.data.id) {
           sessionStorage.setItem('currentShopId', response.data.id);
           sessionStorage.setItem('currentShopName', response.data.shopName);
@@ -90,7 +91,7 @@ const CreateShopPage = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md">
-              Шаг 2 из 4
+              Шаг 3 из 5
             </span>
             <span className="text-xs text-slate-400 font-medium">Настройка бизнеса</span>
           </div>

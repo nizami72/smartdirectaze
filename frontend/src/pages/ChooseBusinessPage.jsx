@@ -39,7 +39,11 @@ const ChooseBusinessPage = () => {
     setLoading(type.id);
     setError('');
     try {
-      await api.post('/api/v1/businesses/choose-business', { businessType: type.id });
+      const res = await api.post('/api/v1/businesses/choose-business', { businessType: type.id });
+      // Пробрасываем businessId в шаг создания магазина/ивента (привязка дочерней сущности).
+      if (res.data?.businessId) {
+        sessionStorage.setItem('currentBusinessId', res.data.businessId);
+      }
       navigate(type.path);
     } catch (err) {
       console.error('Error choosing business type:', err);

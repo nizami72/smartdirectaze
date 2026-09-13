@@ -85,7 +85,7 @@ const FillCatalogPage = () => {
         {/* Шапка с прогрессом */}
         <div className="mb-10 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider mb-4">
-            Шаг 3 из 4: Наполнение каталога
+            Шаг 4 из 5: Наполнение каталога
           </div>
           <h1 className="text-3xl font-bold text-slate-900">Добавьте первые товары</h1>
           <p className="mt-2 text-slate-500 max-w-md mx-auto">

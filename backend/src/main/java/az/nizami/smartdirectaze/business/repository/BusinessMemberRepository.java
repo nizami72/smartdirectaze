@@ -1,6 +1,7 @@
 package az.nizami.smartdirectaze.business.repository;
 
 import az.nizami.smartdirectaze.business.domain.BusinessMember;
+import az.nizami.smartdirectaze.business.domain.Industry;
 import az.nizami.smartdirectaze.business.dto.BusinessSummaryDto;
 import az.nizami.smartdirectaze.business.dto.IndustrySummaryDto;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -8,10 +9,21 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface BusinessMemberRepository extends JpaRepository<BusinessMember, UUID> {
+
+    /**
+     * Членства пользователя (без кросс-модульного join к User — связь по userId).
+     */
+    List<BusinessMember> findByUserId(Long userId);
+
+    /**
+     * Для дедупликации: существующий бизнес пользователя в данной индустрии.
+     */
+    Optional<BusinessMember> findByUserIdAndBusiness_Industry(Long userId, Industry industry);
 
     @Query("""
               select new az.nizami.smartdirectaze.business.dto.BusinessSummaryDto(

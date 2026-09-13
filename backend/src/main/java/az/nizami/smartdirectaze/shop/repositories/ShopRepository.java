@@ -17,6 +17,11 @@ public interface ShopRepository extends JpaRepository<ShopEntity, Long> {
      */
     List<ShopEntity> findAllByOwnerId(Long ownerId);
 
+    /**
+     * Количество магазинов, привязанных к Business-агрегату (модуль business, связь по UUID).
+     */
+    long countByBusinessId(UUID businessId);
+
     // Этот метод будет использоваться контроллером покупателей для поиска настроек бота по URL
     Optional<ShopEntity> findByBotUuid(String botUuid);
 

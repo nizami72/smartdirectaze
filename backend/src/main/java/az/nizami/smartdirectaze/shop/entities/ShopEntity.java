@@ -28,6 +28,10 @@ public class ShopEntity {
     @Column(name = "owner_id")
     private Long ownerId;
 
+    // Ссылка на Business-агрегат (модуль business) строго по ID (UUID), без ORM-связи.
+    @Column(name = "business_id")
+    private java.util.UUID businessId;
+
     @Column(name = "shop_name", nullable = false)
     private String shopName;
 

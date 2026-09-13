@@ -15,6 +15,11 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
     @Query("select count(e) from Event e")
     long countAllEvents();
 
+    /**
+     * Количество ивентов, привязанных к Business-агрегату (связь по UUID).
+     */
+    long countByBusinessId(UUID businessId);
+
     @Query("select count(e) from Event e where e.dateTime >= current_timestamp")
     long countUpcomingEvents();
 

@@ -57,8 +57,17 @@ const MyBusinessesPage = () => {
   };
 
   const handleOpen = (summary) => {
-    // Route to existing feature pages where available. For MVP, use unified dashboard.
-    navigate('/dashboard');
+    // Роутинг по индустрии: у магазина и ивентов разные дашборды.
+    switch (summary.industry) {
+      case 'SHOP':
+        navigate('/shop-dashboard');
+        break;
+      case 'EVENTS':
+        navigate('/dashboard');
+        break;
+      default:
+        navigate('/dashboard');
+    }
   };
 
   const hasBusinesses = summaries.length > 0;

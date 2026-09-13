@@ -83,4 +83,10 @@ public class EventServiceImpl implements EventService {
                 eventSummaries
         );
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByBusiness(UUID businessId) {
+        return businessId == null ? 0L : eventRepository.countByBusinessId(businessId);
+    }
 }

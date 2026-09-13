@@ -30,6 +30,8 @@ function App() {
         <Route path="/fill-catalog" element={<FillCatalogPage />} />
         <Route path="/connect-channels" element={<ConnectChannelsPage />} />
         <Route path="/dashboard" element={<EventsDashboardPage />} />
+        {/* Shop dashboard (home for SHOP businesses) */}
+        <Route path="/shop-dashboard" element={<DashboardPage />} />
         <Route path="/old-dashboard" element={<DashboardPage />} />
         {/* Guests: business and event contexts (same page) */}
         <Route path="/business/:businessId/guests" element={<GuestListPage />} />

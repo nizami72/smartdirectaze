@@ -103,7 +103,7 @@ const ConnectChannelsPage = () => {
     setCompleting(true);
     try {
       await api.post(`/api/v1/shops/channels/onboarding/complete?shopId=${shopId}`);
-      navigate('/dashboard');
+      navigate('/shop-dashboard');
     } catch (err) {
       console.error('Complete onboarding error:', err);
       setError('Не удалось завершить регистрацию. Попробуйте еще раз.');
@@ -253,7 +253,7 @@ const ConnectChannelsPage = () => {
         <div className="mb-10 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-100 shadow-sm text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-6">
             <span className="w-2 h-2 rounded-full bg-slate-900"></span>
-            Шаг 4 из 4: Активация ИИ-ассистента
+            Шаг 5 из 5: Активация ИИ-ассистента
           </div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Подключите WhatsApp</h1>
           <p className="mt-3 text-slate-500 text-sm">

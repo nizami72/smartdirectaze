@@ -36,6 +36,7 @@ public class ShopService {
 
         ShopEntity shop = ShopEntity.builder()
                 .ownerId(ownerId)
+                .businessId(dto.businessId())
                 .shopName(dto.shopName())
                 .address(dto.address())
                 .workingHours(dto.workingHours())
@@ -103,5 +104,11 @@ public class ShopService {
                 .toList();
     }
 
+    /**
+     * Количество магазинов, привязанных к Business-агрегату.
+     */
+    public long countByBusiness(UUID businessId) {
+        return businessId == null ? 0L : shopRepository.countByBusinessId(businessId);
+    }
 
 }

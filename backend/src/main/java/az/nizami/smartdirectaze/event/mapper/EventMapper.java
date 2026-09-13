@@ -14,6 +14,7 @@ public class EventMapper {
     public Event toEntity(EventRequest request) {
         if (request == null) return null;
         return Event.builder()
+                .businessId(request.getBusinessId())
                 .name(request.getName())
                 .dateTime(request.getDateTime())
                 .place(request.getPlace())

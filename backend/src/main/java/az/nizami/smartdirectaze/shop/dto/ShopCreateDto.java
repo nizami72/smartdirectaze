@@ -3,8 +3,12 @@ package az.nizami.smartdirectaze.shop.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 public record ShopCreateDto(
+    // Business-агрегат, к которому привязывается магазин (из шага choose-business).
+    UUID businessId,
+
     @NotBlank(message = "Shop name is required")
     String shopName,
 

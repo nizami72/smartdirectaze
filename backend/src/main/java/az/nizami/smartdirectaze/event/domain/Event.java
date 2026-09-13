@@ -19,6 +19,10 @@ public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    // Business-агрегат (модуль business), к которому принадлежит ивент. Связь по ID.
+    private UUID businessId;
+
     private String name;
     private LocalDateTime dateTime;
     private String place;

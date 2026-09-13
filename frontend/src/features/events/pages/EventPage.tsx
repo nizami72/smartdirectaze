@@ -140,6 +140,8 @@ const EventPage: React.FC = () => {
         description: formData.description,
       };
       if (mode === 'create') {
+        // Привязываем ивент к Business-агрегату из шага choose-business.
+        request.businessId = sessionStorage.getItem('currentBusinessId') || undefined;
         const created = await eventsApi.createEvent(request);
         setSnackbar({ open: true, message: 'Event created', severity: 'success' });
         // Navigate to created event view if id is returned

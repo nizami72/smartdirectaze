@@ -8,12 +8,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventRequest {
+    // Business-агрегат, к которому привязывается ивент (из шага choose-business).
+    private UUID businessId;
+
     @NotBlank(message = "Event name is required")
     private String name;
 

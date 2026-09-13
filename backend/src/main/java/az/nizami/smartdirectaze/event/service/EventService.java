@@ -15,4 +15,9 @@ public interface EventService {
     void deleteEvent(UUID id);
 
     EventsDashboardResponse getEventsDashboard();
+
+    /**
+     * Количество ивентов, привязанных к Business-агрегату.
+     */
+    long countByBusiness(UUID businessId);
 }

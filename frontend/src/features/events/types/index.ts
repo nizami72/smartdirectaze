@@ -25,6 +25,7 @@ export interface EventFormData {
 }
 
 export interface EventRequestDTO {
+  businessId?: string; // Business-агрегат, к которому привязывается ивент
   name: string;
   dateTime: string; // ISO string, mapping to Backend's LocalDateTime
   place: string;
