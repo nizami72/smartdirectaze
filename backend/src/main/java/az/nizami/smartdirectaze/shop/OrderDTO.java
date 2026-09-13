@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.shop;
 
+import az.nizami.smartdirectaze.shop.entities.OrderStatus;
 import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -14,5 +15,6 @@ public class OrderDTO {
     private String deliveryAddress;
     private String itemsSummary;
     private String paymentMethod;
+    private OrderStatus status;
     private LocalDateTime createdAt;
 }
