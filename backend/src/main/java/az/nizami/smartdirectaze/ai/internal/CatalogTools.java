@@ -7,6 +7,7 @@ import dev.langchain4j.agent.tool.ToolMemoryId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
@@ -27,9 +28,7 @@ public class CatalogTools {
     public String getShopPolicyInfo(@ToolMemoryId ConversationKey key) {
         ShopDto shop = productService.getShopById(key.shopId());
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Delivery price: %s AZN. Free delivery threshold: %s AZN. ",
-                shop.deliveryPrice() != null ? shop.deliveryPrice() : "0",
-                shop.freeDeliveryThreshold() != null ? shop.freeDeliveryThreshold() : "0"));
+        sb.append(describeDeliveryPrice(shop.deliveryPrice(), shop.freeDeliveryThreshold()));
 
         if (shop.zones() != null && !shop.zones().isEmpty()) {
             sb.append("Delivery zones: ");
@@ -89,5 +88,16 @@ public class CatalogTools {
         return "Заказ успешно создан. Номер заказа: #" + order.getId();
     }
 
+    /**
+     * One unambiguous sentence for the model: a bare "free delivery threshold: 0" was read as "always free".
+     */
+    static String describeDeliveryPrice(BigDecimal price, BigDecimal freeThreshold) {
+        if (price == null || price.signum() <= 0) {
+            return "Delivery is free. ";
+        }
+        if (freeThreshold != null && freeThreshold.signum() > 0) {
+            return String.format("Delivery price: %s AZN; delivery is free for orders from %s AZN. ", price, freeThreshold);
+        }
+        return String.format("Delivery price: %s AZN; there is no free delivery. ", price);
+    }
 }
-

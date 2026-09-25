@@ -140,6 +140,8 @@ public class AiChannelServiceImpl implements AiChannelService {
                 .map(PhoneUtils::digits)
                 .filter(phone -> !phone.isEmpty())
                 .forEach(channel.getTestPhones()::add);
+        String notificationPhone = PhoneUtils.digits(settings.getNotificationPhone());
+        channel.setNotificationPhone(notificationPhone.isEmpty() ? null : notificationPhone);
         log.info("WhatsApp AI settings of shop {} changed: mode {}, {} test phone(s)", shopId, channel.getAiMode(), channel.getTestPhones().size());
         return toAiSettings(channel);
     }
@@ -153,6 +155,7 @@ public class AiChannelServiceImpl implements AiChannelService {
         return AiSettingsDto.builder()
                 .aiMode(channel.getAiMode())
                 .testPhones(new TreeSet<>(channel.getTestPhones()))
+                .notificationPhone(channel.getNotificationPhone())
                 .build();
     }
 

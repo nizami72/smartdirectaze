@@ -9,6 +9,7 @@ import CreateClinicPage from './pages/CreateClinicPage';
 import FillCatalogPage from './pages/FillCatalogPage';
 import ConnectChannelsPage from './pages/ConnectChannelsPage';
 import TestSellerPage from './pages/TestSellerPage';
+import OrdersPage from './pages/OrdersPage';
 import DashboardPage from './pages/DashboardPage';
 import EventsDashboardPage from './features/dashboard/pages/EventsDashboardPage';
 import './App.css';
@@ -29,6 +30,7 @@ function App() {
         <Route path="/shops/:shopId/catalog" element={<FillCatalogPage />} />
         <Route path="/shops/:shopId/test" element={<TestSellerPage />} />
         <Route path="/shops/:shopId/connect" element={<ConnectChannelsPage />} />
+        <Route path="/shops/:shopId/orders" element={<OrdersPage />} />
         {/* Old shop routes, kept so existing links keep working */}
         <Route path="/my-businesses" element={<Navigate to="/shops" replace />} />
         <Route path="/create-shop" element={<Navigate to="/shops/new" replace />} />

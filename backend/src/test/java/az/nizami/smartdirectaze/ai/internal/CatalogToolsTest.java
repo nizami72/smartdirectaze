@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -75,5 +76,16 @@ class CatalogToolsTest {
         // Assert
         assertEquals(products, result);
         verify(productService).searchForAiAssistant(2L, "çanta");
+    }
+
+    @Test
+    void describeDeliveryPrice_ShouldNeverPromiseFreeDeliveryWithoutThreshold() {
+        assertEquals("Delivery price: 5 AZN; there is no free delivery. ",
+                CatalogTools.describeDeliveryPrice(new BigDecimal("5"), BigDecimal.ZERO));
+        assertEquals("Delivery price: 5 AZN; there is no free delivery. ",
+                CatalogTools.describeDeliveryPrice(new BigDecimal("5"), null));
+        assertEquals("Delivery price: 5 AZN; delivery is free for orders from 50 AZN. ",
+                CatalogTools.describeDeliveryPrice(new BigDecimal("5"), new BigDecimal("50")));
+        assertEquals("Delivery is free. ", CatalogTools.describeDeliveryPrice(BigDecimal.ZERO, null));
     }
 }

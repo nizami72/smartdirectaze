@@ -44,6 +44,9 @@ google:
 
 app:
   productAliasesFilePath: ${PRODUCT_ALIASES_FILE_PATH}
+  frontend:
+    # Links in messages to merchants (order alerts)
+    base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
   whatsapp:
     # Same value as webhookUrlToken in the Green API instance settings; empty = webhook open (dev only)
     webhook-token: ${WHATSAPP_WEBHOOK_TOKEN:}

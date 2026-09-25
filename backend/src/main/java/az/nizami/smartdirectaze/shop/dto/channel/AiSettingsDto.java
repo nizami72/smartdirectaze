@@ -20,4 +20,8 @@ public class AiSettingsDto {
     @NotNull
     @Size(max = 10)
     private Set<String> testPhones;
+
+    // Phone for order alerts; empty = the merchant's own WhatsApp chat
+    @Size(max = 32)
+    private String notificationPhone;
 }

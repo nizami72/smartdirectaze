@@ -48,6 +48,10 @@ public class AiChannelEntity {
     @Builder.Default
     private AiMode aiMode = AiMode.TEST;
 
+    // Where order alerts go, digits only; null = the merchant's own WhatsApp ("message yourself", no push)
+    @Column(name = "notification_phone", length = 32)
+    private String notificationPhone;
+
     // Digits only, e.g. "994551112233"
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "ai_channel_test_phones", joinColumns = @JoinColumn(name = "ai_channel_id"))

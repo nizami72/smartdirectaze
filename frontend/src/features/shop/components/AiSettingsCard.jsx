@@ -12,13 +12,17 @@ const MODES = [
 const AiSettingsCard = ({ shopId }) => {
   const [settings, setSettings] = useState(null);
   const [newPhone, setNewPhone] = useState('');
+  const [notificationPhone, setNotificationPhone] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
     if (!shopId) return;
     api.get(`/api/v1/shops/channels/whatsapp/ai?shopId=${shopId}`)
-      .then(res => setSettings(res.data))
+      .then(res => {
+        setSettings(res.data);
+        setNotificationPhone(res.data.notificationPhone ? `+${res.data.notificationPhone}` : '');
+      })
       .catch(() => setSettings(null));
   }, [shopId]);
 
@@ -114,6 +118,27 @@ const AiSettingsCard = ({ shopId }) => {
           </form>
         </div>
       )}
+
+      <div className="mt-6 pt-5 border-t border-slate-100">
+        <p className="text-sm font-semibold text-slate-700 mb-1">Уведомления о заказах</p>
+        <p className="text-sm text-slate-500 mb-2">
+          Номер, на который придёт сообщение о новом заказе. Если пусто — в чат «с самим собой» на подключённом номере (без звука).
+        </p>
+        <form className="flex gap-2"
+              onSubmit={e => { e.preventDefault(); save({ ...settings, notificationPhone: notificationPhone.replace(/\D/g, '') }); }}>
+          <input
+            type="tel"
+            value={notificationPhone}
+            onChange={e => setNotificationPhone(e.target.value)}
+            placeholder="+994 55 123 45 67"
+            className="flex-1 min-w-0 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+          <button type="submit" disabled={saving}
+                  className="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-sm font-semibold">
+            Сохранить
+          </button>
+        </form>
+      </div>
 
       {message && <p className="text-xs text-slate-400 mt-3">{message}</p>}
     </section>

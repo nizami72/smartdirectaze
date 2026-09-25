@@ -9,7 +9,8 @@ import {
   LogOut, 
   Store,
   ArrowLeft,
-  MessageCircle
+  MessageCircle,
+  ShoppingBag
 } from 'lucide-react';
 
 const DashboardPage = () => {
@@ -18,6 +19,7 @@ const DashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [shopInfo, setShopInfo] = useState({ id: null, name: '' });
+  const [newOrders, setNewOrders] = useState(0);
   const contentRef = useRef(null);
 
   useEffect(() => {
@@ -33,6 +35,9 @@ const DashboardPage = () => {
         }
         const currentShopId = shop.id;
         setShopInfo({ id: shop.id, name: shop.shopName });
+        api.get(`/api/v1/shops/${shop.id}/orders`)
+          .then(res => setNewOrders((res.data || []).filter(o => o.status === 'NEW').length))
+          .catch(() => setNewOrders(0));
 
         // 2. Fetch inventory fragment
         const fragmentResponse = await api.get(`/api/v1/dashboard/inventory?shopId=${currentShopId}`, {
@@ -131,6 +136,14 @@ const DashboardPage = () => {
                       className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all">
                 <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Мои магазины</span>
+              </button>
+              <button type="button" onClick={() => navigate(`/shops/${shopId}/orders`)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all">
+                <ShoppingBag className="w-4 h-4" />
+                <span className="hidden sm:inline">Заказы</span>
+                {newOrders > 0 && (
+                  <span className="min-w-5 h-5 px-1.5 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">{newOrders}</span>
+                )}
               </button>
               <button type="button" onClick={() => navigate(`/shops/${shopId}/connect`)}
                       className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all">
