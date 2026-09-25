@@ -7,4 +7,5 @@ public interface WhatsappService {
     String getStateInstance(String instanceId, String token);
     String getSettings(String instanceId, String token);
     void logout(String instanceId, String token);
+    void sendMessage(String instanceId, String token, String chatId, String message);
 }

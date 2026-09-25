@@ -84,6 +84,12 @@ app.use((req, res, next) => {
         return res.json({ "wid": instanceState.phoneAttached, "countryInstance": "AZ" });
     }
 
+    // Перехватываем метод sendMessage (ответ AI-продавца клиенту)
+    if (url.includes('/sendMessage/') && req.method === 'POST') {
+        console.log(`[GreenAPI - SendMessage] to ${req.body.chatId}:\n${req.body.message}`);
+        return res.json({ "idMessage": "MOCK" + Date.now() });
+    }
+
     // Перехватываем метод logout
     if (url.includes('/logout/') && req.method === 'POST') {
         console.log(`[GreenAPI - Logout] Pruning old session... CLEARING STATE`);

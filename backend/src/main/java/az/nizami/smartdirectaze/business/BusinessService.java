@@ -4,6 +4,7 @@ import az.nizami.smartdirectaze.business.dto.ChosenBusinessDto;
 import az.nizami.smartdirectaze.business.dto.IndustrySummaryDto;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface BusinessService {
 
@@ -18,4 +19,9 @@ public interface BusinessService {
      * дочерних сущностей (магазины/ивенты), а не числом строк Business.
      */
     List<IndustrySummaryDto> getMyBusinesses(String email);
+
+    /**
+     * Returns the user's Business in the industry, creating it if there is none (one per user + industry).
+     */
+    UUID ensureBusiness(Long userId, Industry industry);
 }

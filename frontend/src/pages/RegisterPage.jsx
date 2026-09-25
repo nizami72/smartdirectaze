@@ -52,8 +52,8 @@ const RegisterPage = () => {
     setLoading(true);
     try {
       const response = await api.post('/api/v1/auth/register', formData);
-      // After successful registration, always redirect to MyBusinessesPage
-      navigate('/my-businesses');
+      // After registration: the shops list sends a new user straight to creating a shop
+      navigate('/shops');
       return;
     } catch (err) {
       console.error('Registration error:', err);
@@ -67,19 +67,11 @@ const RegisterPage = () => {
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4 py-12 sm:px-6 lg:px-8 font-sans">
         <div className="max-w-md w-full bg-white p-10 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden">
 
-          {/* Декоративная тонкая полоска прогресса сверху */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-slate-100">
-            <div className="w-1/3 h-full bg-slate-900 transition-all duration-500"></div>
-          </div>
-
           {/* Заголовок и Индикатор шага */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md">
-              Шаг 1 из 5
+            <span className="inline-block mb-4 text-xs font-semibold uppercase tracking-wider text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md">
+              Создание аккаунта
             </span>
-              <span className="text-xs text-slate-400">Создание аккаунта</span>
-            </div>
             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
               Регистрация партнера
             </h2>

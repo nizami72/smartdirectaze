@@ -1,10 +1,17 @@
 package az.nizami.smartdirectaze.ai;
 
-import org.telegram.telegrambots.meta.api.objects.Update;
-
 import java.util.concurrent.CompletableFuture;
 
 public interface AiService {
-    CompletableFuture<AssistantResponse> processQuery(String chatId, String userMessage);
-    CompletableFuture<AssistantResponse> processQuery(String botUuid, Update userMessage);
+    /**
+     * Answers a Telegram customer of the shop behind the bot; the message is Telegram HTML.
+     */
+    CompletableFuture<AssistantResponse> processQuery(String botUuid, String chatId, String userMessage);
+
+    /**
+     * Answers a customer of the given shop. Returns the model's raw (Markdown) text.
+     *
+     * @param conversationId key of the chat memory, must be unique per customer conversation
+     */
+    String answer(Long shopId, String conversationId, String userMessage);
 }

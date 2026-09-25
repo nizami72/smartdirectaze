@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/api.ts';
 
@@ -15,11 +15,17 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 
+const pluralized = (count, industry) => {
+  const word = industry === 'EVENTS' ? 'event' : 'item';
+  const suffix = count === 1 ? '' : 's';
+  return `${count} ${word}${suffix}`;
+};
+
 const MyBusinessesPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [summaries, setSummaries] = useState([]);
+  const [cards, setCards] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -27,18 +33,34 @@ const MyBusinessesPage = () => {
       setLoading(true);
       setError('');
       try {
-        // Load per-industry summaries for current user
-        const res = await api.get('/api/v1/businesses/my');
-        const items = (res.data || []).map((b) => {
-          const display = b.displayName || (b.industry === 'SHOP' ? 'Shop' : b.industry === 'EVENTS' ? 'Events' : b.industry === 'DENTAL' ? 'Dental' : (b.industry || 'Business'));
+        // Per-industry summaries + the user's shops: every shop gets its own card
+        const [businessesRes, shopsRes] = await Promise.all([
+          api.get('/api/v1/businesses/my'),
+          api.get('/api/v1/shops/my'),
+        ]);
+        const shopCards = (shopsRes.data || []).map((shop) => ({
+          key: `shop-${shop.id}`,
+          title: shop.shopName,
+          subtitle: `Shop #${shop.id}`,
+          path: `/shops/${shop.id}`,
+        }));
+        // Other industries (events) keep their summary card
+        const otherCards = (businessesRes.data || []).filter((b) => b.industry !== 'SHOP').map((b) => {
+          const display = b.displayName || (b.industry === 'EVENTS' ? 'Events' : b.industry === 'DENTAL' ? 'Dental' : (b.industry || 'Business'));
           return {
-            industry: b.industry,
-            displayName: display,
-            count: b.count ?? 0,
-            raw: b,
+            key: b.industry,
+            title: display,
+            subtitle: pluralized(b.count ?? 0, b.industry),
+            path: '/dashboard',
           };
         });
-        if (isMounted) setSummaries(items);
+        const items = [...shopCards, ...otherCards];
+        if (items.length === 0) {
+          // Nothing yet: straight to creating the first shop
+          navigate('/shops/new', { replace: true });
+          return;
+        }
+        if (isMounted) setCards(items);
       } catch (e) {
         console.error('Failed to load businesses', e);
         if (isMounted) setError('Failed to load your businesses. Please try again.');
@@ -50,44 +72,24 @@ const MyBusinessesPage = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [navigate]);
 
-  const handleCreateBusiness = () => {
-    navigate('/choose-business');
+  const handleCreateShop = () => {
+    navigate('/shops/new');
   };
 
-  const handleOpen = (summary) => {
-    // Роутинг по индустрии: у магазина и ивентов разные дашборды.
-    switch (summary.industry) {
-      case 'SHOP':
-        navigate('/shop-dashboard');
-        break;
-      case 'EVENTS':
-        navigate('/dashboard');
-        break;
-      default:
-        navigate('/dashboard');
-    }
-  };
-
-  const hasBusinesses = summaries.length > 0;
-
-  const pluralized = (count, industry) => {
-    const word = industry === 'EVENTS' ? 'event' : industry === 'SHOP' ? 'shop' : 'item';
-    const suffix = count === 1 ? '' : 's';
-    return `${count} ${word}${suffix}`;
-  };
+  const hasBusinesses = cards.length > 0;
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
         <Typography variant="h4" fontWeight={700} gutterBottom sx={{ mb: 0 }}>
-          My Businesses
+          Мои магазины
         </Typography>
 
         {hasBusinesses && (
-          <Button variant="text" color="primary" onClick={handleCreateBusiness}>
-            + Add Business
+          <Button variant="text" color="primary" onClick={handleCreateShop}>
+            + Новый магазин
           </Button>
         )}
       </Stack>
@@ -106,13 +108,13 @@ const MyBusinessesPage = () => {
           }}
         >
           <Typography variant="h5" fontWeight={700} gutterBottom>
-            You don't have any businesses yet.
+            У вас пока нет магазинов.
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Create your first business to start using the platform.
+            Создайте первый магазин — это займёт минуту.
           </Typography>
-          <Button variant="contained" color="primary" size="large" onClick={handleCreateBusiness}>
-            Create Business
+          <Button variant="contained" color="primary" size="large" onClick={handleCreateShop}>
+            Создать магазин
           </Button>
         </Box>
       )}
@@ -130,19 +132,19 @@ const MyBusinessesPage = () => {
       {/* List state */}
       {!loading && !error && hasBusinesses && (
         <Grid container spacing={3}>
-          {summaries.map((s) => (
-            <Grid key={s.industry} size={{ xs: 12, sm: 6, md: 4 }}>
+          {cards.map((c) => (
+            <Grid key={c.key} size={{ xs: 12, sm: 6, md: 4 }}>
               <Card elevation={2} sx={{ height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" fontWeight={700} gutterBottom>
-                    {s.displayName}
+                    {c.title}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {pluralized(s.count, s.industry)}
+                    {c.subtitle}
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ px: 2, pb: 2 }}>
-                  <Button variant="contained" onClick={() => handleOpen(s)}>
+                  <Button variant="contained" onClick={() => navigate(c.path)}>
                     Open
                   </Button>
                 </CardActions>

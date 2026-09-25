@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/api.ts';
 import { 
   Package, 
@@ -11,9 +11,11 @@ import {
   AlignLeft,
   DollarSign
 } from 'lucide-react';
+import OnboardingSteps from '../features/shop/components/OnboardingSteps.jsx';
 
 const FillCatalogPage = () => {
   const navigate = useNavigate();
+  const { shopId } = useParams();
   const [products, setProducts] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -23,25 +25,6 @@ const FillCatalogPage = () => {
   const [loading, setLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [error, setError] = useState('');
-  const [shopId, setShopId] = useState(null);
-
-  React.useEffect(() => {
-    const id = sessionStorage.getItem('currentShopId');
-    if (!id) {
-      // Можно добавить редирект или запрос к API если id нет
-      api.get('/api/v1/shops/my').then(res => {
-        if (res.data.length > 0) {
-          sessionStorage.setItem('currentShopId', res.data[0].id);
-          sessionStorage.setItem('currentShopName', res.data[0].shopName);
-          setShopId(res.data[0].id);
-        } else {
-          navigate('/create-shop');
-        }
-      }).catch(() => navigate('/login'));
-    } else {
-      setShopId(id);
-    }
-  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -72,11 +55,7 @@ const FillCatalogPage = () => {
     }
   };
 
-  const handleFinish = () => {
-    if (products.length > 0) {
-      navigate('/connect-channels');
-    }
-  };
+  const handleFinish = () => navigate(`/shops/${shopId}/test`);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] px-4 py-12 sm:px-6 lg:px-8 font-sans">
@@ -84,9 +63,7 @@ const FillCatalogPage = () => {
         
         {/* Шапка с прогрессом */}
         <div className="mb-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold uppercase tracking-wider mb-4">
-            Шаг 4 из 5: Наполнение каталога
-          </div>
+          <div className="max-w-md mx-auto"><OnboardingSteps current={2} /></div>
           <h1 className="text-3xl font-bold text-slate-900">Добавьте первые товары</h1>
           <p className="mt-2 text-slate-500 max-w-md mx-auto">
             ИИ-ассистенту нужны данные о ваших товарах, чтобы он мог отвечать на вопросы клиентов о ценах и наличии.
@@ -210,10 +187,9 @@ const FillCatalogPage = () => {
 
             <button
               onClick={handleFinish}
-              disabled={products.length === 0}
-              className="w-full mt-4 flex items-center justify-center gap-2 bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50 font-bold py-3.5 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="w-full mt-4 flex items-center justify-center gap-2 bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50 font-bold py-3.5 rounded-xl transition-all"
             >
-              Продолжить
+              {products.length > 0 ? 'Продолжить' : 'Пропустить, добавлю позже'}
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>

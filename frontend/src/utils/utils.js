@@ -6,8 +6,11 @@ export function cn(...inputs) {
 }
 
 export const formatAzerbaijanPhone = (value) => {
-  const digits = value.replace(/\D/g, '');
-  if (!digits.startsWith('994')) return '+994 ';
+  let digits = value.replace(/\D/g, '');
+  // Part of the prefix erased ("+99"): keep the prefix, not "+994 99"
+  if ('994'.startsWith(digits)) return '+994';
+  // Local format ("050 123 45 67", "501234567"): drop the leading 0 and add the country code
+  if (!digits.startsWith('994')) digits = '994' + digits.replace(/^0+/, '');
   
   let formatted = '+994';
   if (digits.length > 3) formatted += ' ' + digits.substring(3, 5);

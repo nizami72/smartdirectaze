@@ -4,8 +4,11 @@ import az.nizami.smartdirectaze.whatsapp.GreenApiResponseDto;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -16,17 +19,20 @@ public class GreenApiClient {
     private final String urlState;
     private final String urlSettings;
     private final String urlLogout;
+    private final String urlSendMessage;
 
     public GreenApiClient(RestClient.Builder restClientBuilder,
                           @Value("${app.url.greenApi.url.qrCode}") String urlQr,
                           @Value("${app.url.greenApi.url.state}") String urlState,
                           @Value("${app.url.greenApi.url.settings}") String urlSettings,
-                          @Value("${app.url.greenApi.url.logout}") String urlLogout) {
+                          @Value("${app.url.greenApi.url.logout}") String urlLogout,
+                          @Value("${app.url.greenApi.url.sendMessage}") String urlSendMessage) {
         this.restClient = restClientBuilder.build();
         this.urlQr = urlQr;
         this.urlState = urlState;
         this.urlSettings = urlSettings;
         this.urlLogout = urlLogout;
+        this.urlSendMessage = urlSendMessage;
     }
 
     /**
@@ -93,6 +99,23 @@ public class GreenApiClient {
         } catch (Exception e) {
             log.error("Error fetching state instance from Green-API for instance {}: {}", instanceId, e.getMessage());
             throw new RuntimeException("Failed to fetch instance state from Green-API", e);
+        }
+    }
+
+    /**
+     * URL: https://api.green-api.com/waInstance{instanceId}/sendMessage/{token}
+     */
+    public void sendMessage(String instanceId, String token, String chatId, String message) {
+        try {
+            restClient.post()
+                    .uri(urlSendMessage, instanceId, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Map.of("chatId", chatId, "message", message))
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (Exception e) {
+            log.error("Error sending message via Green-API for instance {}: {}", instanceId, e.getMessage());
+            throw new RuntimeException("Failed to send message via Green-API", e);
         }
     }
 

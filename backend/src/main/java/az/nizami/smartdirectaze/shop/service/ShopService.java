@@ -1,5 +1,7 @@
 package az.nizami.smartdirectaze.shop.service;
 
+import az.nizami.smartdirectaze.business.BusinessService;
+import az.nizami.smartdirectaze.business.Industry;
 import az.nizami.smartdirectaze.identity.RegistrationStep;
 import az.nizami.smartdirectaze.identity.UserService;
 import az.nizami.smartdirectaze.shop.dto.BaseShopDto;
@@ -26,6 +28,7 @@ public class ShopService {
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
     private final AiChannelService aiChannelService;
+    private final BusinessService businessService;
 
     /**
      * Создает магазин для владельца (Шаг 2 онбординга).
@@ -36,7 +39,8 @@ public class ShopService {
 
         ShopEntity shop = ShopEntity.builder()
                 .ownerId(ownerId)
-                .businessId(dto.businessId())
+                // The owner's SHOP business is resolved here, never taken from the client
+                .businessId(businessService.ensureBusiness(ownerId, Industry.SHOP))
                 .shopName(dto.shopName())
                 .address(dto.address())
                 .workingHours(dto.workingHours())
@@ -102,13 +106,6 @@ public class ShopService {
                         null // Step not relevant here
                 ))
                 .toList();
-    }
-
-    /**
-     * Количество магазинов, привязанных к Business-агрегату.
-     */
-    public long countByBusiness(UUID businessId) {
-        return businessId == null ? 0L : shopRepository.countByBusinessId(businessId);
     }
 
 }

@@ -3,7 +3,8 @@ app:
     greenApi:
       url:
         greenBase: http://localhost:9090/waInstance
-        qrCode:    ${app.url.greenApi.url.greenBase}${WHATSAPP_INSTANCE_ID}/qrCode/${WHATSAPP_TOKEN}
-        settings:  ${app.url.greenApi.url.greenBase}${WHATSAPP_INSTANCE_ID}/getSettings/${WHATSAPP_TOKEN}
-        logout:    ${app.url.greenApi.url.greenBase}${WHATSAPP_INSTANCE_ID}/logout/${WHATSAPP_TOKEN}
-        state:     ${app.url.greenApi.url.greenBase}${WHATSAPP_INSTANCE_ID}/getStateInstance/${WHATSAPP_TOKEN}
+        qrCode:    ${app.url.greenApi.url.greenBase}{instanceId}/qrCode/{token}
+        settings:  ${app.url.greenApi.url.greenBase}{instanceId}/getSettings/{token}
+        logout:    ${app.url.greenApi.url.greenBase}{instanceId}/logout/{token}
+        state:     ${app.url.greenApi.url.greenBase}{instanceId}/getStateInstance/{token}
+        sendMessage: ${app.url.greenApi.url.greenBase}{instanceId}/sendMessage/{token}

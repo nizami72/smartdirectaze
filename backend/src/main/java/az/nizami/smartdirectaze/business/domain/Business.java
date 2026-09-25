@@ -1,5 +1,7 @@
 package az.nizami.smartdirectaze.business.domain;
 
+import az.nizami.smartdirectaze.business.Industry;
+
 import jakarta.persistence.*;
 import lombok.*;
 import java.util.UUID;

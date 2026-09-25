@@ -1,11 +1,14 @@
 package az.nizami.smartdirectaze.shop.entities;
 
+import az.nizami.smartdirectaze.shop.AiMode;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "ai_channels", indexes = {
@@ -38,6 +41,19 @@ public class AiChannelEntity {
 
     @Column(name = "instance_external_id", unique = true)
     private String instanceExternalId;
+
+    // New channels start in TEST: the AI must not answer real customers before the merchant checked it
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ai_mode", nullable = false, length = 16)
+    @Builder.Default
+    private AiMode aiMode = AiMode.TEST;
+
+    // Digits only, e.g. "994551112233"
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "ai_channel_test_phones", joinColumns = @JoinColumn(name = "ai_channel_id"))
+    @Column(name = "phone", nullable = false)
+    @Builder.Default
+    private Set<String> testPhones = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)

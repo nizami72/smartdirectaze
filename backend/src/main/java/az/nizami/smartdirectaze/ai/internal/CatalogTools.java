@@ -3,6 +3,7 @@ package az.nizami.smartdirectaze.ai.internal;
 import az.nizami.smartdirectaze.shop.*;
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
+import dev.langchain4j.agent.tool.ToolMemoryId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,15 +17,15 @@ public class CatalogTools {
     private final OrderService orderService;
     private final NotificationService notificationService;
 
-    @Tool("Search for products in the store catalog by name or SKU to get current prices and stock.")
-    public List<ProductDTO> searchProduct(String query) {
-        // Вызываем твой метод из модуля Catalog
-        return productService.searchForAiAssistant(query);
+    @Tool("Search for products in the store catalog by name or SKU to get current prices and stock. An empty query returns the whole catalog.")
+    public List<ProductDTO> searchProduct(@ToolMemoryId ConversationKey key,
+                                          @P("Product name, part of the name or SKU; empty for the whole catalog") String query) {
+        return productService.searchForAiAssistant(key.shopId(), query);
     }
 
     @Tool("Get the rules, prices, and delivery times, as well as 'Trying and Returns' policy for the current shop.")
-    public String getShopPolicyInfo(@P("The ID of the shop to get info for") Long shopId) {
-        ShopDto shop = productService.getShopById(shopId);
+    public String getShopPolicyInfo(@ToolMemoryId ConversationKey key) {
+        ShopDto shop = productService.getShopById(key.shopId());
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("Delivery price: %s AZN. Free delivery threshold: %s AZN. ",
                 shop.deliveryPrice() != null ? shop.deliveryPrice() : "0",
@@ -71,7 +72,7 @@ public class CatalogTools {
 
     @Tool("Регистрация финального заказа в системе. Вызывай этот метод только после того, как клиент подтвердил имя, телефон, адрес и время доставки.")
     public String createFinalOrder(
-            @P("ID магазина") Long shopId,
+            @ToolMemoryId ConversationKey key,
             @P("Имя клиента") String customerName,
             @P("Номер телефона клиента") String phoneNumber,
             @P("Полный адрес доставки и время") String deliveryAddress,
@@ -79,6 +80,7 @@ public class CatalogTools {
             @P("Выбранный способ оплаты") String paymentMethod
     ) {
         // 1. Логика сохранения в твою БД (Table: Orders)
+        Long shopId = key.shopId();
         OrderDTO order = orderService.createNewOrder(shopId, customerName, phoneNumber, deliveryAddress, itemsSummary, paymentMethod);
 
         // 2. Отправка уведомления владельцу (через твой Telegram Bot Service)

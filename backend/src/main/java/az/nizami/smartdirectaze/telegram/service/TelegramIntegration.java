@@ -57,7 +57,7 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
             }
             log.debug("Message from user [{}]", userText);
             sendTypingStatus(chatId);
-            aiService.processQuery(chatId.toString(), userText)
+            aiService.processQuery(chatId.toString(), chatId.toString(), userText)
                     .thenAccept(aiResponse -> {
                         // Успешный ответ
                         sendMessage(chatId, aiResponse.getMessage());

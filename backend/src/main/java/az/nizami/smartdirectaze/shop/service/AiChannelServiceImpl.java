@@ -1,5 +1,7 @@
 package az.nizami.smartdirectaze.shop.service;
 
+import az.nizami.smartdirectaze.shop.PhoneUtils;
+import az.nizami.smartdirectaze.shop.dto.channel.AiSettingsDto;
 import az.nizami.smartdirectaze.shop.dto.channel.WhatsAppQrResponse;
 import az.nizami.smartdirectaze.shop.entities.AiChannelEntity;
 import az.nizami.smartdirectaze.shop.entities.ChannelStatus;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.TreeSet;
 
 @Slf4j
 @Service
@@ -118,6 +121,38 @@ public class AiChannelServiceImpl implements AiChannelService {
 
         return WhatsAppQrResponse.builder()
                 .status(ChannelStatus.PENDING_ACTIVATION)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AiSettingsDto getWhatsAppAiSettings(Long shopId) {
+        return toAiSettings(findWhatsAppChannel(shopId));
+    }
+
+    @Override
+    @Transactional
+    public AiSettingsDto updateWhatsAppAiSettings(Long shopId, AiSettingsDto settings) {
+        AiChannelEntity channel = findWhatsAppChannel(shopId);
+        channel.setAiMode(settings.getAiMode());
+        channel.getTestPhones().clear();
+        settings.getTestPhones().stream()
+                .map(PhoneUtils::digits)
+                .filter(phone -> !phone.isEmpty())
+                .forEach(channel.getTestPhones()::add);
+        log.info("WhatsApp AI settings of shop {} changed: mode {}, {} test phone(s)", shopId, channel.getAiMode(), channel.getTestPhones().size());
+        return toAiSettings(channel);
+    }
+
+    private AiChannelEntity findWhatsAppChannel(Long shopId) {
+        return aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP)
+                .orElseThrow(() -> new RuntimeException("WhatsApp channel not found for shop: " + shopId));
+    }
+
+    private AiSettingsDto toAiSettings(AiChannelEntity channel) {
+        return AiSettingsDto.builder()
+                .aiMode(channel.getAiMode())
+                .testPhones(new TreeSet<>(channel.getTestPhones()))
                 .build();
     }
 

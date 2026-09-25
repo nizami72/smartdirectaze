@@ -18,8 +18,10 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long> {
 
     @Query(value = "SELECT DISTINCT p.* FROM products p " +
             "LEFT JOIN product_titles pt ON p.id = pt.product_id " +
-            "WHERE pt.title_text ILIKE CONCAT('%', TRIM(:query), '%') " +
-            "OR p.sku ILIKE CONCAT('%', TRIM(:query), '%')",
+            "WHERE p.shop_id = :shopId " +
+            "AND (pt.title_text ILIKE CONCAT('%', TRIM(:query), '%') " +
+            "OR p.sku ILIKE CONCAT('%', TRIM(:query), '%')) " +
+            "LIMIT 20",
             nativeQuery = true)
-    List<ProductEntity> searchByKeyword(@Param("query") String query);
+    List<ProductEntity> searchByKeywordInShop(@Param("shopId") Long shopId, @Param("query") String query);
 }

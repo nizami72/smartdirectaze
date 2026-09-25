@@ -1,26 +1,27 @@
 package az.nizami.smartdirectaze.business.service;
 
+import az.nizami.smartdirectaze.business.BusinessChildCounter;
 import az.nizami.smartdirectaze.business.BusinessService;
 import az.nizami.smartdirectaze.business.domain.Business;
 import az.nizami.smartdirectaze.business.domain.BusinessMember;
-import az.nizami.smartdirectaze.business.domain.Industry;
+import az.nizami.smartdirectaze.business.Industry;
 import az.nizami.smartdirectaze.business.dto.ChosenBusinessDto;
 import az.nizami.smartdirectaze.business.dto.IndustrySummaryDto;
 import az.nizami.smartdirectaze.business.repository.BusinessMemberRepository;
 import az.nizami.smartdirectaze.business.repository.BusinessRepository;
-import az.nizami.smartdirectaze.event.service.EventService;
 import az.nizami.smartdirectaze.exception.UserNotFoundException;
 import az.nizami.smartdirectaze.exception.ErrorMessage;
 import az.nizami.smartdirectaze.identity.UserDto;
 import az.nizami.smartdirectaze.identity.UserService;
 import az.nizami.smartdirectaze.business.domain.BusinessRole;
-import az.nizami.smartdirectaze.shop.service.ShopService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Log4j2
@@ -30,8 +31,8 @@ public class BusinessServiceImpl implements BusinessService {
     private final BusinessRepository businessRepository;
     private final BusinessMemberRepository businessMemberRepository;
     private final UserService userService;
-    private final ShopService shopService;
-    private final EventService eventService;
+    // Shops, events: counted through their modules without depending on them
+    private final List<BusinessChildCounter> childCounters;
 
     @Override
     @Transactional
@@ -45,31 +46,31 @@ public class BusinessServiceImpl implements BusinessService {
             default -> throw new IllegalArgumentException("Unknown business type: " + businessType);
         };
 
+        return new ChosenBusinessDto(ensureBusiness(user.getId(), industry), industry);
+    }
+
+    @Override
+    @Transactional
+    public UUID ensureBusiness(Long userId, Industry industry) {
         // Дедупликация: один Business на (пользователь + индустрия).
-        BusinessMember existing = businessMemberRepository
-                .findByUserIdAndBusiness_Industry(user.getId(), industry)
-                .orElse(null);
-        if (existing != null) {
-            Business business = existing.getBusiness();
-            log.info("Reusing existing business {} ({}) for user {}", business.getId(), industry, email);
-            return new ChosenBusinessDto(business.getId(), industry);
+        Optional<BusinessMember> existing = businessMemberRepository.findByUserIdAndBusiness_Industry(userId, industry);
+        if (existing.isPresent()) {
+            return existing.get().getBusiness().getId();
         }
 
-        Business business = Business.builder()
-                .name(industry.name() + " for " + email)
+        Business business = businessRepository.save(Business.builder()
+                .name(industry.name() + " for user " + userId)
                 .industry(industry)
-                .build();
-        business = businessRepository.save(business);
+                .build());
 
-        BusinessMember member = BusinessMember.builder()
-                .userId(user.getId())
+        businessMemberRepository.save(BusinessMember.builder()
+                .userId(userId)
                 .business(business)
                 .role(BusinessRole.OWNER)
-                .build();
-        businessMemberRepository.save(member);
+                .build());
 
-        log.info("Created business {} ({}) for user {}", business.getId(), industry, email);
-        return new ChosenBusinessDto(business.getId(), industry);
+        log.info("Created business {} ({}) for user {}", business.getId(), industry, userId);
+        return business.getId();
     }
 
     @Override
@@ -88,11 +89,10 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     private long countChildren(Industry industry, java.util.UUID businessId) {
-        return switch (industry) {
-            case SHOP -> shopService.countByBusiness(businessId);
-            case EVENTS -> eventService.countByBusiness(businessId);
-            case DENTAL -> 0L;
-        };
+        return childCounters.stream()
+                .filter(counter -> counter.industry() == industry)
+                .mapToLong(counter -> counter.countByBusiness(businessId))
+                .sum();
     }
 
     private String displayName(Industry industry) {

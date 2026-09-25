@@ -10,4 +10,6 @@ import java.util.Optional;
 @Repository
 public interface AiChannelRepository extends JpaRepository<AiChannelEntity, Long> {
     Optional<AiChannelEntity> findByShopIdAndChannelType(Long shopId, ChannelType channelType);
+
+    Optional<AiChannelEntity> findByInstanceExternalIdAndChannelType(String instanceExternalId, ChannelType channelType);
 }

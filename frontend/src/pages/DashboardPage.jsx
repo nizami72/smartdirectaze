@@ -1,15 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/api.ts';
+import AiSettingsCard from '../features/shop/components/AiSettingsCard.jsx';
+import TestChatCard from '../features/shop/components/TestChatCard.jsx';
 import { 
   Loader2,
   AlertCircle, 
   LogOut, 
-  Store
+  Store,
+  ArrowLeft,
+  MessageCircle
 } from 'lucide-react';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
+  const { shopId } = useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [shopInfo, setShopInfo] = useState({ id: null, name: '' });
@@ -18,25 +23,16 @@ const DashboardPage = () => {
   useEffect(() => {
     const initDashboard = async () => {
       try {
-        // 1. Fetch shop info
-        let currentShopId = sessionStorage.getItem('currentShopId');
-        let currentShopName = sessionStorage.getItem('currentShopName');
-
-        if (!currentShopId) {
-          const response = await api.get('/api/v1/shops/my');
-          if (response.data && response.data.length > 0) {
-            const shop = response.data[0];
-            currentShopId = shop.id;
-            currentShopName = shop.shopName;
-            sessionStorage.setItem('currentShopId', shop.id);
-            sessionStorage.setItem('currentShopName', shop.shopName);
-          } else {
-            navigate('/create-shop');
-            return;
-          }
+        // 1. The shop comes from the URL; it must be one of the user's shops
+        const response = await api.get('/api/v1/shops/my');
+        const shop = (response.data || []).find(s => String(s.id) === shopId);
+        if (!shop) {
+          setError('Магазин не найден.');
+          setLoading(false);
+          return;
         }
-
-        setShopInfo({ id: currentShopId, name: currentShopName });
+        const currentShopId = shop.id;
+        setShopInfo({ id: shop.id, name: shop.shopName });
 
         // 2. Fetch inventory fragment
         const fragmentResponse = await api.get(`/api/v1/dashboard/inventory?shopId=${currentShopId}`, {
@@ -45,7 +41,13 @@ const DashboardPage = () => {
         });
 
         if (contentRef.current) {
+          // The fragment's forms and photos use backend paths (/webhooks/...): point them to the backend
+          const apiBase = api.defaults.baseURL || '';
+          window.INVENTORY_API_BASE = apiBase;
           contentRef.current.innerHTML = fragmentResponse.data;
+          contentRef.current.querySelectorAll('img[src^="/webhooks/"]').forEach(img => {
+            img.src = apiBase + img.getAttribute('src');
+          });
           
           // Execute scripts in the injected HTML (similar to auth.html logic)
           const scripts = contentRef.current.querySelectorAll('script');
@@ -66,7 +68,7 @@ const DashboardPage = () => {
     };
 
     initDashboard();
-  }, [navigate]);
+  }, [shopId]);
 
   const handleLogout = () => {
     sessionStorage.clear();
@@ -108,21 +110,33 @@ const DashboardPage = () => {
       {/* Navigation / Header */}
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
+          <div className="flex justify-between items-center gap-4 py-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-100">
                 <Store className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-lg font-bold text-slate-900 leading-tight">{shopInfo.name}</h1>
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
+              <div className="min-w-0 text-left">
+                {/* Not an h1: the global h1 style (index.css) would blow it up and push the subtitle onto the border */}
+                <p className="text-lg font-bold text-slate-900 leading-tight truncate" data-testid="shop-name">{shopInfo.name}</p>
+                <div className="flex items-center gap-1.5 mt-1 text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                   Active Shop
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              {/* Buttons, not links: the embedded fragment's Bootstrap CSS restyles every <a> on the page */}
+              <button type="button" onClick={() => navigate('/shops')}
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all">
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Мои магазины</span>
+              </button>
+              <button type="button" onClick={() => navigate(`/shops/${shopId}/connect`)}
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all">
+                <MessageCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">WhatsApp</span>
+              </button>
               <button 
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all"
@@ -137,8 +151,12 @@ const DashboardPage = () => {
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <TestChatCard shopId={shopInfo.id} />
+        <AiSettingsCard shopId={shopInfo.id} />
+
         {/* We inject the Thymeleaf fragment here */}
-        <div ref={contentRef} className="thymeleaf-container">
+        {/* --inventory-sticky-top: the fragment's sticky form must stay below this page's sticky header */}
+        <div ref={contentRef} className="thymeleaf-container" style={{ '--inventory-sticky-top': '6rem' }}>
           {/* Fragment content will be injected here */}
         </div>
       </main>

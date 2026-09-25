@@ -178,10 +178,10 @@ public class InventoryController {
         UserDto user = userService.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        // todo old implementation was "Check if shop belongs to user" new should be based on another approach of defining who is owner
-//        if (!productService.isShopBelongToUser(shopId, user.getId())) {
-//            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not own this shop");
-//        }
+        // Web shops are owned by the user id (Telegram-bot shops use the Telegram id and are opened via auth-inventory)
+        if (!productService.isShopBelongToUser(shopId, user.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Shop not found");
+        }
 
         List<ProductDTO> products = productService.findProductDtoForShop(shopId);
         ShopDto shop = productService.getShopById(shopId);

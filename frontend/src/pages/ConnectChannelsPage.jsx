@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/api.ts';
 import { 
   MessageSquare, 
@@ -12,57 +12,17 @@ import {
   QrCode,
   Clock
 } from 'lucide-react';
+import OnboardingSteps from '../features/shop/components/OnboardingSteps.jsx';
 
 const ConnectChannelsPage = () => {
   const navigate = useNavigate();
+  const { shopId } = useParams();
   const [status, setStatus] = useState('LOADING'); // LOADING, PENDING_ACTIVATION, WAITING_QR, CONNECTED, ERROR
   const [qrCode, setQrCode] = useState('');
-  const [shopId, setShopId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [completing, setCompleting] = useState(false);
 
-  // Получаем shopId из localStorage или предыдущего шага. 
-  // В реальном приложении лучше получать его из контекста пользователя или API.
-  // Но для простоты сейчас попробуем найти его через API или предположим он сохранен.
-  useEffect(() => {
-    const fetchShopInfo = async () => {
-      try {
-        // Сначала пробуем получить из sessionStorage
-        const savedShopId = sessionStorage.getItem('currentShopId');
-        if (savedShopId) {
-          setShopId(savedShopId);
-          // Не устанавливаем setLoading(false) здесь, пусть checkStatus сработает
-          return;
-        }
-
-        // Если нет в sessionStorage, пробуем получить через /api/v1/shops/my
-        const shopsResponse = await api.get('/api/v1/shops/my');
-        if (shopsResponse.data && shopsResponse.data.length > 0) {
-           const shop = shopsResponse.data[0];
-           setShopId(shop.id);
-           sessionStorage.setItem('currentShopId', shop.id);
-           sessionStorage.setItem('currentShopName', shop.shopName);
-           return;
-        }
-
-        // Если и там нет, пробуем получить через /api/v1/auth/me (как запасной вариант для проверки авторизации)
-        const userResponse = await api.get('/api/v1/auth/me');
-        if (userResponse.data) {
-           setError('Не удалось найти ваш магазин. Пожалуйста, создайте магазин.');
-           setStatus('ERROR');
-           setLoading(false);
-        }
-      } catch (err) {
-        console.error('Fetch shop error:', err);
-        setStatus('ERROR');
-        setError('Ошибка авторизации или загрузки данных.');
-        setLoading(false);
-      }
-    };
-
-    fetchShopInfo();
-  }, []);
 
   const checkStatus = useCallback(async () => {
     if (!shopId) return;
@@ -80,7 +40,11 @@ const ConnectChannelsPage = () => {
       }
     } catch (err) {
       console.error('Check status error:', err);
-      // Не прерываем опрос при временных ошибках сети
+      // Не прерываем опрос при временных ошибках сети, но показываем ответ сервера с ошибкой
+      if (err.response) {
+        setStatus('ERROR');
+        setError('Не удалось получить статус WhatsApp для этого магазина.');
+      }
     } finally {
       setLoading(false);
     }
@@ -103,7 +67,7 @@ const ConnectChannelsPage = () => {
     setCompleting(true);
     try {
       await api.post(`/api/v1/shops/channels/onboarding/complete?shopId=${shopId}`);
-      navigate('/shop-dashboard');
+      navigate(`/shops/${shopId}`);
     } catch (err) {
       console.error('Complete onboarding error:', err);
       setError('Не удалось завершить регистрацию. Попробуйте еще раз.');
@@ -210,7 +174,8 @@ const ConnectChannelsPage = () => {
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-2">Успешно подключено!</h3>
               <p className="text-emerald-700 font-medium">
-                Ваш WhatsApp ассистент активен и готов к работе.
+                AI сейчас в режиме «Тест» и отвечает только вашим тестовым номерам.
+                Добавьте свой второй номер в панели магазина, проверьте ответы и включите AI для всех.
               </p>
             </div>
 
@@ -249,15 +214,13 @@ const ConnectChannelsPage = () => {
     <div className="min-h-screen bg-[#f8fafc] px-4 py-12 sm:px-6 lg:px-8 font-sans flex items-center justify-center">
       <div className="max-w-md w-full">
         
-        {/* Шапка */}
-        <div className="mb-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-100 shadow-sm text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-6">
-            <span className="w-2 h-2 rounded-full bg-slate-900"></span>
-            Шаг 5 из 5: Активация ИИ-ассистента
-          </div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Подключите WhatsApp</h1>
+        <div className="text-left">
+          <OnboardingSteps current={4} />
+        </div>
+        <div className="mb-8 text-center">
+          <p className="text-3xl font-bold text-slate-900 tracking-tight">Подключите WhatsApp</p>
           <p className="mt-3 text-slate-500 text-sm">
-            Последний шаг, чтобы ваш ИИ начал продавать товары и отвечать клиентам.
+            Последний шаг, чтобы AI начал отвечать вашим клиентам.
           </p>
         </div>
 
@@ -265,6 +228,13 @@ const ConnectChannelsPage = () => {
         <div className="bg-white p-8 sm:p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-slate-50 relative overflow-hidden">
           {renderContent()}
         </div>
+
+        {status !== 'CONNECTED' && (
+          <button type="button" onClick={() => navigate(`/shops/${shopId}`)}
+                  className="mt-6 w-full text-sm font-semibold text-slate-500 hover:text-slate-800">
+            Подключу позже — перейти в панель магазина
+          </button>
+        )}
 
         {/* Дополнительная информация */}
         <div className="mt-10 flex items-center justify-center gap-8 opacity-40 grayscale">

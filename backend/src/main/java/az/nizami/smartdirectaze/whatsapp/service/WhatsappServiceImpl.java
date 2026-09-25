@@ -30,4 +30,9 @@ public class WhatsappServiceImpl implements WhatsappService {
     public void logout(String instanceId, String token) {
         greenApiClient.logout(instanceId, token);
     }
+
+    @Override
+    public void sendMessage(String instanceId, String token, String chatId, String message) {
+        greenApiClient.sendMessage(instanceId, token, chatId, message);
+    }
 }

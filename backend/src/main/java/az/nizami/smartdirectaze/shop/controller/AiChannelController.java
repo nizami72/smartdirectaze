@@ -2,6 +2,7 @@ package az.nizami.smartdirectaze.shop.controller;
 
 import az.nizami.smartdirectaze.identity.RegistrationStep;
 import az.nizami.smartdirectaze.identity.UserService;
+import az.nizami.smartdirectaze.shop.dto.channel.AiSettingsDto;
 import az.nizami.smartdirectaze.shop.dto.channel.TelegramChannelRequest;
 import az.nizami.smartdirectaze.shop.dto.channel.WhatsAppInitRequest;
 import az.nizami.smartdirectaze.shop.dto.channel.WhatsAppQrResponse;
@@ -54,6 +55,21 @@ public class AiChannelController {
         
         validateOwner(shopId, userDetails);
         return ResponseEntity.ok(aiChannelService.getWhatsAppQr(shopId));
+    }
+
+    @GetMapping("/whatsapp/ai")
+    public ResponseEntity<AiSettingsDto> getWhatsAppAiSettings(@RequestParam Long shopId,
+                                                               @AuthenticationPrincipal UserDetails userDetails) {
+        validateOwner(shopId, userDetails);
+        return ResponseEntity.ok(aiChannelService.getWhatsAppAiSettings(shopId));
+    }
+
+    @PutMapping("/whatsapp/ai")
+    public ResponseEntity<AiSettingsDto> updateWhatsAppAiSettings(@RequestParam Long shopId,
+                                                                  @Valid @RequestBody AiSettingsDto settings,
+                                                                  @AuthenticationPrincipal UserDetails userDetails) {
+        validateOwner(shopId, userDetails);
+        return ResponseEntity.ok(aiChannelService.updateWhatsAppAiSettings(shopId, settings));
     }
 
     @PostMapping("/onboarding/complete")

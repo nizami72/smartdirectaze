@@ -3,19 +3,14 @@ package az.nizami.smartdirectaze.shop.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
-import java.util.UUID;
 
 public record ShopCreateDto(
-    // Business-агрегат, к которому привязывается магазин (из шага choose-business).
-    UUID businessId,
-
     @NotBlank(message = "Shop name is required")
     String shopName,
 
-    @NotBlank(message = "Address is required")
+    // Optional on creation, filled later in the dashboard
     String address,
 
-    @NotBlank(message = "Working hours are required")
     String workingHours,
 
     @PositiveOrZero(message = "Delivery price must be positive or zero")

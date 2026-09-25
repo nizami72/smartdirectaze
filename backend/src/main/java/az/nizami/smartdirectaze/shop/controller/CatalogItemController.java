@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,10 +36,12 @@ public class CatalogItemController {
             @AuthenticationPrincipal UserDetails userDetails) {
 
         var user = userService.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
 
-        ShopEntity shop = shopRepository.findByOwnerId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Shop not found for current user"));
+        // The owner may have several shops: add to the requested one, 404 for a foreign shop
+        ShopEntity shop = shopRepository.findById(dto.getShopId())
+                .filter(s -> s.getOwnerId().equals(user.getId()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Shop not found"));
 
         ProductDTO productDTO = new ProductDTO();
         productDTO.setShopId(shop.getId());

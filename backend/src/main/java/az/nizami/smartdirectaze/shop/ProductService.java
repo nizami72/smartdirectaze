@@ -14,7 +14,10 @@ public interface ProductService {
     @Transactional
     void synchroniseProducts();
 
-    List<ProductDTO> searchForAiAssistant(String message);
+    /**
+     * Searches products of one shop by title or SKU; an empty query returns the shop's catalog (max 20).
+     */
+    List<ProductDTO> searchForAiAssistant(Long shopId, String query);
 
     List<ProductDTO> findProductDtoForShop(Long botUuid);
 
@@ -33,6 +36,8 @@ public interface ProductService {
     byte[] loadProductPhoto(Long shopId, Long productId, String filename);
 
     Optional<ShopDto> findByBotUuid(String botUuid);
+
+    Optional<WhatsappChannelDto> findWhatsappChannel(String instanceId);
 
     Optional<ShopDto> findByOwnerId(Long ownerId);
 

@@ -48,8 +48,8 @@ const LoginPage = () => {
     setLoading(true);
     try {
       const response = await api.post('/api/v1/auth/login', formData);
-      // After successful authentication, always redirect to MyBusinessesPage
-      navigate('/my-businesses');
+      // After login: the shops list (it sends users without shops to creating one)
+      navigate('/shops');
       return;
     } catch (err) {
       console.error('Login error:', err);

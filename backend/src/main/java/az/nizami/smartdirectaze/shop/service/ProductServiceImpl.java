@@ -1,12 +1,14 @@
 package az.nizami.smartdirectaze.shop.service;
 
 import az.nizami.smartdirectaze.shop.*;
+import az.nizami.smartdirectaze.shop.entities.ChannelType;
 import az.nizami.smartdirectaze.shop.entities.ProductEntity;
 import az.nizami.smartdirectaze.shop.entities.ShopEntity;
 import az.nizami.smartdirectaze.shop.internal.ProductMapper;
 import az.nizami.smartdirectaze.shop.internal.ProductRepository;
 import az.nizami.smartdirectaze.shop.internal.ShopMapper;
 import az.nizami.smartdirectaze.shop.internal.sync.CatalogSyncService;
+import az.nizami.smartdirectaze.shop.repositories.AiChannelRepository;
 import az.nizami.smartdirectaze.shop.repositories.ShopRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -29,6 +32,7 @@ class ProductServiceImpl implements ProductService {
     private final ShopMapper shopMapper;
     private final ShopRepository shopRepository;
     private final FileStorageService fileStorageService;
+    private final AiChannelRepository aiChannelRepository;
     //</editor-fold>
 
     public void synchroniseProducts(){
@@ -37,8 +41,8 @@ class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductDTO> searchForAiAssistant(String message) {
-        return productRepository.searchByKeyword(message).stream()
+    public List<ProductDTO> searchForAiAssistant(Long shopId, String query) {
+        return productRepository.searchByKeywordInShop(shopId, query == null ? "" : query).stream()
                 .map(productMapper::toDto)
                 .toList();
     }
@@ -142,6 +146,14 @@ class ProductServiceImpl implements ProductService {
     public Optional<ShopDto> findByBotUuid(String botUuid) {
         Optional<ShopEntity> shop = shopRepository.findByBotUuid(botUuid);
         return shop.map(shopMapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<WhatsappChannelDto> findWhatsappChannel(String instanceId) {
+        return aiChannelRepository.findByInstanceExternalIdAndChannelType(instanceId, ChannelType.WHATSAPP)
+                .map(channel -> new WhatsappChannelDto(channel.getShop().getId(), channel.getInstanceExternalId(), channel.getApiToken(),
+                        channel.getAiMode(), Set.copyOf(channel.getTestPhones())));
     }
 
     @Override

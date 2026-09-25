@@ -9,6 +9,9 @@ import java.math.BigDecimal;
 
 @Data
 public class CatalogItemRequestDto {
+    @NotNull(message = "Магазин обязателен")
+    private Long shopId;
+
     @NotBlank(message = "Название товара обязательно")
     private String name;
 

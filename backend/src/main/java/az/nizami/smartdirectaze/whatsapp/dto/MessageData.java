@@ -16,4 +16,17 @@ public class MessageData {
     @JsonProperty("textMessageData")
     private TextMessageData textMessageData;
 
+    // Sent instead of textMessageData for replies, messages with links, forwarded text
+    @JsonProperty("extendedTextMessageData")
+    private ExtendedTextMessageData extendedTextMessageData;
+
+    public String extractText() {
+        if (textMessageData != null) {
+            return textMessageData.getTextMessage();
+        }
+        if (extendedTextMessageData != null) {
+            return extendedTextMessageData.getText();
+        }
+        return null;
+    }
 }

@@ -1,4 +1,4 @@
-package az.nizami.smartdirectaze.business.domain;
+package az.nizami.smartdirectaze.business;
 
 public enum Industry {
 

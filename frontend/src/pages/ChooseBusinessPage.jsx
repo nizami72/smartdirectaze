@@ -15,7 +15,7 @@ const ChooseBusinessPage = () => {
       description: 'Sell products via WhatsApp',
       icon: <ShoppingBag className="w-6 h-6 text-blue-600" />,
       color: 'blue',
-      path: '/create-shop'
+      path: '/shops/new'
     },
     {
       id: 'EVENTS',

@@ -7,6 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -52,11 +54,26 @@ class CatalogToolsTest {
                 .thenReturn(mockOrder);
 
         // Act
-        String result = catalogTools.createFinalOrder(shopId, customerName, phoneNumber, deliveryAddress, itemsSummary, paymentMethod);
+        String result = catalogTools.createFinalOrder(new ConversationKey(shopId, "wa:1:994500000000@c.us"), customerName, phoneNumber, deliveryAddress, itemsSummary, paymentMethod);
 
         // Assert
         assertEquals("Заказ успешно создан. Номер заказа: #100", result);
         verify(orderService).createNewOrder(shopId, customerName, phoneNumber, deliveryAddress, itemsSummary, paymentMethod);
         verify(notificationService).sendNewOrderAlertToOwner(eq(shopId), eq(mockOrder));
+    }
+
+    @Test
+    void searchProduct_ShouldSearchOnlyInConversationShop() {
+        // Arrange
+        ConversationKey key = new ConversationKey(2L, "tg:bot:42");
+        List<ProductDTO> products = List.of(new ProductDTO());
+        when(productService.searchForAiAssistant(2L, "çanta")).thenReturn(products);
+
+        // Act
+        List<ProductDTO> result = catalogTools.searchProduct(key, "çanta");
+
+        // Assert
+        assertEquals(products, result);
+        verify(productService).searchForAiAssistant(2L, "çanta");
     }
 }
