@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.identity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,8 @@ import java.util.Set;
 public class UserDto {
     private Long id;
     private String email;
+    // Accepted on registration, never sent back (it holds the password hash)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private String username;
     private String googleId;

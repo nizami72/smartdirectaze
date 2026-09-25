@@ -184,20 +184,32 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // The React shop dashboard embeds this fragment and sets the backend address;
-        // in the Telegram WebApp the page is served by the backend itself and forms submit normally.
+        // Two hosts of this fragment:
+        // - the React shop dashboard: sets the backend address, auth by the JWT cookie;
+        // - the Telegram WebApp (auth.html, served by the backend): auth by the signed Telegram initData.
         function isEmbeddedInDashboard() {
             return window.INVENTORY_API_BASE !== undefined;
         }
 
+        function telegramInitData() {
+            return (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) || '';
+        }
+
+        function postsWithFetch() {
+            return isEmbeddedInDashboard() || telegramInitData() !== '';
+        }
+
         function inventoryUrl(action) {
-            return window.INVENTORY_API_BASE + new URL(action, window.location.href).pathname;
+            const path = new URL(action, window.location.href).pathname;
+            return isEmbeddedInDashboard() ? window.INVENTORY_API_BASE + path : path;
         }
 
         function postToInventory(action, body) {
-            return fetch(inventoryUrl(action), { method: 'POST', body: body, credentials: 'include' })
+            if (telegramInitData()) body.append('initData', telegramInitData());
+            // 'manual': the backend answers with a redirect to the web dashboard, not needed here
+            return fetch(inventoryUrl(action), { method: 'POST', body: body, credentials: 'include', redirect: 'manual' })
                 .then(response => {
-                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    if (!response.ok && response.type !== 'opaqueredirect') throw new Error('HTTP ' + response.status);
                     window.location.reload();
                 })
                 .catch(error => {
@@ -269,7 +281,7 @@
             window.inventorySubmitHandlerBound = true;
             document.addEventListener('submit', function(e) {
                 const form = e.target;
-                if (form.action.includes('/webhooks/inventory/') && isEmbeddedInDashboard()) {
+                if (form.action.includes('/webhooks/inventory/') && postsWithFetch()) {
                     e.preventDefault();
                     const formData = new FormData(form);
                     postToInventory(form.action, form.enctype === 'multipart/form-data' ? formData : new URLSearchParams(formData));
@@ -508,8 +520,8 @@
             productIdInput.value = productId;
             form.appendChild(productIdInput);
             
-            // In the React dashboard: AJAX to the backend instead of a full page submit
-            if (isEmbeddedInDashboard()) {
+            // Dashboard or Telegram: AJAX with auth instead of a full page submit
+            if (postsWithFetch()) {
                 postToInventory(form.action, new URLSearchParams(new FormData(form)));
                 return;
             }

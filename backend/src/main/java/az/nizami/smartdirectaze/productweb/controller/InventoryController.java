@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,6 +51,8 @@ public class InventoryController {
 
     @PostMapping("/webhooks/inventory/add")
     public String addProduct(@RequestParam("shopId") Long shopId,
+                             @AuthenticationPrincipal UserDetails userDetails,
+                             @RequestParam(value = "initData", required = false) String initData,
                              @RequestParam("name") String name,
                              @RequestParam(value = "sku", required = false) String sku,
                              @RequestParam("salePrice") java.math.BigDecimal salePrice,
@@ -64,6 +68,7 @@ public class InventoryController {
                              @RequestParam(value = "unitOfMeasure", required = false) String unitOfMeasure,
                              @RequestParam(value = "isAvailable", defaultValue = "false") Boolean isAvailable,
                              @RequestParam(value = "photo", required = false) org.springframework.web.multipart.MultipartFile photo) {
+        verifyShopAccess(shopId, userDetails, initData);
         ProductDTO productDto = populateProductDto(name, sku, salePrice, basePrice, currency, description, brandName, barcode, stockQuantity, weight, size, mainImageUrl, unitOfMeasure, isAvailable);
         productService.addProduct(shopId, productDto, photo);
         return "redirect:/api/v1/dashboard/inventory?shopId=" + shopId;
@@ -71,6 +76,8 @@ public class InventoryController {
 
     @PostMapping("/webhooks/inventory/update")
     public String updateProduct(@RequestParam("shopId") Long shopId,
+                             @AuthenticationPrincipal UserDetails userDetails,
+                             @RequestParam(value = "initData", required = false) String initData,
                                 @RequestParam("productId") Long productId,
                                 @RequestParam("name") String name,
                                 @RequestParam(value = "sku", required = false) String sku,
@@ -87,6 +94,7 @@ public class InventoryController {
                                 @RequestParam(value = "unitOfMeasure", required = false) String unitOfMeasure,
                                 @RequestParam(value = "isAvailable", defaultValue = "false") Boolean isAvailable,
                                 @RequestParam(value = "photo", required = false) org.springframework.web.multipart.MultipartFile photo) {
+        verifyShopAccess(shopId, userDetails, initData);
         ProductDTO productDto = populateProductDto(name, sku, salePrice, basePrice, currency, description, brandName, barcode, stockQuantity, weight, size, mainImageUrl, unitOfMeasure, isAvailable);
         ProductDTO dto = productService.updateProduct(shopId, productId, productDto, photo);
         if(dto == null) log.error("Product not found for shopId: {}, productId: {}", shopId, productId);
@@ -96,13 +104,18 @@ public class InventoryController {
 
     @PostMapping("/webhooks/inventory/delete")
     public String deleteProduct(@RequestParam("shopId") Long shopId,
+                             @AuthenticationPrincipal UserDetails userDetails,
+                             @RequestParam(value = "initData", required = false) String initData,
                                 @RequestParam("productId") Long productId) {
+        verifyShopAccess(shopId, userDetails, initData);
         productService.deleteProduct(shopId, productId);
         return "redirect:/api/v1/dashboard/inventory?shopId=" + shopId;
     }
 
     @PostMapping("/webhooks/inventory/delivery-config")
     public String updateDeliveryConfig(@RequestParam("shopId") Long shopId,
+                             @AuthenticationPrincipal UserDetails userDetails,
+                             @RequestParam(value = "initData", required = false) String initData,
                                        @RequestParam(value = "zoneNames", required = false) List<String> zoneNames,
                                        @RequestParam(value = "zonePrices", required = false) List<java.math.BigDecimal> zonePrices,
                                        @RequestParam(value = "freeDeliveryThreshold", required = false) java.math.BigDecimal freeDeliveryThreshold,
@@ -121,6 +134,7 @@ public class InventoryController {
                                        @RequestParam(value = "workingHours", required = false) String workingHours,
                                        @RequestParam(value = "address", required = false) String address,
                                        @RequestParam(value = "paymentMethods", required = false) List<PaymentMethod> paymentMethods) {
+        verifyShopAccess(shopId, userDetails, initData);
         log.info("Received delivery configuration for shop [{}]:", shopId);
 
         List<DeliveryZoneDto> zones = new java.util.ArrayList<>();
@@ -164,6 +178,28 @@ public class InventoryController {
         }
         productDto.setIsAvailable(isAvailable);
         return productDto;
+    }
+
+    /**
+     * Inventory forms are used from the web dashboard (JWT cookie, shop owned by the user id)
+     * and from the Telegram WebApp (signed initData, shop owned by the Telegram id).
+     * 404 for a foreign shop, so its existence is not revealed.
+     */
+    private void verifyShopAccess(Long shopId, UserDetails userDetails, String initData) {
+        Long ownerId;
+        if (userDetails != null) {
+            ownerId = userService.findByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"))
+                    .getId();
+        } else if (initData != null && telegramAuthService.isValid(initData, masterBotToken)) {
+            ownerId = telegramAuthService.getUserIdFromInitData(initData);
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
+        }
+        if (ownerId == null || !productService.isShopBelongToUser(shopId, ownerId)) {
+            log.warn("Inventory change rejected for shop [{}]", shopId);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Shop not found");
+        }
     }
 
     @org.springframework.web.bind.annotation.GetMapping("/api/v1/dashboard/inventory")

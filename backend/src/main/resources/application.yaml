@@ -44,6 +44,9 @@ google:
 
 app:
   productAliasesFilePath: ${PRODUCT_ALIASES_FILE_PATH}
+  whatsapp:
+    # Same value as webhookUrlToken in the Green API instance settings; empty = webhook open (dev only)
+    webhook-token: ${WHATSAPP_WEBHOOK_TOKEN:}
   catalog:
     sync:
       cron: 0 0 * * * ?

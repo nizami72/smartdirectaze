@@ -12,7 +12,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -54,10 +56,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Пока отключаем для проверки MVP
                 // ... ваши остальные настройки авторизации
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/register").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        // Unused admin CRUD over all users: closed until there is a real admin role
+                        .requestMatchers("/api/v1/users/**").denyAll()
+                        .requestMatchers("/api/**").authenticated()
+                        // Webhooks (WhatsApp, Telegram) and the Telegram WebApp check their own tokens
                         .anyRequest().permitAll()
                 )
+                // 401 instead of the default 403 for requests without a valid JWT
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
