@@ -28,6 +28,9 @@ class CatalogToolsTest {
     @Mock
     private NotificationService notificationService;
 
+    @Mock
+    private ConversationService conversationService;
+
     @InjectMocks
     private CatalogTools catalogTools;
 
@@ -55,7 +58,7 @@ class CatalogToolsTest {
                 .thenReturn(mockOrder);
 
         // Act
-        String result = catalogTools.createFinalOrder(new ConversationKey(shopId, "wa:1:994500000000@c.us"), customerName, phoneNumber, deliveryAddress, itemsSummary, paymentMethod);
+        String result = catalogTools.createFinalOrder(new ConversationKey(shopId, "wa:1:994500000000@c.us", "994500000000@c.us"), customerName, phoneNumber, deliveryAddress, itemsSummary, paymentMethod);
 
         // Assert
         assertEquals("Заказ успешно создан. Номер заказа: #100", result);
@@ -66,7 +69,7 @@ class CatalogToolsTest {
     @Test
     void searchProduct_ShouldSearchOnlyInConversationShop() {
         // Arrange
-        ConversationKey key = new ConversationKey(2L, "tg:bot:42");
+        ConversationKey key = new ConversationKey(2L, "tg:bot:42", null);
         List<ProductDTO> products = List.of(new ProductDTO());
         when(productService.searchForAiAssistant(2L, "çanta")).thenReturn(products);
 
@@ -87,5 +90,17 @@ class CatalogToolsTest {
         assertEquals("Delivery price: 5 AZN; delivery is free for orders from 50 AZN. ",
                 CatalogTools.describeDeliveryPrice(new BigDecimal("5"), new BigDecimal("50")));
         assertEquals("Delivery is free. ", CatalogTools.describeDeliveryPrice(BigDecimal.ZERO, null));
+    }
+
+    @Test
+    void requestHumanHelp_WhatsappChat_ShouldHandOverToSeller() {
+        catalogTools.requestHumanHelp(new ConversationKey(4L, "wa:1:994551112233@c.us", "994551112233@c.us"), "Хочет скидку");
+        verify(conversationService).handOverToSeller(4L, "994551112233@c.us", "Хочет скидку");
+    }
+
+    @Test
+    void requestHumanHelp_WebTestChat_ShouldNotHandOver() {
+        catalogTools.requestHumanHelp(new ConversationKey(4L, "web:3:session", null), "Хочет скидку");
+        verify(conversationService, org.mockito.Mockito.never()).handOverToSeller(any(), any(), any());
     }
 }

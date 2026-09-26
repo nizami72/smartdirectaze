@@ -1,6 +1,7 @@
 package az.nizami.smartdirectaze.whatsapp.controller;
 
 import az.nizami.smartdirectaze.whatsapp.WhatsappMessageReceivedEvent;
+import az.nizami.smartdirectaze.whatsapp.WhatsappSellerMessageEvent;
 import az.nizami.smartdirectaze.whatsapp.dto.WebhookRequest;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
@@ -51,23 +52,31 @@ public class WhatsappWebhookController {
         }
         log.debug("Whatsapp webhook received: {}", request);
 
-        // Only process incoming text messages from private chats
-        if (!"incomingMessageReceived".equals(request.getTypeWebhook())
-                || request.getMessageData() == null
-                || request.getInstanceData() == null
-                || request.getSenderData() == null) {
+        if (request.getInstanceData() == null || request.getSenderData() == null) {
             return ResponseEntity.ok().build();
         }
-
-        String userMessage = request.getMessageData().extractText();
-        String chatId = request.getSenderData().getChatId();
-        if (userMessage == null || userMessage.isBlank() || chatId == null || chatId.endsWith("@g.us")) {
-            return ResponseEntity.ok().build();
-        }
-
         String instanceId = String.valueOf(request.getInstanceData().getIdInstance());
-        // Answer asynchronously: Green API expects a fast 200, otherwise it retries the webhook
-        eventPublisher.publishEvent(new WhatsappMessageReceivedEvent(instanceId, chatId, userMessage));
+        String chatId = request.getSenderData().getChatId();
+        // Private chats only: groups end with @g.us
+        if (chatId == null || chatId.endsWith("@g.us")) {
+            return ResponseEntity.ok().build();
+        }
+
+        // Answered asynchronously: Green API expects a fast 200, otherwise it retries the webhook
+        switch (String.valueOf(request.getTypeWebhook())) {
+            case "incomingMessageReceived" -> {
+                if (request.getMessageData() == null) {
+                    break;
+                }
+                eventPublisher.publishEvent(new WhatsappMessageReceivedEvent(instanceId, chatId,
+                        request.getSenderData().getSenderName(),
+                        request.getMessageData().extractText(),
+                        request.getMessageData().getTypeMessage()));
+            }
+            // Sent by the seller from the phone (not by us via API): needs outgoingWebhook enabled in Green API
+            case "outgoingMessageReceived" -> eventPublisher.publishEvent(new WhatsappSellerMessageEvent(instanceId, chatId));
+            default -> log.debug("Whatsapp webhook {} ignored", request.getTypeWebhook());
+        }
 
         return ResponseEntity.ok().build();
     }

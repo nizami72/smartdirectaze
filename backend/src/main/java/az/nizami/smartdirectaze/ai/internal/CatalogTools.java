@@ -17,6 +17,7 @@ public class CatalogTools {
     private final ProductService productService;
     private final OrderService orderService;
     private final NotificationService notificationService;
+    private final ConversationService conversationService;
 
     @Tool("Search for products in the store catalog by name or SKU to get current prices and stock. An empty query returns the whole catalog.")
     public List<ProductDTO> searchProduct(@ToolMemoryId ConversationKey key,
@@ -67,6 +68,17 @@ public class CatalogTools {
         }
 
         return sb.toString().trim();
+    }
+
+    @Tool("Hand the conversation over to the human seller. Call it when the shop data has no answer, the customer is unhappy "
+            + "or complains, wants to change or cancel an order, or asks for something you cannot do.")
+    public String requestHumanHelp(@ToolMemoryId ConversationKey key,
+                                   @P("Short reason in Russian for the seller, e.g. 'Хочет скидку на 10 штук'") String reason) {
+        if (key.customerChatId() != null) {
+            conversationService.handOverToSeller(key.shopId(), key.customerChatId(), reason);
+        }
+        return "The seller has been notified and will answer this customer personally. "
+                + "Tell the customer briefly, in their language, that the seller will reply soon. Do not answer the question yourself.";
     }
 
     @Tool("Регистрация финального заказа в системе. Вызывай этот метод только после того, как клиент подтвердил имя, телефон, адрес и время доставки.")

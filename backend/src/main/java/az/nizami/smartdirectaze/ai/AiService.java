@@ -12,6 +12,7 @@ public interface AiService {
      * Answers a customer of the given shop. Returns the model's raw (Markdown) text.
      *
      * @param conversationId key of the chat memory, must be unique per customer conversation
+     * @param customerChatId WhatsApp chat of the customer, lets the AI hand it over to the seller; null otherwise
      */
-    String answer(Long shopId, String conversationId, String userMessage);
+    String answer(Long shopId, String conversationId, String customerChatId, String userMessage);
 }

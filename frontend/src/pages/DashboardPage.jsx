@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/api.ts';
 import AiSettingsCard from '../features/shop/components/AiSettingsCard.jsx';
 import TestChatCard from '../features/shop/components/TestChatCard.jsx';
+import HandoffCard from '../features/shop/components/HandoffCard.jsx';
 import { 
   Loader2,
   AlertCircle, 
@@ -164,6 +165,7 @@ const DashboardPage = () => {
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <HandoffCard shopId={shopInfo.id} />
         <TestChatCard shopId={shopInfo.id} />
         <AiSettingsCard shopId={shopInfo.id} />
 

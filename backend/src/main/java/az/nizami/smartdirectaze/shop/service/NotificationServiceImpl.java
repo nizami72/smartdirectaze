@@ -52,7 +52,21 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
+    @Override
+    public void sendHumanHelpAlert(Long shopId, String customerChatId, String customerName, String reason, String lastMessage) {
+        aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP)
+                .filter(channel -> channel.getInstanceExternalId() != null && channel.getApiToken() != null)
+                .ifPresentOrElse(
+                        channel -> sendToMerchant(channel, formatHumanHelpMessage(shopId, customerChatId, customerName, reason, lastMessage),
+                                "help alert for chat " + customerChatId),
+                        () -> log.warn("Help alert for shop {} not sent: no WhatsApp channel", shopId));
+    }
+
     private void sendViaWhatsapp(AiChannelEntity channel, OrderDTO order) {
+        sendToMerchant(channel, formatWhatsappMessage(order), "order #" + order.getId() + " alert");
+    }
+
+    private void sendToMerchant(AiChannelEntity channel, String text, String what) {
         String instanceId = channel.getInstanceExternalId();
         String token = channel.getApiToken();
         try {
@@ -61,15 +75,35 @@ public class NotificationServiceImpl implements NotificationService {
                     ? channel.getNotificationPhone()
                     : whatsappService.getSettings(instanceId, token);
             if (target == null || target.isBlank()) {
-                log.warn("Order #{} alert not sent: WhatsApp of shop {} is not connected", order.getId(), order.getShopId());
+                log.warn("{} not sent: WhatsApp instance {} is not connected", what, instanceId);
                 return;
             }
             String chatId = target.contains("@") ? target : target + "@c.us";
-            whatsappService.sendMessage(instanceId, token, chatId, formatWhatsappMessage(order));
-            log.info("Order #{} alert sent to WhatsApp of shop {}", order.getId(), order.getShopId());
+            whatsappService.sendMessage(instanceId, token, chatId, text);
+            log.info("{} sent to the merchant's WhatsApp", what);
         } catch (Exception e) {
-            log.error("Failed to send WhatsApp order alert for order #{}: {}", order.getId(), e.getMessage());
+            log.error("Failed to send {} to the merchant's WhatsApp: {}", what, e.getMessage());
         }
+    }
+
+    String formatHumanHelpMessage(Long shopId, String customerChatId, String customerName, String reason, String lastMessage) {
+        String phone = customerChatId.replaceAll("@.*$", "");
+        return String.format(
+                "🙋 *Нужна ваша помощь*\n\n" +
+                "*Клиент:* +%s%s\n" +
+                "*Причина:* %s\n" +
+                "*Последнее сообщение:* %s\n\n" +
+                "AI в этом чате молчит, пока вы не ответите.\n" +
+                "Написать клиенту: https://wa.me/%s\n" +
+                "Все такие чаты: %s/shops/%d",
+                phone,
+                customerName != null && !customerName.isBlank() ? " (" + customerName + ")" : "",
+                reason,
+                lastMessage != null ? "«" + lastMessage + "»" : "—",
+                phone,
+                frontendBaseUrl,
+                shopId
+        );
     }
 
     private void sendViaTelegram(Long shopId, OrderDTO order) {

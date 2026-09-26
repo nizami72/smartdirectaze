@@ -50,7 +50,7 @@ public class AiTestChatController {
         log.debug("Test chat of shop [{}], session [{}]", shopId, request.sessionId());
 
         String conversationId = "web:" + userId + ":" + request.sessionId();
-        String reply = aiService.answer(shopId, conversationId, request.message());
+        String reply = aiService.answer(shopId, conversationId, null, request.message());
         return ResponseEntity.ok(new TestChatResponse(WhatsappTextUtils.convertMdToWhatsapp(reply)));
     }
 

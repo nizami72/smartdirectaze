@@ -44,6 +44,9 @@ google:
 
 app:
   productAliasesFilePath: ${PRODUCT_ALIASES_FILE_PATH}
+  handoff:
+    # How long the AI stays silent in a chat handed over to the seller (or where the seller replied himself)
+    pause-hours: 12
   frontend:
     # Links in messages to merchants (order alerts)
     base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
