@@ -20,9 +20,17 @@ public class CatalogTools {
     private final ConversationService conversationService;
 
     @Tool("Search for products in the store catalog by name or SKU to get current prices and stock. An empty query returns the whole catalog.")
-    public List<ProductDTO> searchProduct(@ToolMemoryId ConversationKey key,
-                                          @P("Product name, part of the name or SKU; empty for the whole catalog") String query) {
-        return productService.searchForAiAssistant(key.shopId(), query);
+    public ProductSearchResult searchProduct(@ToolMemoryId ConversationKey key,
+                                             @P("One key word of the product name or SKU, e.g. 'сумка', 'клатч'; empty for the whole catalog") String query) {
+        List<ProductDTO> found = productService.searchForAiAssistant(key.shopId(), query);
+        if (!found.isEmpty() || query == null || query.isBlank()) {
+            return new ProductSearchResult(true, null, found);
+        }
+        // Catalog names are often in another language than the customer's words: let the model match by meaning
+        return new ProductSearchResult(false,
+                "No product name contains '" + query + "'. This is the shop's whole catalog: find the requested product "
+                        + "by meaning in any language before saying it is not sold.",
+                productService.searchForAiAssistant(key.shopId(), ""));
     }
 
     @Tool("Get the rules, prices, and delivery times, as well as 'Trying and Returns' policy for the current shop.")
@@ -30,6 +38,13 @@ public class CatalogTools {
         ShopDto shop = productService.getShopById(key.shopId());
         StringBuilder sb = new StringBuilder();
         sb.append(describeDeliveryPrice(shop.deliveryPrice(), shop.freeDeliveryThreshold()));
+
+        appendIfPresent(sb, "Delivery to other cities and regions", shop.regionsDeliveryInfo());
+        appendIfPresent(sb, "When an order is delivered (processing time)", shop.processingTimeRules());
+        appendIfPresent(sb, "Delivery hours", shop.deliveryWorkingHours());
+        if (shop.courierWaitingTime() != null) {
+            sb.append(String.format("The courier waits up to %d minutes. ", shop.courierWaitingTime()));
+        }
 
         if (shop.zones() != null && !shop.zones().isEmpty()) {
             sb.append("Delivery zones: ");
@@ -98,6 +113,12 @@ public class CatalogTools {
         notificationService.sendNewOrderAlertToOwner(shopId, order);
 
         return "Заказ успешно создан. Номер заказа: #" + order.getId();
+    }
+
+    private static void appendIfPresent(StringBuilder sb, String label, String value) {
+        if (value != null && !value.isBlank()) {
+            sb.append(label).append(": ").append(value.trim()).append(". ");
+        }
     }
 
     /**

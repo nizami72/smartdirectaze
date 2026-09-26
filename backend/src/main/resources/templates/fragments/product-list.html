@@ -726,15 +726,15 @@
                                         <label class="form-label small fw-semibold text-muted">Payment Methods</label>
                                         <div class="d-flex gap-3">
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="paymentMethods" value="CASH" id="payCash" th:checked="${shop?.paymentMethods != null && shop.paymentMethods.contains(T(az.nizami.smartdirectaze.eatery.PaymentMethod).CASH)}">
+                                                <input class="form-check-input" type="checkbox" name="paymentMethods" value="CASH" id="payCash" th:checked="${shop?.paymentMethods != null && shop.paymentMethods.contains(T(az.nizami.smartdirectaze.shop.PaymentMethod).CASH)}">
                                                 <label class="form-check-label small" for="payCash">Cash</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="paymentMethods" value="CARD" id="payCard" th:checked="${shop?.paymentMethods != null && shop.paymentMethods.contains(T(az.nizami.smartdirectaze.eatery.PaymentMethod).CARD)}">
+                                                <input class="form-check-input" type="checkbox" name="paymentMethods" value="CARD" id="payCard" th:checked="${shop?.paymentMethods != null && shop.paymentMethods.contains(T(az.nizami.smartdirectaze.shop.PaymentMethod).CARD)}">
                                                 <label class="form-check-label small" for="payCard">Card</label>
                                             </div>
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="paymentMethods" value="TRANSFER" id="payTransfer" th:checked="${shop?.paymentMethods != null && shop.paymentMethods.contains(T(az.nizami.smartdirectaze.eatery.PaymentMethod).TRANSFER)}">
+                                                <input class="form-check-input" type="checkbox" name="paymentMethods" value="TRANSFER" id="payTransfer" th:checked="${shop?.paymentMethods != null && shop.paymentMethods.contains(T(az.nizami.smartdirectaze.shop.PaymentMethod).TRANSFER)}">
                                                 <label class="form-check-label small" for="payTransfer">Transfer</label>
                                             </div>
                                         </div>

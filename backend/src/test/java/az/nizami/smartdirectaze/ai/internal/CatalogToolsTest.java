@@ -74,10 +74,11 @@ class CatalogToolsTest {
         when(productService.searchForAiAssistant(2L, "çanta")).thenReturn(products);
 
         // Act
-        List<ProductDTO> result = catalogTools.searchProduct(key, "çanta");
+        ProductSearchResult result = catalogTools.searchProduct(key, "çanta");
 
         // Assert
-        assertEquals(products, result);
+        assertEquals(products, result.products());
+        assertEquals(true, result.exactMatch());
         verify(productService).searchForAiAssistant(2L, "çanta");
     }
 
@@ -102,5 +103,17 @@ class CatalogToolsTest {
     void requestHumanHelp_WebTestChat_ShouldNotHandOver() {
         catalogTools.requestHumanHelp(new ConversationKey(4L, "web:3:session", null), "Хочет скидку");
         verify(conversationService, org.mockito.Mockito.never()).handOverToSeller(any(), any(), any());
+    }
+
+    @Test
+    void searchProduct_NoMatch_ShouldReturnWholeCatalogForMatchingByMeaning() {
+        List<ProductDTO> catalog = List.of(new ProductDTO(), new ProductDTO());
+        when(productService.searchForAiAssistant(2L, "pulqabı")).thenReturn(List.of());
+        when(productService.searchForAiAssistant(2L, "")).thenReturn(catalog);
+
+        ProductSearchResult result = catalogTools.searchProduct(new ConversationKey(2L, "wa:1:x", null), "pulqabı");
+
+        assertEquals(false, result.exactMatch());
+        assertEquals(catalog, result.products());
     }
 }

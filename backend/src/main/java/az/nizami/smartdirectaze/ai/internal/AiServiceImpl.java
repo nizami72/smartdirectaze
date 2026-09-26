@@ -48,7 +48,7 @@ public class AiServiceImpl implements AiService {
                 .orElseThrow(() -> new RuntimeException("Shop not found for botUuid: " + botUuid));
 
         // 2. Send it to Agent
-        String aiTextMessage = agent.chat(new ConversationKey(shopId, "tg:" + botUuid + ":" + chatId, null), userMessage);
+        String aiTextMessage = agent.chat(new ConversationKey(shopId, "tg:" + botUuid + ":" + chatId, null), LanguageHint.withHint(userMessage));
         
         // 2.1 Convert Markdown to HTML for Telegram
         String htmlMessage = HtmlUtils.convertMdToTelegramHtml(aiTextMessage);
@@ -66,6 +66,6 @@ public class AiServiceImpl implements AiService {
     // No transaction here: it would hold a DB connection for the whole LLM call; tools open their own
     @Override
     public String answer(Long shopId, String conversationId, String customerChatId, String userMessage) {
-        return agent.chat(new ConversationKey(shopId, conversationId, customerChatId), userMessage);
+        return agent.chat(new ConversationKey(shopId, conversationId, customerChatId), LanguageHint.withHint(userMessage));
     }
 }
