@@ -75,7 +75,7 @@ app.use((req, res, next) => {
     if (url.includes('/getStateInstance/') && req.method === 'GET') {
         const status = instanceState.isAuthorized ? "authorized" : "notAuthorized";
         console.log(`[GreenAPI - State] Current status: ${status}`);
-        return res.json({ "statusInstance": status });
+        return res.json({ "stateInstance": status });
     }
 
     // Перехватываем метод getSettings

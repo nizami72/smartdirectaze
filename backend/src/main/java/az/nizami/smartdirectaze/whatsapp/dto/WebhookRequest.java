@@ -28,5 +28,9 @@ public class WebhookRequest {
     @JsonProperty("messageData")
     private MessageData messageData;
 
+    // stateInstanceChanged only
+    @JsonProperty("stateInstance")
+    private String stateInstance;
+
 
 }

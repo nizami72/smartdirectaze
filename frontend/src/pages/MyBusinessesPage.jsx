@@ -26,6 +26,7 @@ const MyBusinessesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [cards, setCards] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -74,6 +75,10 @@ const MyBusinessesPage = () => {
     };
   }, [navigate]);
 
+  useEffect(() => {
+    api.get('/api/v1/admin/me').then(res => setIsAdmin(res.data.admin === true)).catch(() => setIsAdmin(false));
+  }, []);
+
   const handleCreateShop = () => {
     navigate('/shops/new');
   };
@@ -87,11 +92,18 @@ const MyBusinessesPage = () => {
           Мои магазины
         </Typography>
 
-        {hasBusinesses && (
-          <Button variant="text" color="primary" onClick={handleCreateShop}>
-            + Новый магазин
-          </Button>
-        )}
+        <Stack direction="row" spacing={1}>
+          {isAdmin && (
+            <Button variant="text" color="inherit" onClick={() => navigate('/admin')}>
+              Админ
+            </Button>
+          )}
+          {hasBusinesses && (
+            <Button variant="text" color="primary" onClick={handleCreateShop}>
+              + Новый магазин
+            </Button>
+          )}
+        </Stack>
       </Stack>
 
       {/* Empty state */}

@@ -44,6 +44,9 @@ google:
 
 app:
   productAliasesFilePath: ${PRODUCT_ALIASES_FILE_PATH}
+  admin:
+    # Operators with access to /admin (bind Green API instances to shops), comma separated
+    emails: ${ADMIN_EMAILS:}
   handoff:
     # How long the AI stays silent in a chat handed over to the seller (or where the seller replied himself)
     pause-hours: 12
@@ -53,6 +56,8 @@ app:
   whatsapp:
     # Same value as webhookUrlToken in the Green API instance settings; empty = webhook open (dev only)
     webhook-token: ${WHATSAPP_WEBHOOK_TOKEN:}
+    # Set into every instance bound from the admin page
+    webhook-url: ${WHATSAPP_WEBHOOK_URL:https://qrfood.az/webhooks/w}
   catalog:
     sync:
       cron: 0 0 * * * ?
@@ -84,6 +89,7 @@ app:
         logout:    ${app.url.greenApi.url.greenBase}{instanceId}/logout/{token}
         state:     ${app.url.greenApi.url.greenBase}{instanceId}/getStateInstance/{token}
         sendMessage: ${app.url.greenApi.url.greenBase}{instanceId}/sendMessage/{token}
+        setSettings: ${app.url.greenApi.url.greenBase}{instanceId}/setSettings/{token}
 
     public: https://qrfood.az/webhooks
     frontend: https://qrfood.az/webhooks/inventory?shopId=%s

@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.shop.service;
 
+import az.nizami.smartdirectaze.shop.dto.channel.AdminWhatsappShopDto;
 import az.nizami.smartdirectaze.shop.dto.channel.AiSettingsDto;
 import az.nizami.smartdirectaze.shop.dto.channel.WhatsAppQrResponse;
 import az.nizami.smartdirectaze.shop.entities.AiChannelEntity;
@@ -15,4 +16,18 @@ public interface AiChannelService {
     AiSettingsDto updateWhatsAppAiSettings(Long shopId, AiSettingsDto settings);
 
     List<AiChannelEntity> createBaseChannels(ShopEntity shopEntity);
+
+    // --- Admin: Green API instances of shops
+
+    List<AdminWhatsappShopDto> listShopsForAdmin();
+
+    /**
+     * Binds a Green API instance to the shop and points its webhooks to this backend.
+     */
+    AdminWhatsappShopDto bindInstance(Long shopId, String instanceId, String apiToken);
+
+    /**
+     * Logs the number out and frees the instance, so it can be given to another shop.
+     */
+    AdminWhatsappShopDto unbindInstance(Long shopId);
 }

@@ -8,3 +8,4 @@ app:
         logout:    ${app.url.greenApi.url.greenBase}{instanceId}/logout/{token}
         state:     ${app.url.greenApi.url.greenBase}{instanceId}/getStateInstance/{token}
         sendMessage: ${app.url.greenApi.url.greenBase}{instanceId}/sendMessage/{token}
+        setSettings: ${app.url.greenApi.url.greenBase}{instanceId}/setSettings/{token}

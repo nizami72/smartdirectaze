@@ -20,19 +20,22 @@ public class GreenApiClient {
     private final String urlSettings;
     private final String urlLogout;
     private final String urlSendMessage;
+    private final String urlSetSettings;
 
     public GreenApiClient(RestClient.Builder restClientBuilder,
                           @Value("${app.url.greenApi.url.qrCode}") String urlQr,
                           @Value("${app.url.greenApi.url.state}") String urlState,
                           @Value("${app.url.greenApi.url.settings}") String urlSettings,
                           @Value("${app.url.greenApi.url.logout}") String urlLogout,
-                          @Value("${app.url.greenApi.url.sendMessage}") String urlSendMessage) {
+                          @Value("${app.url.greenApi.url.sendMessage}") String urlSendMessage,
+                          @Value("${app.url.greenApi.url.setSettings}") String urlSetSettings) {
         this.restClient = restClientBuilder.build();
         this.urlQr = urlQr;
         this.urlState = urlState;
         this.urlSettings = urlSettings;
         this.urlLogout = urlLogout;
         this.urlSendMessage = urlSendMessage;
+        this.urlSetSettings = urlSetSettings;
     }
 
     /**
@@ -95,7 +98,7 @@ public class GreenApiClient {
                     .uri(urlState, instanceId, token)
                     .retrieve()
                     .body(StateResponse.class);
-            return response != null ? response.getStatusInstance() : null;
+            return response != null ? response.getStateInstance() : null;
         } catch (Exception e) {
             log.error("Error fetching state instance from Green-API for instance {}: {}", instanceId, e.getMessage());
             throw new RuntimeException("Failed to fetch instance state from Green-API", e);
@@ -119,6 +122,23 @@ public class GreenApiClient {
         }
     }
 
+    /**
+     * URL: https://api.green-api.com/waInstance{instanceId}/setSettings/{token}
+     */
+    public void setSettings(String instanceId, String token, Map<String, Object> settings) {
+        try {
+            restClient.post()
+                    .uri(urlSetSettings, instanceId, token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(settings)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (Exception e) {
+            log.error("Error setting Green-API settings for instance {}: {}", instanceId, e.getMessage());
+            throw new RuntimeException("Failed to configure the Green-API instance: " + e.getMessage(), e);
+        }
+    }
+
     @Data
     private static class QrResponse {
         private String type;
@@ -133,6 +153,7 @@ public class GreenApiClient {
 
     @Data
     private static class StateResponse {
-        private String statusInstance;
+        // Green API: {"stateInstance": "authorized"}
+        private String stateInstance;
     }
 }

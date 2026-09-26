@@ -21,6 +21,10 @@ public class AiSettingsDto {
     @Size(max = 10)
     private Set<String> testPhones;
 
+    // Read only: connection of the shop's WhatsApp number and the connected number (digits)
+    private String channelStatus;
+    private String connectedPhone;
+
     // Phone for order alerts; empty = the merchant's own WhatsApp chat
     @Size(max = 32)
     private String notificationPhone;

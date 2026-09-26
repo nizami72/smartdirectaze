@@ -2,6 +2,7 @@ package az.nizami.smartdirectaze.whatsapp.controller;
 
 import az.nizami.smartdirectaze.whatsapp.WhatsappMessageReceivedEvent;
 import az.nizami.smartdirectaze.whatsapp.WhatsappSellerMessageEvent;
+import az.nizami.smartdirectaze.whatsapp.WhatsappStateChangedEvent;
 import az.nizami.smartdirectaze.whatsapp.dto.WebhookRequest;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
@@ -52,10 +53,17 @@ public class WhatsappWebhookController {
         }
         log.debug("Whatsapp webhook received: {}", request);
 
-        if (request.getInstanceData() == null || request.getSenderData() == null) {
+        if (request.getInstanceData() == null) {
             return ResponseEntity.ok().build();
         }
         String instanceId = String.valueOf(request.getInstanceData().getIdInstance());
+        if ("stateInstanceChanged".equals(request.getTypeWebhook())) {
+            eventPublisher.publishEvent(new WhatsappStateChangedEvent(instanceId, request.getStateInstance()));
+            return ResponseEntity.ok().build();
+        }
+        if (request.getSenderData() == null) {
+            return ResponseEntity.ok().build();
+        }
         String chatId = request.getSenderData().getChatId();
         // Private chats only: groups end with @g.us
         if (chatId == null || chatId.endsWith("@g.us")) {
@@ -73,7 +81,7 @@ public class WhatsappWebhookController {
                         request.getMessageData().extractText(),
                         request.getMessageData().getTypeMessage()));
             }
-            // Sent by the seller from the phone (not by us via API): needs outgoingWebhook enabled in Green API
+            // Sent by the seller from the phone (not by us via API): needs outgoingMessageWebhook enabled in Green API
             case "outgoingMessageReceived" -> eventPublisher.publishEvent(new WhatsappSellerMessageEvent(instanceId, chatId));
             default -> log.debug("Whatsapp webhook {} ignored", request.getTypeWebhook());
         }

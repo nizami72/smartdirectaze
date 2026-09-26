@@ -9,6 +9,7 @@ import az.nizami.smartdirectaze.telegram.service.TelegramService;
 import az.nizami.smartdirectaze.whatsapp.service.WhatsappService;
 import az.nizami.smartdirectaze.shop.repositories.AiChannelRepository;
 import az.nizami.smartdirectaze.shop.repositories.ShopRepository;
+import az.nizami.smartdirectaze.identity.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,12 +34,14 @@ class AiChannelServiceTest {
     private TelegramService telegramService;
     @Mock
     private WhatsappService whatsappService;
+    @Mock
+    private UserService userService;
 
     private AiChannelService aiChannelService;
 
     @BeforeEach
     void setUp() {
-        aiChannelService = new AiChannelServiceImpl(aiChannelRepository, shopRepository, telegramService, whatsappService);
+        aiChannelService = new AiChannelServiceImpl(aiChannelRepository, shopRepository, telegramService, whatsappService, userService);
     }
 
     @Test
@@ -113,7 +116,9 @@ class AiChannelServiceTest {
         
         when(aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP))
                 .thenReturn(Optional.of(channel));
-        when(whatsappService.getStateInstance("inst123", "tok123")).thenReturn("authorized");
+        // Green API answers "alreadyLogged" instead of a QR when the number is connected
+        when(whatsappService.getQrCode("inst123", "tok123")).thenReturn(
+                az.nizami.smartdirectaze.whatsapp.GreenApiResponseDto.builder().type("alreadyLogged").build());
 
         WhatsAppQrResponse response = aiChannelService.getWhatsAppQr(shopId);
 
@@ -127,6 +132,7 @@ class AiChannelServiceTest {
         Long shopId = 1L;
         String mockQr = "mock_qr_string";
         az.nizami.smartdirectaze.whatsapp.GreenApiResponseDto mockResponse = az.nizami.smartdirectaze.whatsapp.GreenApiResponseDto.builder()
+                .type("qrCode")
                 .message(mockQr)
                 .build();
         AiChannelEntity channel = AiChannelEntity.builder()
@@ -137,7 +143,6 @@ class AiChannelServiceTest {
         
         when(aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP))
                 .thenReturn(Optional.of(channel));
-        when(whatsappService.getStateInstance("inst123", "tok123")).thenReturn("notAuthorized");
         when(whatsappService.getQrCode("inst123", "tok123")).thenReturn(mockResponse);
 
         WhatsAppQrResponse response = aiChannelService.getWhatsAppQr(shopId);

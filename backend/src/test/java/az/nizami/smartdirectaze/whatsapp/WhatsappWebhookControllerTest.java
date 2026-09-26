@@ -62,4 +62,18 @@ class WhatsappWebhookControllerTest {
         assertEquals(HttpStatus.OK, controller.handleIncomingMessage(incomingText(), null).getStatusCode());
         verify(publisher).publishEvent(any(WhatsappMessageReceivedEvent.class));
     }
+
+    @Test
+    void stateChanged_ShouldPublishState() {
+        WhatsappWebhookController controller = new WhatsappWebhookController(publisher, "");
+        WebhookRequest request = new WebhookRequest();
+        request.setTypeWebhook("stateInstanceChanged");
+        InstanceData instance = new InstanceData();
+        instance.setIdInstance(7107000000L);
+        request.setInstanceData(instance);
+        request.setStateInstance("notAuthorized");
+
+        assertEquals(HttpStatus.OK, controller.handleIncomingMessage(request, null).getStatusCode());
+        verify(publisher).publishEvent(new WhatsappStateChangedEvent("7107000000", "notAuthorized"));
+    }
 }

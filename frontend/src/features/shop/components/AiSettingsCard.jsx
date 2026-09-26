@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../../../api/api.ts';
-import { Bot, Loader2, Plus, X } from 'lucide-react';
+import { AlertTriangle, Bot, CheckCircle2, Loader2, Plus, X } from 'lucide-react';
 
 const MODES = [
   { value: 'OFF', label: 'Выключен', hint: 'AI молчит, вы отвечаете клиентам сами.' },
@@ -10,6 +11,7 @@ const MODES = [
 
 // Settings of the AI seller on the shop's WhatsApp: who it answers
 const AiSettingsCard = ({ shopId }) => {
+  const navigate = useNavigate();
   const [settings, setSettings] = useState(null);
   const [newPhone, setNewPhone] = useState('');
   const [notificationPhone, setNotificationPhone] = useState('');
@@ -67,6 +69,24 @@ const AiSettingsCard = ({ shopId }) => {
         </div>
         {saving && <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />}
       </div>
+
+      {settings.channelStatus === 'CONNECTED' ? (
+        <p className="flex items-center gap-2 text-sm text-emerald-700 mb-4">
+          <CheckCircle2 className="w-4 h-4" />
+          WhatsApp подключён{settings.connectedPhone ? `: +${settings.connectedPhone}` : ''}
+        </p>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-2 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4">
+          <p className="flex items-center gap-2 text-sm text-amber-800">
+            <AlertTriangle className="w-4 h-4" />
+            WhatsApp не подключён — AI не сможет отвечать клиентам.
+          </p>
+          <button type="button" onClick={() => navigate(`/shops/${shopId}/connect`)}
+                  className="text-sm font-semibold text-amber-900 underline">
+            Подключить
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-2 bg-slate-100 p-1 rounded-2xl">
         {MODES.map(mode => (
