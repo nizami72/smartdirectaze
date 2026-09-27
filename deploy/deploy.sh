@@ -16,7 +16,7 @@ trap 'rm -rf "$BUILD"' EXIT
 
 echo "== backend"
 rsync -a --exclude target --exclude logs "$ROOT/backend/" "$BUILD/backend/"
-(cd "$BUILD/backend" && ./mvnw -q package -DskipTests)
+(cd "$BUILD/backend" && ./mvnw -o -q package -DskipTests || ./mvnw -q package -DskipTests)
 JAR=$(ls "$BUILD"/backend/target/smartdirectaze-*.jar | grep -v plain | head -1)
 
 echo "== frontend"
