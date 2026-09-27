@@ -34,6 +34,9 @@ Server: Hetzner 157.180.16.28 (shared with qrfood, carhub, legalai). Address: ht
 while `/etc/smartdirect/allow-reset` exists on the server. After debugging close it:
 `ssh -i ~/.ssh/key2 root@157.180.16.28 rm /etc/smartdirect/allow-reset`.
 
-The admin is any user whose email is in `ADMIN_EMAILS`: after a wipe register with it right away
-(emails are not verified yet).
+## Admin account
+
+Admins are the emails in `ADMIN_EMAILS`. The site refuses to register them ("Эта почта зарезервирована");
+the account is created only from the laptop: `bash deploy/create-admin.sh` (asks for a new password).
+Then log in on the usual /login page and open /admin. After a wipe run the script again.
 

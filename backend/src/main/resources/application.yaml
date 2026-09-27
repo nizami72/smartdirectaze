@@ -52,6 +52,8 @@ app:
   admin:
     # Operators with access to /admin (bind Green API instances to shops), comma separated
     emails: ${ADMIN_EMAILS:}
+    # Lets deploy/create-admin.sh register an admin email (blocked for the site); set only on the server
+    bootstrap-token: ${ADMIN_BOOTSTRAP_TOKEN:}
   handoff:
     # How long the AI stays silent in a chat handed over to the seller (or where the seller replied himself)
     pause-hours: 12
