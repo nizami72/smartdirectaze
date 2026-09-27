@@ -21,10 +21,12 @@ const TestChatCard = ({ shopId }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
-  const bottomRef = useRef(null);
+  const listRef = useRef(null);
 
+  // Scroll only the message list: scrollIntoView would move the whole dashboard to the chat on load
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    const list = listRef.current;
+    if (list) list.scrollTo({ top: list.scrollHeight, behavior: 'smooth' });
   }, [messages, sending]);
 
   const send = async (text) => {
@@ -69,7 +71,7 @@ const TestChatCard = ({ shopId }) => {
         Напишите как покупатель. AI ответит по вашим товарам и условиям доставки — так же, как клиенту в WhatsApp.
       </p>
 
-      <div className="bg-[#EFEAE2] rounded-2xl p-4 h-80 overflow-y-auto space-y-2">
+      <div ref={listRef} className="bg-[#EFEAE2] rounded-2xl p-4 h-80 overflow-y-auto space-y-2">
         {messages.length === 0 && (
           <div className="flex flex-wrap gap-2">
             {EXAMPLES.map(example => (
@@ -97,7 +99,6 @@ const TestChatCard = ({ shopId }) => {
             </div>
           </div>
         )}
-        <div ref={bottomRef} />
       </div>
 
       <form onSubmit={e => { e.preventDefault(); send(input); }} className="flex gap-2 mt-3">

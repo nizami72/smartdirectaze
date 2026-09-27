@@ -11,7 +11,8 @@ import {
   Store,
   ArrowLeft,
   MessageCircle,
-  ShoppingBag
+  ShoppingBag,
+  Package
 } from 'lucide-react';
 
 const DashboardPage = () => {
@@ -126,7 +127,7 @@ const DashboardPage = () => {
                 <p className="text-lg font-bold text-slate-900 leading-tight truncate" data-testid="shop-name">{shopInfo.name}</p>
                 <div className="flex items-center gap-1.5 mt-1 text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Active Shop
+                  Активный магазин
                 </div>
               </div>
             </div>
@@ -137,6 +138,11 @@ const DashboardPage = () => {
                       className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all">
                 <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Мои магазины</span>
+              </button>
+              <button type="button" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all">
+                <Package className="w-4 h-4" />
+                <span className="hidden sm:inline">Товары</span>
               </button>
               <button type="button" onClick={() => navigate(`/shops/${shopId}/orders`)}
                       className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all">
@@ -156,7 +162,7 @@ const DashboardPage = () => {
                 className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all"
               >
                 <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Logout</span>
+                <span className="hidden sm:inline">Выйти</span>
               </button>
             </div>
           </div>
@@ -165,15 +171,18 @@ const DashboardPage = () => {
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Urgent first, then what the merchant works with every day: products and delivery */}
         <HandoffCard shopId={shopInfo.id} />
-        <TestChatCard shopId={shopInfo.id} />
-        <AiSettingsCard shopId={shopInfo.id} />
 
         {/* We inject the Thymeleaf fragment here */}
         {/* --inventory-sticky-top: the fragment's sticky form must stay below this page's sticky header */}
-        <div ref={contentRef} className="thymeleaf-container" style={{ '--inventory-sticky-top': '6rem' }}>
+        <div id="products" ref={contentRef} className="thymeleaf-container mb-8"
+             style={{ '--inventory-sticky-top': '6rem', scrollMarginTop: '6rem' }}>
           {/* Fragment content will be injected here */}
         </div>
+
+        <AiSettingsCard shopId={shopInfo.id} />
+        <TestChatCard shopId={shopInfo.id} />
       </main>
 
       {/* Footer / Mobile Nav could go here */}
