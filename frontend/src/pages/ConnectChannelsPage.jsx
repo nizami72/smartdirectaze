@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import OnboardingSteps from '../features/shop/components/OnboardingSteps.jsx';
 
+// Operator's WhatsApp for merchants waiting for activation (digits); no button when not set
+const SUPPORT_WHATSAPP = (import.meta.env.VITE_SUPPORT_WHATSAPP || '').replace(/\D/g, '');
+
 const ConnectChannelsPage = () => {
   const navigate = useNavigate();
   const { shopId } = useParams();
@@ -22,6 +25,11 @@ const ConnectChannelsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [completing, setCompleting] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    api.get('/api/v1/admin/me').then(res => setIsAdmin(res.data.admin === true)).catch(() => setIsAdmin(false));
+  }, []);
 
 
   const checkStatus = useCallback(async () => {
@@ -115,20 +123,27 @@ const ConnectChannelsPage = () => {
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
                 <Clock className="w-8 h-8 text-amber-500 animate-pulse" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-2">Сервер готовится</h3>
-              <p className="text-slate-600 text-sm leading-relaxed mb-6">
-                Ваш выделенный ИИ-сервер готовится. Это обычно занимает от 5 до 15 минут. 
-                Мы пришлем уведомление, когда все будет готово.
+              <p className="text-lg font-bold text-slate-900 mb-2">Подключаем WhatsApp</p>
+              <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                Мы готовим подключение WhatsApp для вашего магазина — обычно в течение рабочего дня.
+                Когда всё будет готово, на этой странице появится QR-код.
               </p>
-              <a 
-                href="https://wa.me/994508434303" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba56] text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-green-100"
-              >
-                <MessageSquare className="w-5 h-5" />
-                Ускорить активацию
-              </a>
+              <p className="text-slate-500 text-sm">
+                А пока можно добавить товары и проверить продавца в панели магазина.
+              </p>
+              {SUPPORT_WHATSAPP && (
+                <a href={`https://wa.me/${SUPPORT_WHATSAPP}`} target="_blank" rel="noopener noreferrer"
+                   className="mt-6 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba56] text-white px-6 py-3 rounded-xl font-bold transition-all">
+                  <MessageSquare className="w-5 h-5" />
+                  Написать в поддержку
+                </a>
+              )}
+              {isAdmin && (
+                <button type="button" onClick={() => navigate('/admin')}
+                        className="mt-4 block mx-auto text-sm font-semibold text-slate-700 underline">
+                  Привязать инстанс (админ)
+                </button>
+              )}
             </div>
           </div>
         );

@@ -48,6 +48,10 @@ public class AiChannelEntity {
     @Builder.Default
     private AiMode aiMode = AiMode.TEST;
 
+    // First time the merchant waited for WhatsApp activation: the operator is alerted once
+    @Column(name = "activation_requested_at")
+    private LocalDateTime activationRequestedAt;
+
     // Where order alerts go, digits only; null = the merchant's own WhatsApp ("message yourself", no push)
     @Column(name = "notification_phone", length = 32)
     private String notificationPhone;

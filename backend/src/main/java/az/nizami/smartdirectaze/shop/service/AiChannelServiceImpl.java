@@ -100,6 +100,7 @@ public class AiChannelServiceImpl implements AiChannelService {
 
         if (instanceId == null || instanceId.isBlank() || token == null || token.isBlank()) {
             log.debug("Whatsapp channel not null, but some info still missing [{}]", shopId);
+            requestActivationOnce(aiChannelEntity, shopId);
             return WhatsAppQrResponse.builder()
                     .status(ChannelStatus.PENDING_ACTIVATION)
                     .build();
@@ -201,6 +202,23 @@ public class AiChannelServiceImpl implements AiChannelService {
                     }
                     log.info("WhatsApp instance {} state {}: {} -> {}", event.instanceId(), event.state(), before, channel.getChannelStatus());
                 });
+    }
+
+    /**
+     * The merchant waits for WhatsApp: the operator binds an instance by hand, so he is told once per shop
+     * (the connect page polls every few seconds).
+     */
+    private void requestActivationOnce(AiChannelEntity channel, Long shopId) {
+        if (channel.getActivationRequestedAt() != null) {
+            return;
+        }
+        channel.setActivationRequestedAt(java.time.LocalDateTime.now());
+        aiChannelRepository.save(channel);
+        // No transaction here (Green API calls): the shop is read by id, not through the lazy relation
+        String shopName = shopRepository.findById(shopId).map(ShopEntity::getShopName).orElse("?");
+        telegramService.notifyAdmin(String.format(
+                "🟡 Магазин «%s» (#%d) ждёт подключения WhatsApp. Привяжите инстанс Green API в админке.",
+                shopName, shopId));
     }
 
     private void markConnected(AiChannelEntity channel) {
