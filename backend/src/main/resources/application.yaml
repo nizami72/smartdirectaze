@@ -67,6 +67,8 @@ app:
   telegram:
     rateLimit: 3
   security:
+    # true behind HTTPS (server): the login cookie is never sent over plain HTTP
+    cookie-secure: ${COOKIE_SECURE:false}
     jwt:
       secret: ${JWT_SECRET}
       expiration: 86400000 # 24 hours
@@ -91,11 +93,12 @@ app:
         sendMessage: ${app.url.greenApi.url.greenBase}{instanceId}/sendMessage/{token}
         setSettings: ${app.url.greenApi.url.greenBase}{instanceId}/setSettings/{token}
 
-    public: https://qrfood.az/webhooks
-    frontend: https://qrfood.az/webhooks/inventory?shopId=%s
+    # Telegram master bot flow (not used by the WhatsApp MVP)
+    public: ${APP_TELEGRAM_PUBLIC_URL:https://qrfood.az/webhooks}
+    frontend: ${APP_TELEGRAM_FRONTEND_URL:https://qrfood.az/webhooks/inventory?shopId=%s}
   product:
     folder:
-      photo: /home/nizami/projects/java/smartdirectaze/photo
+      photo: ${PRODUCT_PHOTO_DIR:/home/nizami/projects/java/smartdirectaze/photo}
   seeder:
     product-count: 100 # Укажите здесь нужное количество товаров
 

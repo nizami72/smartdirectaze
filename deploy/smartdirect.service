@@ -1,0 +1,16 @@
+[Unit]
+Description=SmartDirect - AI seller for shops (Spring Boot)
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+User=smartdirect
+WorkingDirectory=/opt/smartdirect
+EnvironmentFile=/etc/smartdirect/smartdirect.env
+# Memory is capped: the server is shared with qrfood, carhub and legalai
+ExecStart=/usr/bin/java -Xms128m -Xmx384m -XX:MaxMetaspaceSize=192m -XX:ReservedCodeCacheSize=64m -Xss512k -XX:+UseSerialGC -jar /opt/smartdirect/smartdirect.jar
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

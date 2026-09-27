@@ -54,6 +54,13 @@ public class AdminWhatsappController {
         return ResponseEntity.ok(aiChannelService.unbindInstance(shopId));
     }
 
+    // After moving to another address: every bound instance gets the new webhook URL
+    @PostMapping("/whatsapp/reconfigure-webhooks")
+    public ResponseEntity<Map<Long, String>> reconfigureWebhooks(@AuthenticationPrincipal UserDetails userDetails) {
+        requireAdmin(userDetails);
+        return ResponseEntity.ok(aiChannelService.reconfigureAllWebhooks());
+    }
+
     private void requireAdmin(UserDetails userDetails) {
         if (userDetails == null || !adminAccess.isAdmin(userDetails.getUsername())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admins only");

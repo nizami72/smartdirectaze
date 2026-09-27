@@ -95,6 +95,29 @@ const AdminPage = () => {
 
   const replace = (updated) => setShops(prev => prev.map(s => (s.shopId === updated.shopId ? updated : s)));
 
+  const [reconfiguring, setReconfiguring] = useState(false);
+  const [reconfigureResult, setReconfigureResult] = useState('');
+
+  // After moving to another address every bound instance must send webhooks to the new one
+  const reconfigureWebhooks = async () => {
+    setReconfiguring(true);
+    setReconfigureResult('');
+    try {
+      const res = await api.post('/api/v1/admin/whatsapp/reconfigure-webhooks');
+      const entries = Object.entries(res.data || {});
+      const failed = entries.filter(([, status]) => status !== 'ok');
+      setReconfigureResult(entries.length === 0
+        ? 'Нет привязанных инстансов.'
+        : failed.length === 0
+          ? `Готово: обновлено ${entries.length}.`
+          : `Обновлено ${entries.length - failed.length} из ${entries.length}. Ошибки: ${failed.map(([id, e]) => `#${id}: ${e}`).join('; ')}`);
+    } catch {
+      setReconfigureResult('Не удалось обновить вебхуки.');
+    } finally {
+      setReconfiguring(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F3F4F6] font-sans">
       <div className="max-w-4xl mx-auto px-4 py-8 text-left">
@@ -106,6 +129,16 @@ const AdminPage = () => {
         <p className="text-sm text-slate-500 mt-1 mb-6">
           Привязка настраивает вебхуки инстанса в Green API автоматически. Затем мерчант сканирует QR у себя на странице «WhatsApp».
         </p>
+        {!loading && !error && (
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <button type="button" onClick={reconfigureWebhooks} disabled={reconfiguring}
+                    className="inline-flex items-center gap-1.5 border border-slate-300 bg-white hover:bg-slate-50 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-700 disabled:opacity-50">
+              {reconfiguring && <Loader2 className="w-4 h-4 animate-spin" />}
+              Обновить вебхуки у всех инстансов
+            </button>
+            {reconfigureResult && <span className="text-sm text-slate-600">{reconfigureResult}</span>}
+          </div>
+        )}
         {loading && <Loader2 className="w-8 h-8 text-slate-400 animate-spin" />}
         {error && <p className="text-red-600">{error}</p>}
         <div className="space-y-3">

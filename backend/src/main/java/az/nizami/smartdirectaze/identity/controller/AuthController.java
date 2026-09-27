@@ -7,10 +7,10 @@ import az.nizami.smartdirectaze.identity.service.AuthService;
 import az.nizami.smartdirectaze.identity.service.JwtService;
 import az.nizami.smartdirectaze.identity.UserDto;
 import az.nizami.smartdirectaze.identity.UserService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +25,10 @@ public class AuthController {
     private final UserService userService;
     private final AuthService authService;
     private final JwtService jwtService;
+
+    // HTTPS on the server: the cookie is marked Secure
+    @Value("${app.security.cookie-secure:false}")
+    private boolean cookieSecure;
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody UserDto userDto, HttpServletResponse response) {
@@ -53,11 +57,7 @@ public class AuthController {
     }
 
     private void setCookie(HttpServletResponse response, String token) {
-        Cookie jwtCookie = new Cookie("jwt_token", token);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(false);
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(7 * 24 * 60 * 60);
-        response.addHeader("Set-Cookie", "jwt_token=" + token + "; Path=/; Max-Age=604800; HttpOnly; SameSite=Lax");
+        response.addHeader("Set-Cookie", "jwt_token=" + token + "; Path=/; Max-Age=604800; HttpOnly; SameSite=Lax"
+                + (cookieSecure ? "; Secure" : ""));
     }
 }

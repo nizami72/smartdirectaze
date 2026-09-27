@@ -287,6 +287,23 @@ public class AiChannelServiceImpl implements AiChannelService {
         }
     }
 
+    @Override
+    public java.util.Map<Long, String> reconfigureAllWebhooks() {
+        java.util.Map<Long, String> result = new java.util.TreeMap<>();
+        aiChannelRepository.findAll().stream()
+                .filter(c -> c.getChannelType() == ChannelType.WHATSAPP && c.getInstanceExternalId() != null && c.getApiToken() != null)
+                .forEach(c -> {
+                    try {
+                        whatsappService.configureWebhooks(c.getInstanceExternalId(), c.getApiToken());
+                        result.put(c.getShop().getId(), "ok");
+                    } catch (Exception e) {
+                        result.put(c.getShop().getId(), e.getMessage());
+                    }
+                });
+        log.info("Webhooks reconfigured: {}", result);
+        return result;
+    }
+
     private String safeState(String instanceId, String apiToken) {
         try {
             return whatsappService.getStateInstance(instanceId, apiToken);
