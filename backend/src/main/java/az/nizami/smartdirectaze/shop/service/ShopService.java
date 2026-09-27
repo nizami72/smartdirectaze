@@ -1,5 +1,7 @@
 package az.nizami.smartdirectaze.shop.service;
 
+import az.nizami.smartdirectaze.identity.UserDto;
+import az.nizami.smartdirectaze.telegram.service.TelegramService;
 import az.nizami.smartdirectaze.business.BusinessService;
 import az.nizami.smartdirectaze.business.Industry;
 import az.nizami.smartdirectaze.identity.RegistrationStep;
@@ -29,6 +31,7 @@ public class ShopService {
     private final ApplicationEventPublisher eventPublisher;
     private final AiChannelService aiChannelService;
     private final BusinessService businessService;
+    private final TelegramService telegramService;
 
     /**
      * Создает магазин для владельца (Шаг 2 онбординга).
@@ -58,6 +61,12 @@ public class ShopService {
 
         ShopEntity savedShop = shopRepository.save(shop);
         shop.setChannels(aiChannelService.createBaseChannels(savedShop));
+
+        // The operator binds a Green API instance to every new shop by hand
+        String ownerEmail = userService.findById(ownerId).map(UserDto::getEmail).orElse("—");
+        telegramService.notifyAdmin(String.format(
+                "🏪 Новый магазин «%s» (#%d), владелец %s — нужно привязать idInstance и apiTokenInstance в админке.",
+                savedShop.getShopName(), savedShop.getId(), ownerEmail));
 
         //todo decided to delete reg step "Обновляем шаг регистрации пользователя через UserService"
 //        userService.updateRegistrationStep(ownerId, RegistrationStep.SHOP_CREATED);

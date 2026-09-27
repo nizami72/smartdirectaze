@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.identity;
 
+import org.springframework.context.ApplicationEventPublisher;
 import az.nizami.smartdirectaze.exception.DuplicateEmailException;
 import az.nizami.smartdirectaze.identity.entity.User;
 import az.nizami.smartdirectaze.identity.entity.UserProfile;
@@ -22,12 +23,15 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, UserMapper userMapper,
+                           PasswordEncoder passwordEncoder, ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userMapper = userMapper;
         this.passwordEncoder = passwordEncoder;
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -90,7 +94,10 @@ public class UserServiceImpl implements UserService {
         // Assign default USER role
         roleRepository.findByName("USER").ifPresent(role -> user.getRoles().add(role));
 
-        return userMapper.toDto(userRepository.save(user));
+        UserDto registered = userMapper.toDto(userRepository.save(user));
+        eventPublisher.publishEvent(new UserRegisteredEvent(registered.getId(), registered.getEmail(),
+                userDto.getName(), profile.getPhones()));
+        return registered;
     }
 
     @Override

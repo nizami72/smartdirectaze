@@ -95,6 +95,10 @@ const AdminPage = () => {
 
   const replace = (updated) => setShops(prev => prev.map(s => (s.shopId === updated.shopId ? updated : s)));
 
+  // Shops waiting for an instance first, newest on top; the rest by id
+  const waiting = shops.filter(s => !s.instanceId).sort((a, b) => b.shopId - a.shopId);
+  const bound = shops.filter(s => s.instanceId).sort((a, b) => a.shopId - b.shopId);
+
   const [reconfiguring, setReconfiguring] = useState(false);
   const [reconfigureResult, setReconfigureResult] = useState('');
 
@@ -141,8 +145,14 @@ const AdminPage = () => {
         )}
         {loading && <Loader2 className="w-8 h-8 text-slate-400 animate-spin" />}
         {error && <p className="text-red-600">{error}</p>}
+        {!loading && !error && (
+          <p className="text-sm font-semibold mb-3">
+            <span className={waiting.length > 0 ? 'text-amber-700' : 'text-slate-500'}>Ждут инстанс: {waiting.length}</span>
+            <span className="text-slate-400"> · всего магазинов: {shops.length}</span>
+          </p>
+        )}
         <div className="space-y-3">
-          {shops.map(shop => <ShopRow key={shop.shopId} shop={shop} onChanged={replace} />)}
+          {[...waiting, ...bound].map(shop => <ShopRow key={shop.shopId} shop={shop} onChanged={replace} />)}
         </div>
       </div>
     </div>

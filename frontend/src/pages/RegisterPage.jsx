@@ -51,7 +51,9 @@ const RegisterPage = () => {
 
     setLoading(true);
     try {
-      const response = await api.post('/api/v1/auth/register', formData);
+      // The backend keeps phones as a list
+      const { phone, ...rest } = formData;
+      const response = await api.post('/api/v1/auth/register', { ...rest, phones: phone ? [phone] : [] });
       // After registration: the shops list sends a new user straight to creating a shop
       navigate('/shops');
       return;
