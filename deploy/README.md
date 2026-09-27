@@ -27,3 +27,13 @@ Server: Hetzner 157.180.16.28 (shared with qrfood, carhub, legalai). Address: ht
 ## Every release
 
 `bash deploy/deploy.sh` from the repo root.
+
+## Wipe to a fresh install (debug only)
+
+`bash deploy/reset-server.sh` — backup first, then empty database and photos. Works only with the SSH key and
+while `/etc/smartdirect/allow-reset` exists on the server. After debugging close it:
+`ssh -i ~/.ssh/key2 root@157.180.16.28 rm /etc/smartdirect/allow-reset`.
+
+The admin is any user whose email is in `ADMIN_EMAILS`: after a wipe register with it right away
+(emails are not verified yet).
+
