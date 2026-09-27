@@ -40,3 +40,10 @@ Admins are the emails in `ADMIN_EMAILS`. The site refuses to register them ("Ð­Ñ
 the account is created only from the laptop: `bash deploy/create-admin.sh` (asks for a new password).
 Then log in on the usual /login page and open /admin. After a wipe run the script again.
 
+## Demo catalog (debug only)
+
+`bash deploy/seed-demo-shop.sh <shop id>` fills a shop with 20 realistic products of a shoe shop
+(`deploy/demo/shoe-shop.sql`: prices in AZN, sizes, stock, two out of stock). Re-running adds nothing twice.
+Another catalog: `bash deploy/seed-demo-shop.sh <shop id> deploy/demo/<file>.sql`. Closed together with the wipe
+(needs `/etc/smartdirect/allow-reset`).
+
