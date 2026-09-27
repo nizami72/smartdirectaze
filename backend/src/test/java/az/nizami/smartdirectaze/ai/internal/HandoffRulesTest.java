@@ -12,21 +12,21 @@ class HandoffRulesTest {
 
     @Test
     void askingForPerson_ShouldHandOver_InAllLanguages() {
-        assertEquals(Optional.of("Клиент просит продавца"), HandoffRules.reasonBeforeAi("Позовите менеджера, пожалуйста", "textMessage"));
-        assertEquals(Optional.of("Клиент просит продавца"), HandoffRules.reasonBeforeAi("Canlı insanla danışmaq istəyirəm", "textMessage"));
-        assertEquals(Optional.of("Клиент просит продавца"), HandoffRules.reasonBeforeAi("Can I talk to a real person?", "extendedTextMessage"));
+        assertEquals(Optional.of("Клиент просит продавца"), HandoffRules.beforeAi("Позовите менеджера, пожалуйста", "textMessage").map(HandoffRules.Handoff::reason));
+        assertEquals(Optional.of("Клиент просит продавца"), HandoffRules.beforeAi("Canlı insanla danışmaq istəyirəm", "textMessage").map(HandoffRules.Handoff::reason));
+        assertEquals(Optional.of("Клиент просит продавца"), HandoffRules.beforeAi("Can I talk to a real person?", "extendedTextMessage").map(HandoffRules.Handoff::reason));
     }
 
     @Test
     void usualQuestion_ShouldGoToAi() {
-        assertEquals(Optional.empty(), HandoffRules.reasonBeforeAi("Qara çanta var? Çatdırılma neçəyədir?", "textMessage"));
-        assertEquals(Optional.empty(), HandoffRules.reasonBeforeAi("Сколько стоит доставка?", "textMessage"));
+        assertEquals(Optional.empty(), HandoffRules.beforeAi("Qara çanta var? Çatdırılma neçəyədir?", "textMessage"));
+        assertEquals(Optional.empty(), HandoffRules.beforeAi("Сколько стоит доставка?", "textMessage"));
     }
 
     @Test
     void mediaAiCannotRead_ShouldHandOver() {
-        assertEquals(Optional.of("Клиент прислал голосовое сообщение"), HandoffRules.reasonBeforeAi(null, "audioMessage"));
-        assertEquals(Optional.of("Клиент прислал фото"), HandoffRules.reasonBeforeAi("", "imageMessage"));
+        assertEquals(Optional.of("Клиент прислал голосовое сообщение"), HandoffRules.beforeAi(null, "audioMessage").map(HandoffRules.Handoff::reason));
+        assertEquals(Optional.of("Клиент прислал фото"), HandoffRules.beforeAi("", "imageMessage").map(HandoffRules.Handoff::reason));
     }
 
     @Test
@@ -43,5 +43,11 @@ class HandoffRulesTest {
         assertTrue(HandoffRules.customerNotice("Canlı insan lazımdır").startsWith("Mesajınızı"));
         // Voice: language unknown, both
         assertTrue(HandoffRules.customerNotice(null).contains("Mesajınızı") && HandoffRules.customerNotice(null).contains("Передал"));
+    }
+
+    @Test
+    void onlyAskingForPerson_ShouldPauseAi() {
+        assertTrue(HandoffRules.beforeAi("Позовите менеджера", "textMessage").orElseThrow().pauseAi());
+        assertFalse(HandoffRules.beforeAi(null, "audioMessage").orElseThrow().pauseAi());
     }
 }

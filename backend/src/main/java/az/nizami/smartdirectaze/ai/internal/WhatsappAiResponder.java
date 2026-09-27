@@ -53,9 +53,13 @@ class WhatsappAiResponder {
             return;
         }
 
-        Optional<String> handoffReason = HandoffRules.reasonBeforeAi(event.text(), event.messageType());
-        if (handoffReason.isPresent()) {
-            conversationService.handOverToSeller(channel.shopId(), event.chatId(), handoffReason.get());
+        Optional<HandoffRules.Handoff> handoff = HandoffRules.beforeAi(event.text(), event.messageType());
+        if (handoff.isPresent()) {
+            if (handoff.get().pauseAi()) {
+                conversationService.handOverToSeller(channel.shopId(), event.chatId(), handoff.get().reason());
+            } else {
+                conversationService.askSellerForHelp(channel.shopId(), event.chatId(), handoff.get().reason());
+            }
             send(channel, event.chatId(), HandoffRules.customerNotice(event.text()));
             return;
         }
@@ -69,7 +73,7 @@ class WhatsappAiResponder {
         } catch (Exception e) {
             log.error("Error processing AI query for WhatsApp instance [{}]", event.instanceId(), e);
             // The customer must not be left without an answer: the seller takes over
-            conversationService.handOverToSeller(channel.shopId(), event.chatId(), "AI не смог ответить (ошибка сервиса)");
+            conversationService.askSellerForHelp(channel.shopId(), event.chatId(), "AI не смог ответить (ошибка сервиса)");
             reply = HandoffRules.customerNotice(event.text());
         }
         send(channel, event.chatId(), reply);

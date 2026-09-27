@@ -96,13 +96,13 @@ class CatalogToolsTest {
     @Test
     void requestHumanHelp_WhatsappChat_ShouldHandOverToSeller() {
         catalogTools.requestHumanHelp(new ConversationKey(4L, "wa:1:994551112233@c.us", "994551112233@c.us"), "Хочет скидку");
-        verify(conversationService).handOverToSeller(4L, "994551112233@c.us", "Хочет скидку");
+        verify(conversationService).askSellerForHelp(4L, "994551112233@c.us", "Хочет скидку");
     }
 
     @Test
     void requestHumanHelp_WebTestChat_ShouldNotHandOver() {
         catalogTools.requestHumanHelp(new ConversationKey(4L, "web:3:session", null), "Хочет скидку");
-        verify(conversationService, org.mockito.Mockito.never()).handOverToSeller(any(), any(), any());
+        verify(conversationService, org.mockito.Mockito.never()).askSellerForHelp(any(), any(), any());
     }
 
     @Test

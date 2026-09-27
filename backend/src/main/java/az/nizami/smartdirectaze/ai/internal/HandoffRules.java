@@ -34,16 +34,22 @@ final class HandoffRules {
     }
 
     /**
-     * @return the reason to hand the chat over, or empty to let the AI answer
+     * @param pauseAi true: the customer wants a person, the AI goes silent; false: only this message needs the seller
      */
-    static Optional<String> reasonBeforeAi(String text, String messageType) {
+    record Handoff(String reason, boolean pauseAi) {
+    }
+
+    /**
+     * @return what the seller must handle, or empty to let the AI answer
+     */
+    static Optional<Handoff> beforeAi(String text, String messageType) {
         if (text == null || text.isBlank()) {
             String media = MEDIA.get(messageType);
-            return media == null ? Optional.empty() : Optional.of("Клиент прислал " + media);
+            return media == null ? Optional.empty() : Optional.of(new Handoff("Клиент прислал " + media, false));
         }
         String lower = text.toLowerCase(Locale.ROOT);
         return ASK_FOR_PERSON.stream().anyMatch(lower::contains)
-                ? Optional.of("Клиент просит продавца")
+                ? Optional.of(new Handoff("Клиент просит продавца", true))
                 : Optional.empty();
     }
 

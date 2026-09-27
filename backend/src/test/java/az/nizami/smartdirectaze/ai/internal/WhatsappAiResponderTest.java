@@ -76,7 +76,7 @@ class WhatsappAiResponderTest {
         responder.onMessage(message(null, "audioMessage"));
 
         verify(conversationService).recordIncomingAndCheckPaused(4L, CHAT, "Leyla", "[голосовое сообщение]");
-        verify(conversationService).handOverToSeller(4L, CHAT, "Клиент прислал голосовое сообщение");
+        verify(conversationService).askSellerForHelp(4L, CHAT, "Клиент прислал голосовое сообщение");
         verifyNoInteractions(aiService);
     }
 
@@ -93,7 +93,7 @@ class WhatsappAiResponderTest {
 
         responder.onMessage(message("Çanta var?", "textMessage"));
 
-        verify(conversationService).handOverToSeller(4L, CHAT, "AI не смог ответить (ошибка сервиса)");
+        verify(conversationService).askSellerForHelp(4L, CHAT, "AI не смог ответить (ошибка сервиса)");
         verify(whatsappService).sendMessage(eq("7107000000"), eq("token"), eq(CHAT), startsWith("Mesajınızı"));
     }
 }

@@ -1,7 +1,6 @@
 package az.nizami.smartdirectaze.shop.repositories;
 
 import az.nizami.smartdirectaze.shop.entities.ConversationEntity;
-import az.nizami.smartdirectaze.shop.entities.ConversationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +15,7 @@ public interface ConversationRepository extends JpaRepository<ConversationEntity
 
     Optional<ConversationEntity> findByIdAndShopId(Long id, Long shopId);
 
-    List<ConversationEntity> findByShopIdAndStatusAndPausedUntilAfterOrderByLastCustomerMessageAtDesc(
-            Long shopId, ConversationStatus status, LocalDateTime now);
+    // Open requests to the seller: AI paused or not (pausedUntil also bounds how long a request is listed)
+    List<ConversationEntity> findByShopIdAndHandoffReasonIsNotNullAndPausedUntilAfterOrderByLastCustomerMessageAtDesc(
+            Long shopId, LocalDateTime now);
 }

@@ -71,10 +71,10 @@ class ConversationServiceImplTest {
         serviceAt(START.plusSeconds(10 * 60)).handOverToSeller(4L, CHAT, "Хочет скидку");
 
         assertTrue(serviceAt(START.plusSeconds(20 * 60)).recordIncomingAndCheckPaused(4L, CHAT, "Leyla", "?"));
-        verify(notificationService, times(1)).sendHumanHelpAlert(4L, CHAT, "Leyla", "Хочет скидку", "Endirim olar?");
+        verify(notificationService, times(1)).sendHumanHelpAlert(4L, CHAT, "Leyla", "Хочет скидку", "Endirim olar?", true);
 
         serviceAt(START.plusSeconds(40 * 60)).handOverToSeller(4L, CHAT, "Хочет скидку");
-        verify(notificationService, times(2)).sendHumanHelpAlert(anyLong(), anyString(), any(), anyString(), any());
+        verify(notificationService, times(2)).sendHumanHelpAlert(anyLong(), anyString(), any(), anyString(), any(), org.mockito.ArgumentMatchers.anyBoolean());
     }
 
     @Test
@@ -98,7 +98,7 @@ class ConversationServiceImplTest {
         assertEquals(ConversationStatus.HUMAN, c.getStatus());
         assertEquals("Хочет скидку", c.getHandoffReason());
         assertEquals(LocalDateTime.ofInstant(START.plusSeconds(13 * 3600), ZoneOffset.UTC), c.getPausedUntil());
-        verify(notificationService, times(1)).sendHumanHelpAlert(anyLong(), anyString(), any(), anyString(), any());
+        verify(notificationService, times(1)).sendHumanHelpAlert(anyLong(), anyString(), any(), anyString(), any(), org.mockito.ArgumentMatchers.anyBoolean());
     }
 
     @Test
@@ -110,6 +110,18 @@ class ConversationServiceImplTest {
         serviceAt(START).onSellerMessage(new WhatsappSellerMessageEvent("7107000000", CHAT));
 
         assertTrue(serviceAt(START.plusSeconds(60)).recordIncomingAndCheckPaused(4L, CHAT, "Leyla", "Salam"));
-        verify(notificationService, never()).sendHumanHelpAlert(anyLong(), anyString(), any(), anyString(), any());
+        verify(notificationService, never()).sendHumanHelpAlert(anyLong(), anyString(), any(), anyString(), any(), org.mockito.ArgumentMatchers.anyBoolean());
+    }
+
+    @Test
+    void askSellerForHelp_ShouldAlertButKeepAiAnswering() {
+        serviceAt(START).recordIncomingAndCheckPaused(4L, CHAT, "Leyla", "Оксфорды оригинал?");
+        serviceAt(START).askSellerForHelp(4L, CHAT, "Спрашивает, оригинал ли оксфорды");
+
+        assertFalse(serviceAt(START.plusSeconds(60)).recordIncomingAndCheckPaused(4L, CHAT, "Leyla", "Какая доставка?"));
+        verify(notificationService).sendHumanHelpAlert(4L, CHAT, "Leyla", "Спрашивает, оригинал ли оксфорды", "Оксфорды оригинал?", false);
+        ConversationEntity c = table.get(CHAT);
+        assertEquals(ConversationStatus.AI, c.getStatus());
+        assertEquals("Спрашивает, оригинал ли оксфорды", c.getHandoffReason());
     }
 }

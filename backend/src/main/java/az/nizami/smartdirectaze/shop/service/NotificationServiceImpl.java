@@ -53,11 +53,12 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void sendHumanHelpAlert(Long shopId, String customerChatId, String customerName, String reason, String lastMessage) {
+    public void sendHumanHelpAlert(Long shopId, String customerChatId, String customerName, String reason, String lastMessage,
+                                   boolean aiPaused) {
         aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP)
                 .filter(channel -> channel.getInstanceExternalId() != null && channel.getApiToken() != null)
                 .ifPresentOrElse(
-                        channel -> sendToMerchant(channel, formatHumanHelpMessage(shopId, customerChatId, customerName, reason, lastMessage),
+                        channel -> sendToMerchant(channel, formatHumanHelpMessage(shopId, customerChatId, customerName, reason, lastMessage, aiPaused),
                                 "help alert for chat " + customerChatId),
                         () -> log.warn("Help alert for shop {} not sent: no WhatsApp channel", shopId));
     }
@@ -86,20 +87,23 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
-    String formatHumanHelpMessage(Long shopId, String customerChatId, String customerName, String reason, String lastMessage) {
+    String formatHumanHelpMessage(Long shopId, String customerChatId, String customerName, String reason, String lastMessage,
+                                  boolean aiPaused) {
         String phone = customerChatId.replaceAll("@.*$", "");
         return String.format(
                 "🙋 *Нужна ваша помощь*\n\n" +
                 "*Клиент:* +%s%s\n" +
                 "*Причина:* %s\n" +
                 "*Последнее сообщение:* %s\n\n" +
-                "AI в этом чате молчит, пока вы не ответите.\n" +
+                "%s\n" +
                 "Написать клиенту: https://wa.me/%s\n" +
                 "Все такие чаты: %s/shops/%d",
                 phone,
                 customerName != null && !customerName.isBlank() ? " (" + customerName + ")" : "",
                 reason,
                 lastMessage != null ? "«" + lastMessage + "»" : "—",
+                aiPaused ? "AI в этом чате молчит, пока вы не ответите."
+                        : "AI отвечает клиенту на другие вопросы, а на этот ответьте вы.",
                 phone,
                 frontendBaseUrl,
                 shopId

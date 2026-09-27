@@ -8,5 +8,6 @@ import java.time.LocalDateTime;
  * @param customerPhone digits only, for tel: and wa.me links
  */
 public record ConversationDto(Long id, String customerPhone, String customerName, String reason,
-                              String lastMessage, LocalDateTime lastMessageAt, LocalDateTime pausedUntil) {
+                              String lastMessage, LocalDateTime lastMessageAt, LocalDateTime pausedUntil,
+                              boolean aiPaused) {
 }

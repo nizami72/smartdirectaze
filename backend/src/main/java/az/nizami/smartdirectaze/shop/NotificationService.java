@@ -6,5 +6,6 @@ public interface NotificationService {
     /**
      * "The seller is needed" alert to the merchant's WhatsApp.
      */
-    void sendHumanHelpAlert(Long shopId, String customerChatId, String customerName, String reason, String lastMessage);
+    void sendHumanHelpAlert(Long shopId, String customerChatId, String customerName, String reason, String lastMessage,
+                            boolean aiPaused);
 }

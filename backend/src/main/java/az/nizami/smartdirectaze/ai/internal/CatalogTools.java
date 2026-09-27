@@ -85,15 +85,15 @@ public class CatalogTools {
         return sb.toString().trim();
     }
 
-    @Tool("Hand the conversation over to the human seller. Call it when the shop data has no answer, the customer is unhappy "
+    @Tool("Ask the human seller to answer one question. Call it when the shop data has no answer, the customer is unhappy "
             + "or complains, wants to change or cancel an order, or asks for something you cannot do.")
     public String requestHumanHelp(@ToolMemoryId ConversationKey key,
                                    @P("Short reason in Russian for the seller, e.g. 'Хочет скидку на 10 штук'") String reason) {
         if (key.customerChatId() != null) {
-            conversationService.handOverToSeller(key.shopId(), key.customerChatId(), reason);
+            conversationService.askSellerForHelp(key.shopId(), key.customerChatId(), reason);
         }
-        return "The seller has been notified and will answer this customer personally. "
-                + "Tell the customer briefly, in their language, that the seller will reply soon. Do not answer the question yourself.";
+        return "The seller has been notified and will answer this question personally. Tell the customer briefly, in their "
+                + "language, that the seller will answer it soon; do not answer it yourself. Keep helping with other questions.";
     }
 
     @Tool("Регистрация финального заказа в системе. Вызывай этот метод только после того, как клиент подтвердил имя, телефон, адрес и время доставки.")

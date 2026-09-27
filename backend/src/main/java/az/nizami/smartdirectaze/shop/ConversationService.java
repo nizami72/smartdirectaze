@@ -16,10 +16,16 @@ public interface ConversationService {
     boolean recordIncomingAndCheckPaused(Long shopId, String chatId, String customerName, String message);
 
     /**
-     * Hands the chat over to the seller: the AI goes silent in it and the seller gets an alert
+     * The customer wants a person: the AI goes silent in the chat and the seller gets an alert
      * (at most one per chat every 30 minutes).
      */
     void handOverToSeller(Long shopId, String chatId, String reason);
+
+    /**
+     * A question the AI cannot answer (no data, voice, photo, AI failure): the seller gets an alert and the chat
+     * is listed as waiting for him, but the AI keeps answering the other questions.
+     */
+    void askSellerForHelp(Long shopId, String chatId, String reason);
 
     List<ConversationDto> findWaitingForSeller(Long shopId);
 

@@ -40,7 +40,8 @@ const HandoffCard = ({ shopId }) => {
         <p className="text-lg font-bold text-slate-900">Нужен ответ продавца ({chats.length})</p>
       </div>
       <p className="text-sm text-slate-500 mb-4">
-        В этих чатах AI молчит, пока вы не ответите или не вернёте его. Через 12 часов AI вернётся сам.
+        Эти клиенты ждут вашего ответа. Где AI на паузе, он молчит, пока вы не вернёте его (или 12 часов).
+        Как только вы сами ответите клиенту в WhatsApp, AI в этом чате замолчит.
       </p>
 
       <div className="space-y-3">
@@ -52,6 +53,9 @@ const HandoffCard = ({ shopId }) => {
                   +{chat.customerPhone}{chat.customerName ? ` · ${chat.customerName}` : ''}
                 </p>
                 <p className="text-sm text-amber-700">{chat.reason}</p>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {chat.aiPaused ? 'AI на паузе' : 'AI отвечает на другие вопросы'}
+                </p>
               </div>
               <span className="text-xs text-slate-400">{formatTime(chat.lastMessageAt)}</span>
             </div>
@@ -67,7 +71,7 @@ const HandoffCard = ({ shopId }) => {
               <button type="button" onClick={() => resumeAi(chat.id)} disabled={resumingId === chat.id}
                       className="inline-flex items-center gap-1.5 border border-slate-200 hover:bg-slate-50 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 disabled:opacity-50">
                 {resumingId === chat.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bot className="w-4 h-4" />}
-                Вернуть AI
+                {chat.aiPaused ? 'Вернуть AI' : 'Отметить решённым'}
               </button>
             </div>
           </div>

@@ -73,16 +73,34 @@ public class ConversationServiceImpl implements ConversationService {
     public void handOverToSeller(Long shopId, String chatId, String reason) {
         ConversationEntity conversation = findOrCreate(shopId, chatId);
         pause(conversation, reason);
+        alertSeller(conversation, reason);
+        log.info("Chat {} of shop {} handed over to the seller, AI paused: {}", chatId, shopId, reason);
+    }
 
+    @Override
+    @Transactional
+    public void askSellerForHelp(Long shopId, String chatId, String reason) {
+        ConversationEntity conversation = findOrCreate(shopId, chatId);
+        conversation.setHandoffReason(reason);
+        // Listed as waiting for the seller for the pause period; a paused chat stays paused
+        if (conversation.getStatus() != ConversationStatus.HUMAN) {
+            conversation.setPausedUntil(now().plus(pause));
+        }
+        alertSeller(conversation, reason);
+        log.info("Seller asked for help in chat {} of shop {}, AI keeps answering: {}", chatId, shopId, reason);
+    }
+
+    private void alertSeller(ConversationEntity conversation, String reason) {
+        Long shopId = conversation.getShopId();
+        String chatId = conversation.getChatId();
         boolean alertedRecently = conversation.getLastAlertAt() != null
                 && conversation.getLastAlertAt().isAfter(now().minus(ALERT_INTERVAL));
         if (!alertedRecently) {
             conversation.setLastAlertAt(now());
             notificationService.sendHumanHelpAlert(shopId, chatId, conversation.getCustomerName(), reason,
-                    conversation.getLastCustomerMessage());
+                    conversation.getLastCustomerMessage(), conversation.getStatus() == ConversationStatus.HUMAN);
         }
         conversationRepository.save(conversation);
-        log.info("Chat {} of shop {} handed over to the seller: {}", chatId, shopId, reason);
     }
 
     /**
@@ -105,10 +123,11 @@ public class ConversationServiceImpl implements ConversationService {
     @Transactional(readOnly = true)
     public List<ConversationDto> findWaitingForSeller(Long shopId) {
         return conversationRepository
-                .findByShopIdAndStatusAndPausedUntilAfterOrderByLastCustomerMessageAtDesc(shopId, ConversationStatus.HUMAN, now())
+                .findByShopIdAndHandoffReasonIsNotNullAndPausedUntilAfterOrderByLastCustomerMessageAtDesc(shopId, now())
                 .stream()
                 .map(c -> new ConversationDto(c.getId(), c.getChatId().replaceAll("@.*$", ""), c.getCustomerName(),
-                        c.getHandoffReason(), c.getLastCustomerMessage(), c.getLastCustomerMessageAt(), c.getPausedUntil()))
+                        c.getHandoffReason(), c.getLastCustomerMessage(), c.getLastCustomerMessageAt(), c.getPausedUntil(),
+                        c.getStatus() == ConversationStatus.HUMAN))
                 .toList();
     }
 
