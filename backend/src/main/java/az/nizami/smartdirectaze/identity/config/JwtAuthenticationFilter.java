@@ -43,7 +43,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public void init() {
         PathPatternParser parser = new PathPatternParser();
         this.pathPatterns = Stream.of(
-                urlRegister
+                urlRegister, "/api/v1/auth/logout"
 
                 )
                 .map(parser::parse).toList();

@@ -54,7 +54,7 @@ public class GreenApiClient {
                         .build();
             }
         } catch (Exception e) {
-            log.error("Error fetching QR code from Green-API for instance {}: {}", instanceId, e.getMessage());
+            log.error("GreenApiClient: operation failed");
             throw new RuntimeException("Failed to fetch QR code from Green-API", e);
         }
         return null;
@@ -68,7 +68,7 @@ public class GreenApiClient {
                     .body(SettingsResponse.class);
             return response != null ? response.getWid() : null;
         } catch (Exception e) {
-            log.error("Error fetching settings from Green-API for instance {}: {}", instanceId, e.getMessage());
+            log.error("GreenApiClient: operation failed");
             throw new RuntimeException("Failed to fetch settings from Green-API", e);
         }
     }
@@ -84,7 +84,7 @@ public class GreenApiClient {
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception e) {
-            log.error("Error logging out from Green-API for instance {}: {}", instanceId, e.getMessage());
+            log.error("GreenApiClient: operation failed");
             // We don't want to throw here to allow retry logic to proceed
         }
     }
@@ -100,7 +100,7 @@ public class GreenApiClient {
                     .body(StateResponse.class);
             return response != null ? response.getStateInstance() : null;
         } catch (Exception e) {
-            log.error("Error fetching state instance from Green-API for instance {}: {}", instanceId, e.getMessage());
+            log.error("GreenApiClient: operation failed");
             throw new RuntimeException("Failed to fetch instance state from Green-API", e);
         }
     }
@@ -117,7 +117,7 @@ public class GreenApiClient {
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception e) {
-            log.error("Error sending message via Green-API for instance {}: {}", instanceId, e.getMessage());
+            log.error("GreenApiClient: operation failed");
             throw new RuntimeException("Failed to send message via Green-API", e);
         }
     }
@@ -134,7 +134,7 @@ public class GreenApiClient {
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception e) {
-            log.error("Error setting Green-API settings for instance {}: {}", instanceId, e.getMessage());
+            log.error("GreenApiClient: operation failed");
             throw new RuntimeException("Failed to configure the Green-API instance: " + e.getMessage(), e);
         }
     }

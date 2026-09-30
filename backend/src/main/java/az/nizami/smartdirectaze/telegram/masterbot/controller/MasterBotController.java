@@ -38,7 +38,7 @@ public class MasterBotController {
     public ResponseEntity<Void> receiveUpdate(@RequestBody Update update) {
         log.debug("Telegram receive update called.");
         if (update.getMessage() == null || update.getMessage().getText() == null) {
-            log.error("Invalid update received: {}", update);
+            log.error("MasterBotController: operation failed");
             return ResponseEntity.ok().build();
         }
 
@@ -48,7 +48,7 @@ public class MasterBotController {
             reply = router.processUpdate(update);
             telegramClient.sendMessage(masterBotToken, update.getMessage().getChatId(), reply);
         } catch (Exception e) {
-            log.error("Ошибка при обработке апдейта от Telegram [{}]", update, e);
+            log.error("MasterBotController: operation failed");
         }
         return ResponseEntity.ok().build();
     }

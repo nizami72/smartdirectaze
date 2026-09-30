@@ -88,6 +88,14 @@ class WhatsappAiResponderTest {
     }
 
     @Test
+    void sellerReplyDuringAiSuppressesAnswer() {
+        when(aiService.answer(eq(4L), anyString(), eq(CHAT), anyString())).thenReturn("answer");
+        when(conversationService.isPaused(4L, CHAT)).thenReturn(true);
+        responder.onMessage(message("question", "textMessage"));
+        verifyNoInteractions(whatsappService);
+    }
+
+    @Test
     void aiFailure_ShouldHandOverAndTellCustomer() {
         when(aiService.answer(eq(4L), anyString(), eq(CHAT), anyString())).thenThrow(new RuntimeException("timeout"));
 

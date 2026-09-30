@@ -4,10 +4,10 @@ import api from '../api/api.ts';
 import AiSettingsCard from '../features/shop/components/AiSettingsCard.jsx';
 import TestChatCard from '../features/shop/components/TestChatCard.jsx';
 import HandoffCard from '../features/shop/components/HandoffCard.jsx';
-import { 
+import {
   Loader2,
-  AlertCircle, 
-  LogOut, 
+  AlertCircle,
+  LogOut,
   Store,
   ArrowLeft,
   MessageCircle,
@@ -23,12 +23,20 @@ const DashboardPage = () => {
   const [shopInfo, setShopInfo] = useState({ id: null, name: '' });
   const [newOrders, setNewOrders] = useState(0);
   const contentRef = useRef(null);
+  const [inventoryHtml, setInventoryHtml] = useState(null);
+  const [logoutError, setLogoutError] = useState('');
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError('');
+    setInventoryHtml(null);
     const initDashboard = async () => {
       try {
         // 1. The shop comes from the URL; it must be one of the user's shops
         const response = await api.get('/api/v1/shops/my');
+        if (cancelled) return;
         const shop = (response.data || []).find(s => String(s.id) === shopId);
         if (!shop) {
           setError('Магазин не найден.');
@@ -38,8 +46,8 @@ const DashboardPage = () => {
         const currentShopId = shop.id;
         setShopInfo({ id: shop.id, name: shop.shopName });
         api.get(`/api/v1/shops/${shop.id}/orders`)
-          .then(res => setNewOrders((res.data || []).filter(o => o.status === 'NEW').length))
-          .catch(() => setNewOrders(0));
+          .then(res => { if (!cancelled) setNewOrders((res.data || []).filter(o => o.status === 'NEW').length); })
+          .catch(() => { if (!cancelled) setNewOrders(0); });
 
         // 2. Fetch inventory fragment
         const fragmentResponse = await api.get(`/api/v1/dashboard/inventory?shopId=${currentShopId}`, {
@@ -47,27 +55,11 @@ const DashboardPage = () => {
           responseType: 'text'
         });
 
-        if (contentRef.current) {
-          // The fragment's forms and photos use backend paths (/webhooks/...): point them to the backend
-          const apiBase = api.defaults.baseURL || '';
-          window.INVENTORY_API_BASE = apiBase;
-          contentRef.current.innerHTML = fragmentResponse.data;
-          contentRef.current.querySelectorAll('img[src^="/webhooks/"]').forEach(img => {
-            img.src = apiBase + img.getAttribute('src');
-          });
-          
-          // Execute scripts in the injected HTML (similar to auth.html logic)
-          const scripts = contentRef.current.querySelectorAll('script');
-          scripts.forEach(oldScript => {
-            const newScript = document.createElement('script');
-            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-            newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-            oldScript.parentNode.replaceChild(newScript, oldScript);
-          });
-        }
-        
+        if (cancelled) return;
+        setInventoryHtml(fragmentResponse.data);
         setLoading(false);
       } catch (err) {
+        if (cancelled) return;
         console.error('Dashboard init error:', err);
         setError('Failed to load dashboard. Please try again.');
         setLoading(false);
@@ -75,12 +67,43 @@ const DashboardPage = () => {
     };
 
     initDashboard();
+    return () => { cancelled = true; };
   }, [shopId]);
 
-  const handleLogout = () => {
-    sessionStorage.clear();
-    // Potentially call logout API
-    navigate('/login');
+  useEffect(() => {
+    if (!loading && inventoryHtml !== null && contentRef.current) {
+      // The fragment's forms and photos use backend paths (/webhooks/...): point them to the backend
+      const apiBase = api.defaults.baseURL || '';
+      window.INVENTORY_API_BASE = apiBase;
+      contentRef.current.innerHTML = inventoryHtml;
+      contentRef.current.querySelectorAll('img[src^="/webhooks/"]').forEach(img => {
+        img.src = apiBase + img.getAttribute('src');
+      });
+
+      // Execute scripts in the injected HTML (similar to auth.html logic)
+      const scripts = contentRef.current.querySelectorAll('script');
+      scripts.forEach(oldScript => {
+        const newScript = document.createElement('script');
+        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+        newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+      });
+    }
+
+  }, [loading, inventoryHtml]);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    setLogoutError('');
+    try {
+      await api.post('/api/v1/auth/logout');
+      sessionStorage.clear();
+      navigate('/login', { replace: true });
+    } catch {
+      setLogoutError('Не удалось выйти. Проверьте соединение и повторите.');
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   if (loading) {
@@ -101,7 +124,7 @@ const DashboardPage = () => {
           </div>
           <h2 className="text-xl font-bold text-slate-900 mb-2">Error Loading Dashboard</h2>
           <p className="text-slate-500 mb-6">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors"
           >
@@ -157,8 +180,9 @@ const DashboardPage = () => {
                 <MessageCircle className="w-4 h-4" />
                 <span className="hidden sm:inline">WhatsApp</span>
               </button>
-              <button 
+              <button
                 onClick={handleLogout}
+                disabled={loggingOut}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all"
               >
                 <LogOut className="w-4 h-4" />
@@ -171,6 +195,7 @@ const DashboardPage = () => {
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {logoutError && <p role="alert" className="text-red-700 mb-4">{logoutError}</p>}
         {/* Urgent first, then what the merchant works with every day: products and delivery */}
         <HandoffCard shopId={shopInfo.id} />
 

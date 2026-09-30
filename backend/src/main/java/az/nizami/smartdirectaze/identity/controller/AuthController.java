@@ -79,6 +79,13 @@ public class AuthController {
                 && MessageDigest.isEqual(token.getBytes(StandardCharsets.UTF_8), adminBootstrapToken.getBytes(StandardCharsets.UTF_8));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        response.addHeader("Set-Cookie", "jwt_token=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax"
+                + (cookieSecure ? "; Secure" : ""));
+        return ResponseEntity.noContent().build();
+    }
+
     private void setCookie(HttpServletResponse response, String token) {
         response.addHeader("Set-Cookie", "jwt_token=" + token + "; Path=/; Max-Age=604800; HttpOnly; SameSite=Lax"
                 + (cookieSecure ? "; Secure" : ""));

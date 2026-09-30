@@ -27,6 +27,8 @@ public interface ConversationService {
      */
     void askSellerForHelp(Long shopId, String chatId, String reason);
 
+    boolean isPaused(Long shopId, String chatId);
+
     List<ConversationDto> findWaitingForSeller(Long shopId);
 
     /**

@@ -52,7 +52,8 @@ class NotificationServiceImplTest {
 
         ArgumentCaptor<String> text = ArgumentCaptor.forClass(String.class);
         verify(whatsappService).sendMessage(eq("7107000000"), eq("token"), eq("994701234567@c.us"), text.capture());
-        assertTrue(text.getValue().contains("Новый заказ #12"));
+        assertTrue(text.getValue().contains("Новая заявка на заказ #12"));
+        assertTrue(text.getValue().contains("окончательную стоимость"));
         assertTrue(text.getValue().contains("https://app.example/shops/4/orders"));
         verify(whatsappService, never()).getSettings(anyString(), anyString());
     }

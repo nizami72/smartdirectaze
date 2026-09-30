@@ -4,7 +4,9 @@ import az.nizami.smartdirectaze.whatsapp.WhatsappMessageReceivedEvent;
 import az.nizami.smartdirectaze.whatsapp.WhatsappSellerMessageEvent;
 import az.nizami.smartdirectaze.whatsapp.WhatsappStateChangedEvent;
 import az.nizami.smartdirectaze.whatsapp.dto.WebhookRequest;
-import jakarta.annotation.PostConstruct;
+import az.nizami.smartdirectaze.whatsapp.IncomingWhatsappMessageService;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,17 +26,17 @@ public class WhatsappWebhookController {
     private final ApplicationEventPublisher eventPublisher;
     // webhookUrlToken of the Green API instances; Green API sends it in the Authorization header
     private final String webhookToken;
+    private final IncomingWhatsappMessageService inbox;
 
     public WhatsappWebhookController(ApplicationEventPublisher eventPublisher,
-                                     @Value("${app.whatsapp.webhook-token:}") String webhookToken) {
+                                     @Value("${app.whatsapp.webhook-token:}") String webhookToken,
+                                     IncomingWhatsappMessageService inbox, Environment environment) {
         this.eventPublisher = eventPublisher;
         this.webhookToken = webhookToken;
-    }
-
-    @PostConstruct
-    void warnIfOpen() {
-        if (webhookToken.isBlank()) {
-            log.warn("WHATSAPP_WEBHOOK_TOKEN is not set: the WhatsApp webhook accepts requests from anyone. Set it before going live.");
+        this.inbox = inbox;
+        boolean local = environment.acceptsProfiles(Profiles.of("local", "mock", "test"));
+        if (webhookToken.isBlank() && (!local || environment.acceptsProfiles(Profiles.of("prod", "production")))) {
+            throw new IllegalStateException("WHATSAPP_WEBHOOK_TOKEN is required outside local/mock/test profiles");
         }
     }
 
@@ -51,7 +53,7 @@ public class WhatsappWebhookController {
             log.warn("Whatsapp webhook rejected: invalid token");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        log.debug("Whatsapp webhook received: {}", request);
+        log.debug("WhatsApp webhook received");
 
         if (request.getInstanceData() == null) {
             return ResponseEntity.ok().build();
@@ -76,7 +78,11 @@ public class WhatsappWebhookController {
                 if (request.getMessageData() == null) {
                     break;
                 }
-                eventPublisher.publishEvent(new WhatsappMessageReceivedEvent(instanceId, chatId,
+                if (request.getIdMessage() == null || request.getIdMessage().isBlank()
+                        || request.getIdMessage().length() > 255 || chatId.length() > 255) {
+                    return ResponseEntity.badRequest().build();
+                }
+                inbox.accept(request.getIdMessage(), new WhatsappMessageReceivedEvent(instanceId, chatId,
                         request.getSenderData().getSenderName(),
                         request.getMessageData().extractText(),
                         request.getMessageData().getTypeMessage()));

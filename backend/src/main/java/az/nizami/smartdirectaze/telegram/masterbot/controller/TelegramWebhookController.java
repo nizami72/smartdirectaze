@@ -36,7 +36,7 @@ public class TelegramWebhookController {
             @RequestHeader(value = "X-Telegram-Bot-Api-Secret-Token", required = false) String secretToken,
             @RequestBody Update update
     ) {
-        log.debug("Update received for bot [{}]: {}", botUuid, update);
+        log.debug("TelegramWebhookController: event processed");
 
         // 1. Проверка безопасности (Secret Token)
         if (!isValidToken(botUuid, secretToken)) {
@@ -68,7 +68,7 @@ public class TelegramWebhookController {
                     sendMessage(dynamicTelegramClient, chatId, aiResponse.getMessage());
                 })
                 .exceptionally(ex -> {
-                    log.error("Error processing AI query: ", ex);
+                    log.error("TelegramWebhookController: operation failed");
                     sendMessage(dynamicTelegramClient, chatId, "Извините, сервис временно недоступен. Попробуйте позже.");
                     return null;
                 });
@@ -92,7 +92,7 @@ public class TelegramWebhookController {
         try {
             return client.execute(sm).getMessageId();
         } catch (TelegramApiException e) {
-            log.error("Failed to send message to chat {}: {}", chatId, e.getMessage());
+            log.error("TelegramWebhookController: operation failed");
             return null;
         }
     }

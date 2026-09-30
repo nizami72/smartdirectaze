@@ -55,7 +55,7 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
                 sendMessage(chatId, technical(userText, chatId));
                 return;
             }
-            log.debug("Message from user [{}]", userText);
+            log.debug("TelegramIntegration: event processed");
             sendTypingStatus(chatId);
             aiService.processQuery(chatId.toString(), chatId.toString(), userText)
                     .thenAccept(aiResponse -> {
@@ -64,7 +64,7 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
                     })
                     .exceptionally(ex -> {
                         // Если что-то пошло не так (ошибка сети, API и т.д.)
-                        log.error("Error processing AI query: ", ex);
+                        log.error("TelegramIntegration: operation failed");
                         sendMessage(chatId, "Извините, сервис временно недоступен. Попробуйте позже.");
                         return null;
                     });
@@ -80,7 +80,7 @@ class TelegramIntegration implements SpringLongPollingBot, LongPollingSingleThre
         try {
             telegramClient.execute(action);
         } catch (TelegramApiException e) {
-            log.error(e.getMessage());
+            log.error("TelegramIntegration: operation failed");
         }
     }
 

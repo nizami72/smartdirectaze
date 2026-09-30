@@ -61,7 +61,7 @@ app:
     # Links in messages to merchants (order alerts)
     base-url: ${FRONTEND_BASE_URL:http://localhost:5173}
   whatsapp:
-    # Same value as webhookUrlToken in the Green API instance settings; empty = webhook open (dev only)
+    # Required outside explicit local/mock/test profiles; must match Green API webhookUrlToken
     webhook-token: ${WHATSAPP_WEBHOOK_TOKEN:}
     # Set into every instance bound from the admin page
     webhook-url: ${WHATSAPP_WEBHOOK_URL:https://qrfood.az/webhooks/w}

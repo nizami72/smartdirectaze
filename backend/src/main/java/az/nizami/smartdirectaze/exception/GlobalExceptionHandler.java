@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(DataIntegrityViolationException ex) {
-        log.error("Error [{}]", ex.getMessage());
+        log.error("Request failed: {}", ex.getClass().getSimpleName());
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 ex.getMessage(),
@@ -74,7 +74,7 @@ public class GlobalExceptionHandler {
     // Deliberate statuses from controllers (401, 404, ...): keep them, the catch-all below would turn them into 500
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex) {
-        log.warn("Request rejected: {} {}", ex.getStatusCode().value(), ex.getReason());
+        log.warn("Request rejected: {}", ex.getStatusCode().value());
         ErrorResponse error = new ErrorResponse(
                 ex.getStatusCode().value(),
                 ex.getReason(),
@@ -86,8 +86,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
-        log.error("Unhandled error", ex);
-        // Internal details stay in the log, not in the response; no message = the page shows its own text
+        log.error("Unhandled error: {}", ex.getClass().getSimpleName());
+        // Log only the exception type; provider bodies may contain customer messages.
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 null,

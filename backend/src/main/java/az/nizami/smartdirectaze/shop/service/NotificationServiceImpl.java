@@ -83,7 +83,7 @@ public class NotificationServiceImpl implements NotificationService {
             whatsappService.sendMessage(instanceId, token, chatId, text);
             log.info("{} sent to the merchant's WhatsApp", what);
         } catch (Exception e) {
-            log.error("Failed to send {} to the merchant's WhatsApp: {}", what, e.getMessage());
+            log.error("NotificationServiceImpl: operation failed");
         }
     }
 
@@ -128,19 +128,19 @@ public class NotificationServiceImpl implements NotificationService {
             telegramClient.execute(sendMessage);
             log.info("Notification sent to owner {} for shop {}", shop.ownerId(), shopId);
         } catch (TelegramApiException e) {
-            log.error("Failed to send Telegram notification to owner {}: {}", shop.ownerId(), e.getMessage());
+            log.error("NotificationServiceImpl: operation failed");
         }
     }
 
     String formatWhatsappMessage(OrderDTO order) {
         return String.format(
-                "🛒 *Новый заказ #%d*\n\n" +
+                "🛒 *Новая заявка на заказ #%d*\n\n" +
                 "*Клиент:* %s\n" +
                 "*Телефон:* %s\n" +
                 "*Адрес:* %s\n\n" +
                 "*Товары:*\n%s\n\n" +
                 "*Оплата:* %s\n\n" +
-                "Заказы магазина: %s/shops/%d/orders",
+                "Подтвердите наличие и окончательную стоимость покупателю.\nЗаказы магазина: %s/shops/%d/orders",
                 order.getId(),
                 order.getCustomerName(),
                 order.getPhoneNumber(),
@@ -154,12 +154,12 @@ public class NotificationServiceImpl implements NotificationService {
 
     private String formatTelegramMessage(OrderDTO order) {
         return String.format(
-                "<b>New Order #%d</b>\n\n" +
+                "<b>New order request #%d</b>\n\n" +
                 "<b>Customer:</b> %s\n" +
                 "<b>Phone:</b> %s\n" +
                 "<b>Address:</b> %s\n" +
                 "<b>Items:</b>\n%s\n\n" +
-                "<b>Payment Method:</b> %s",
+                "<b>Payment Method:</b> %s\nSeller must confirm availability and final price.",
                 order.getId(),
                 order.getCustomerName(),
                 order.getPhoneNumber(),

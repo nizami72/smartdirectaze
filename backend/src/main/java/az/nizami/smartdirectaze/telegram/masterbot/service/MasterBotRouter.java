@@ -53,14 +53,14 @@ public class MasterBotRouter {
                     fakeDataService.generateFakeData(id);
                     return "Fake data generated";
                 } catch (Exception e) {
-                    log.error("Failed to load fake data for chat [{}]", ownerId, e);
+                    log.error("MasterBotRouter: operation failed");
                     return "Failed to load fake data";
                 }
             } else return "Shop not found";
 
         } else if (text.startsWith(START.getCommand())) {
             sessionService.reset(ownerId);
-            log.debug("Chat id [{}] and text [{}]", ownerId, text);
+            log.debug("MasterBotRouter: event processed");
         }
 
         AdminState currentState = sessionService.getState(ownerId);
@@ -71,7 +71,7 @@ public class MasterBotRouter {
             }
         } catch (Exception e) {
             String er = "Failed to handle message";
-            log.error("{} for chat [{}]", er, ownerId, e);
+            log.error("MasterBotRouter: operation failed");
             return er;
         }
         return "Done";

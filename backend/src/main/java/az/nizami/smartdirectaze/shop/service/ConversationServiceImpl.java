@@ -74,7 +74,7 @@ public class ConversationServiceImpl implements ConversationService {
         ConversationEntity conversation = findOrCreate(shopId, chatId);
         pause(conversation, reason);
         alertSeller(conversation, reason);
-        log.info("Chat {} of shop {} handed over to the seller, AI paused: {}", chatId, shopId, reason);
+        log.info("Conversation handoff updated, shop={}, chat={}", shopId, chatId);
     }
 
     @Override
@@ -87,7 +87,7 @@ public class ConversationServiceImpl implements ConversationService {
             conversation.setPausedUntil(now().plus(pause));
         }
         alertSeller(conversation, reason);
-        log.info("Seller asked for help in chat {} of shop {}, AI keeps answering: {}", chatId, shopId, reason);
+        log.info("Conversation handoff updated, shop={}, chat={}", shopId, chatId);
     }
 
     private void alertSeller(ConversationEntity conversation, String reason) {
@@ -140,6 +140,15 @@ public class ConversationServiceImpl implements ConversationService {
         conversation.setPausedUntil(null);
         conversation.setHandoffReason(null);
         conversationRepository.save(conversation);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isPaused(Long shopId, String chatId) {
+        return conversationRepository.findByShopIdAndChatId(shopId, chatId)
+                .map(c -> c.getStatus() == ConversationStatus.HUMAN
+                        && c.getPausedUntil() != null && now().isBefore(c.getPausedUntil()))
+                .orElse(false);
     }
 
     private void pause(ConversationEntity conversation, String reason) {

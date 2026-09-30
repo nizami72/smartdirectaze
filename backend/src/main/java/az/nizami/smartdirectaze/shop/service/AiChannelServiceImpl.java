@@ -125,7 +125,7 @@ public class AiChannelServiceImpl implements AiChannelService {
                     .qrCode(message)
                     .build();
         } else if ("error".equals(type)) {
-            log.error("Error form green api message [{}], shop [{}]", message, shopId);
+            log.error("AiChannelServiceImpl: operation failed");
             return WhatsAppQrResponse.builder()
                     .status(ChannelStatus.PENDING_ACTIVATION)
                     .build();
@@ -211,7 +211,7 @@ public class AiChannelServiceImpl implements AiChannelService {
                 channel.setWid(PhoneUtils.digits(wid));
             }
         } catch (Exception e) {
-            log.warn("Could not read the connected number of instance {}: {}", channel.getInstanceExternalId(), e.getMessage());
+            log.warn("AiChannelServiceImpl: operation failed");
         }
         aiChannelRepository.save(channel);
     }
@@ -300,7 +300,7 @@ public class AiChannelServiceImpl implements AiChannelService {
                         result.put(c.getShop().getId(), e.getMessage());
                     }
                 });
-        log.info("Webhooks reconfigured: {}", result);
+        log.info("AiChannelServiceImpl: event processed");
         return result;
     }
 

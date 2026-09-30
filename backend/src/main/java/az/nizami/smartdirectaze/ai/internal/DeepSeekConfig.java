@@ -18,8 +18,8 @@ public class DeepSeekConfig {
                 .modelName("deepseek-chat")
                 .temperature(0.0)
                 .timeout(Duration.ofSeconds(60))
-                .logRequests(true)
-                .logResponses(true)
+                .logRequests(false)
+                .logResponses(false)
                 .build();
     }
 }

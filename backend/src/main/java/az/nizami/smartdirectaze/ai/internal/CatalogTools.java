@@ -55,7 +55,7 @@ public class CatalogTools {
         }
 
         sb.append(String.format("Fitting/Trying allowed: %s. ",
-                shop.fittingAllowed() != null && shop.fittingAllowed() ? "Yes" : "No"));
+                shop.fittingAllowed() == null ? "Not specified; ask the seller" : shop.fittingAllowed() ? "Yes" : "No"));
 
         if (shop.refusalFee() != null) {
             sb.append(String.format("Refusal fee (if not buying after trying): %s AZN. ", shop.refusalFee()));
@@ -67,10 +67,10 @@ public class CatalogTools {
 
         // Добавь это в StringBuilder sb
         sb.append(String.format("Store Address: %s. ",
-                shop.address() != null ? shop.address() : "Online-only store with delivery."));
+                specifiedOrUnknown(shop.address())));
 
         sb.append(String.format("Working Hours: %s. ",
-                shop.workingHours() != null ? shop.workingHours() : "10:00 - 19:00"));
+                specifiedOrUnknown(shop.workingHours())));
 
         if (shop.paymentMethods() != null && !shop.paymentMethods().isEmpty()) {
             sb.append("Payment methods: ");
@@ -79,7 +79,7 @@ public class CatalogTools {
                     .collect(java.util.stream.Collectors.joining(", ")));
             sb.append(". ");
         } else {
-            sb.append("Payment methods: m10, Credit Card, Cash on delivery. ");
+            sb.append("Payment methods: not specified; ask the seller. ");
         }
 
         return sb.toString().trim();
@@ -96,13 +96,13 @@ public class CatalogTools {
                 + "language, that the seller will answer it soon; do not answer it yourself. Keep helping with other questions.";
     }
 
-    @Tool("Регистрация финального заказа в системе. Вызывай этот метод только после того, как клиент подтвердил имя, телефон, адрес и время доставки.")
+    @Tool("Регистрация заявки на заказ, которую окончательно подтверждает продавец. Вызывай этот метод только после того, как клиент подтвердил имя, телефон, адрес и время доставки.")
     public String createFinalOrder(
             @ToolMemoryId ConversationKey key,
             @P("Имя клиента") String customerName,
             @P("Номер телефона клиента") String phoneNumber,
             @P("Полный адрес доставки и время") String deliveryAddress,
-            @P("Список товаров и их количество") String itemsSummary,
+            @P("Список товаров и их количество, без цен и итоговых сумм") String itemsSummary,
             @P("Выбранный способ оплаты") String paymentMethod
     ) {
         // 1. Логика сохранения в твою БД (Table: Orders)
@@ -112,7 +112,11 @@ public class CatalogTools {
         // 2. Отправка уведомления владельцу (через твой Telegram Bot Service)
         notificationService.sendNewOrderAlertToOwner(shopId, order);
 
-        return "Заказ успешно создан. Номер заказа: #" + order.getId();
+        return "Заявка на заказ #" + order.getId() + " принята. Окончательную стоимость и наличие подтверждает продавец.";
+    }
+
+    private static String specifiedOrUnknown(String value) {
+        return value == null || value.isBlank() ? "Not specified; ask the seller" : value;
     }
 
     private static void appendIfPresent(StringBuilder sb, String label, String value) {
@@ -125,7 +129,10 @@ public class CatalogTools {
      * One unambiguous sentence for the model: a bare "free delivery threshold: 0" was read as "always free".
      */
     static String describeDeliveryPrice(BigDecimal price, BigDecimal freeThreshold) {
-        if (price == null || price.signum() <= 0) {
+        if (price == null || price.signum() < 0) {
+            return "Delivery price: not specified; ask the seller. ";
+        }
+        if (price.signum() == 0) {
             return "Delivery is free. ";
         }
         if (freeThreshold != null && freeThreshold.signum() > 0) {

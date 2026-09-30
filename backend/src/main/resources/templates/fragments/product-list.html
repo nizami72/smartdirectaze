@@ -289,9 +289,10 @@
             });
         }
 
-        document.addEventListener('DOMContentLoaded', initDeliveryZones);
-        // Also call it immediately if it's being executed as part of an AJAX update
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        // No dormant document listeners when React reinserts the fragment.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDeliveryZones, { once: true });
+        } else {
             initDeliveryZones();
         }
 

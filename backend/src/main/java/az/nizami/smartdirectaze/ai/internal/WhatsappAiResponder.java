@@ -10,7 +10,6 @@ import az.nizami.smartdirectaze.whatsapp.service.WhatsappService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -28,7 +27,6 @@ class WhatsappAiResponder {
     private final WhatsappService whatsappService;
     private final ConversationService conversationService;
 
-    @Async
     @EventListener
     public void onMessage(WhatsappMessageReceivedEvent event) {
         Optional<WhatsappChannelDto> channelOp = productService.findWhatsappChannel(event.instanceId());
@@ -71,12 +69,14 @@ class WhatsappAiResponder {
             String aiText = aiService.answer(channel.shopId(), conversationId, event.chatId(), event.text());
             reply = WhatsappTextUtils.convertMdToWhatsapp(aiText);
         } catch (Exception e) {
-            log.error("Error processing AI query for WhatsApp instance [{}]", event.instanceId(), e);
+            log.error("AI processing failed, instance={}, error={}", event.instanceId(), e.getClass().getSimpleName());
             // The customer must not be left without an answer: the seller takes over
             conversationService.askSellerForHelp(channel.shopId(), event.chatId(), "AI не смог ответить (ошибка сервиса)");
             reply = HandoffRules.customerNotice(event.text());
         }
-        send(channel, event.chatId(), reply);
+        if (!conversationService.isPaused(channel.shopId(), event.chatId())) {
+            send(channel, event.chatId(), reply);
+        }
     }
 
     private void send(WhatsappChannelDto channel, String chatId, String text) {

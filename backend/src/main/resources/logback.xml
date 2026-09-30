@@ -23,8 +23,11 @@
         </encoder>
     </appender>
 
-    <logger name="az.nizami.smartdirectaze" level="DEBUG" />
+    <logger name="az.nizami.smartdirectaze" level="INFO" />
 
+    <!-- Provider retry loggers may include response bodies even when model logging is disabled. -->
+    <logger name="dev.langchain4j" level="OFF" />
+    <logger name="org.hibernate.engine.jdbc.spi.SqlExceptionHelper" level="OFF" />
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />

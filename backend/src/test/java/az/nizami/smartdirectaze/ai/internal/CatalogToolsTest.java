@@ -61,7 +61,7 @@ class CatalogToolsTest {
         String result = catalogTools.createFinalOrder(new ConversationKey(shopId, "wa:1:994500000000@c.us", "994500000000@c.us"), customerName, phoneNumber, deliveryAddress, itemsSummary, paymentMethod);
 
         // Assert
-        assertEquals("Заказ успешно создан. Номер заказа: #100", result);
+        assertEquals("Заявка на заказ #100 принята. Окончательную стоимость и наличие подтверждает продавец.", result);
         verify(orderService).createNewOrder(shopId, customerName, phoneNumber, deliveryAddress, itemsSummary, paymentMethod);
         verify(notificationService).sendNewOrderAlertToOwner(eq(shopId), eq(mockOrder));
     }
@@ -91,6 +91,19 @@ class CatalogToolsTest {
         assertEquals("Delivery price: 5 AZN; delivery is free for orders from 50 AZN. ",
                 CatalogTools.describeDeliveryPrice(new BigDecimal("5"), new BigDecimal("50")));
         assertEquals("Delivery is free. ", CatalogTools.describeDeliveryPrice(BigDecimal.ZERO, null));
+    }
+
+    @Test
+    void missingPolicyNeverInventsCommercialTerms() {
+        when(productService.getShopById(2L)).thenReturn(ShopDto.builder().address(" ").workingHours("").build());
+        String policy = catalogTools.getShopPolicyInfo(new ConversationKey(2L, "test", null));
+        org.junit.jupiter.api.Assertions.assertFalse(policy.contains("Delivery is free"));
+        org.junit.jupiter.api.Assertions.assertFalse(policy.contains("10:00"));
+        org.junit.jupiter.api.Assertions.assertFalse(policy.contains("m10"));
+        org.junit.jupiter.api.Assertions.assertFalse(policy.contains("Online-only"));
+        org.junit.jupiter.api.Assertions.assertTrue(policy.contains("Fitting/Trying allowed: Not specified"));
+        org.junit.jupiter.api.Assertions.assertTrue(CatalogTools.describeDeliveryPrice(null, null).contains("not specified"));
+        org.junit.jupiter.api.Assertions.assertTrue(CatalogTools.describeDeliveryPrice(new BigDecimal("-1"), null).contains("not specified"));
     }
 
     @Test
