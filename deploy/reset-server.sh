@@ -5,6 +5,8 @@
 #
 #   bash deploy/reset-server.sh            # asks to type the site name
 #   RESET_CONFIRM=smartdirect.qrfood.az bash deploy/reset-server.sh
+# Started from zsh (e.g. "zsh script" or an IDE run button): rerun in bash, the script relies on it
+[ -n "${BASH_VERSION:-}" ] || exec bash "$0" "$@"
 set -euo pipefail
 SERVER=root@157.180.16.28
 SITE=smartdirect.qrfood.az

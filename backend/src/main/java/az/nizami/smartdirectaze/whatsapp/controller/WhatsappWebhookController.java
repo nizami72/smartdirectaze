@@ -40,12 +40,6 @@ public class WhatsappWebhookController {
         }
     }
 
-    @GetMapping(value = "${app.url.component.alive}")
-    public ResponseEntity<String> alive() {
-        log.debug("Whatsapp alive called");
-        return ResponseEntity.status(HttpStatus.OK).body("<h3>Whatsapp alive id here!</h3>");
-    }
-
     @PostMapping
     public ResponseEntity<Void> handleIncomingMessage(@RequestBody WebhookRequest request,
                                                       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {

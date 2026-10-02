@@ -10,7 +10,7 @@
     </parent>
     <groupId>az.nizami</groupId>
     <artifactId>smartdirectaze</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.1.0</version>
     <name>smartdirectaze</name>
     <description>Smart Direct Aze project</description>
     <url/>
@@ -29,6 +29,8 @@
 
     <properties>
         <java.version>21</java.version>
+        <!-- Commit shown by /webhooks/w/alive; deploy/deploy.sh passes the real one -->
+        <git.commit>local</git.commit>
     </properties>
 
     <dependencyManagement>
@@ -218,9 +220,37 @@
     <build>
         <plugins>
 
+            <!-- Lombok declared explicitly: newer JDKs no longer run annotation processors found on the classpath -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <!-- META-INF/build-info.properties: version, build time and commit for /webhooks/w/alive -->
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                        <configuration>
+                            <additionalProperties>
+                                <commit>${git.commit}</commit>
+                            </additionalProperties>
+                        </configuration>
+                    </execution>
+                </executions>
                 <configuration>
                     <excludes>
                         <exclude>

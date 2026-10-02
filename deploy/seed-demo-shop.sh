@@ -3,6 +3,8 @@
 # Adds nothing twice (products matched by SKU). Works only while /etc/smartdirect/allow-reset exists.
 #   bash deploy/seed-demo-shop.sh 2                               # shop #2, deploy/demo/shoe-shop.sql
 #   bash deploy/seed-demo-shop.sh 2 deploy/demo/other-catalog.sql
+# Started from zsh (e.g. "zsh script" or an IDE run button): rerun in bash, the script relies on it
+[ -n "${BASH_VERSION:-}" ] || exec bash "$0" "$@"
 set -euo pipefail
 SHOP_ID=${1:?usage: seed-demo-shop.sh <shop id> [catalog.sql]}
 CATALOG=${2:-$(dirname "$0")/demo/shoe-shop.sql}

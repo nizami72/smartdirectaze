@@ -3,6 +3,8 @@
 # Works only with your SSH key: the site itself refuses to register admin emails.
 #   bash deploy/create-admin.sh                  # nizami.budagov@gmail.com
 #   bash deploy/create-admin.sh other@admin.az   # another email from ADMIN_EMAILS
+# Started from zsh (e.g. "zsh script" or an IDE run button): rerun in bash, the script relies on it
+[ -n "${BASH_VERSION:-}" ] || exec bash "$0" "$@"
 set -euo pipefail
 SERVER=root@157.180.16.28
 SSH="ssh -i $HOME/.ssh/key2 -o BatchMode=yes"

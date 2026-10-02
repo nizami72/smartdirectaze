@@ -29,6 +29,10 @@ systemctl enable smartdirect.service
 install -m 755 "$HERE/backup-db.sh" /opt/smartdirect/backup-db.sh
 ( crontab -l 2>/dev/null | grep -v "/opt/smartdirect/backup-db.sh"; echo "30 2 * * * /opt/smartdirect/backup-db.sh" ) | crontab -
 
+# Health check every minute, Telegram alert to the operator
+install -m 755 "$HERE/healthcheck.sh" /opt/smartdirect/healthcheck.sh
+( crontab -l 2>/dev/null | grep -v "/opt/smartdirect/healthcheck.sh"; echo "* * * * * /opt/smartdirect/healthcheck.sh" ) | crontab -
+
 # Nginx site: needs the certificate (see deploy/README.md)
 install -m 644 "$HERE/nginx/$DOMAIN.conf" /etc/nginx/sites-available/$DOMAIN.conf
 echo "Server prepared. Next: certificate, env file, deploy.sh"
