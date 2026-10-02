@@ -30,6 +30,7 @@ public interface AiChannelService {
      * Logs the number out and frees the instance, so it can be given to another shop.
      */
     AdminWhatsappShopDto unbindInstance(Long shopId);
+    void disconnectWhatsApp(Long shopId);
 
     /**
      * Sets the current webhook URL and token in every bound instance (after moving to another address).

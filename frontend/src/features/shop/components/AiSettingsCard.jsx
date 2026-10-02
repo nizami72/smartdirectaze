@@ -17,6 +17,8 @@ const AiSettingsCard = ({ shopId }) => {
   const [notificationPhone, setNotificationPhone] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  // "For everyone" is switched on only after the merchant sees which number the AI will answer on
+  const [confirmOn, setConfirmOn] = useState(false);
 
   useEffect(() => {
     if (!shopId) return;
@@ -94,7 +96,11 @@ const AiSettingsCard = ({ shopId }) => {
             key={mode.value}
             type="button"
             disabled={saving}
-            onClick={() => save({ ...settings, aiMode: mode.value })}
+            onClick={() => {
+              if (mode.value === 'ON' && settings.aiMode !== 'ON') { setConfirmOn(true); return; }
+              setConfirmOn(false);
+              save({ ...settings, aiMode: mode.value });
+            }}
             className={`py-2 px-3 rounded-xl text-sm font-semibold transition-all ${
               settings.aiMode === mode.value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'
             }`}
@@ -103,7 +109,30 @@ const AiSettingsCard = ({ shopId }) => {
           </button>
         ))}
       </div>
-      <p className="text-sm text-slate-500 mt-3">{currentMode?.hint}</p>
+      {confirmOn ? (
+        <div className="mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+          <p className="text-sm text-amber-900">
+            AI будет отвечать всем, кто пишет на{' '}
+            {settings.connectedPhone
+              ? <b className="whitespace-nowrap">+{settings.connectedPhone}</b>
+              : 'подключённый номер WhatsApp'}
+            . Это номер, на который пишут ваши покупатели?
+          </p>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <button type="button" disabled={saving}
+                    onClick={() => { setConfirmOn(false); save({ ...settings, aiMode: 'ON' }); }}
+                    className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-sm font-semibold">
+              Да, включить для всех
+            </button>
+            <button type="button" onClick={() => setConfirmOn(false)}
+                    className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl px-4 py-2 text-sm font-semibold">
+              Отмена
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-slate-500 mt-3">{currentMode?.hint}</p>
+      )}
 
       {settings.aiMode === 'TEST' && (
         <div className="mt-5">

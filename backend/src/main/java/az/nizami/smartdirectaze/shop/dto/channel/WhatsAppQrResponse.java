@@ -13,4 +13,6 @@ import lombok.NoArgsConstructor;
 public class WhatsAppQrResponse {
     private String qrCode;
     private ChannelStatus status;
+    /** Digits of the number that scanned the QR; set once connected */
+    private String connectedPhone;
 }

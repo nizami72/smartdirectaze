@@ -26,6 +26,8 @@ const ConnectChannelsPage = () => {
   const [error, setError] = useState('');
   const [completing, setCompleting] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [connectedPhone, setConnectedPhone] = useState('');
+  const [disconnecting, setDisconnecting] = useState(false);
 
   useEffect(() => {
     api.get('/api/v1/admin/me').then(res => setIsAdmin(res.data.admin === true)).catch(() => setIsAdmin(false));
@@ -37,14 +39,16 @@ const ConnectChannelsPage = () => {
 
     try {
       const response = await api.get(`/api/v1/shops/channels/whatsapp/qr?shopId=${shopId}`);
-      const { status: backendStatus, qrCode: backendQr } = response.data;
+      const { status: backendStatus, qrCode: backendQr, connectedPhone: backendPhone } = response.data;
       
       console.log('Backend status:', backendStatus); // Добавим лог для отладки
       setStatus(backendStatus);
-      if (backendQr) setQrCode(backendQr);
+      // Green API sends bare base64 PNG, the local mock a full data URL
+      if (backendQr) setQrCode(backendQr.startsWith('data:') ? backendQr : `data:image/png;base64,${backendQr}`);
       
       if (backendStatus === 'CONNECTED') {
           setError('');
+          setConnectedPhone(backendPhone || '');
       }
     } catch (err) {
       console.error('Check status error:', err);
@@ -81,6 +85,25 @@ const ConnectChannelsPage = () => {
       setError('Не удалось завершить регистрацию. Попробуйте еще раз.');
     } finally {
       setCompleting(false);
+    }
+  };
+
+  // Scanned with the wrong phone: log it out and wait for a fresh QR
+  const handleConnectAnother = async () => {
+    setDisconnecting(true);
+    setError('');
+    try {
+      await api.post(`/api/v1/shops/channels/whatsapp/disconnect?shopId=${shopId}`);
+      setConnectedPhone('');
+      setQrCode('');
+      // Green API needs a few seconds after logout before it hands out a new QR
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      setStatus('WAITING_QR');
+    } catch (err) {
+      console.error('Disconnect error:', err);
+      setError('Не удалось отключить номер. Попробуйте ещё раз.');
+    } finally {
+      setDisconnecting(false);
     }
   };
 
@@ -188,6 +211,18 @@ const ConnectChannelsPage = () => {
                 <CheckCircle2 className="w-10 h-10 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-slate-900 mb-2">Успешно подключено!</h3>
+              {connectedPhone && (
+                <div className="bg-white rounded-2xl border border-emerald-100 px-4 py-4 my-5">
+                  <p className="text-3xl font-bold text-slate-900 tracking-wide whitespace-nowrap">+{connectedPhone}</p>
+                  <p className="text-slate-600 text-sm mt-2">Это номер, на который пишут покупатели?</p>
+                  <button type="button" onClick={handleConnectAnother} disabled={disconnecting}
+                          className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:underline disabled:opacity-50">
+                    {disconnecting && <Loader2 className="w-4 h-4 animate-spin" />}
+                    Нет, подключить другой
+                  </button>
+                  {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+                </div>
+              )}
               <p className="text-emerald-700 font-medium">
                 AI сейчас в режиме «Тест» и отвечает только вашим тестовым номерам.
                 Добавьте свой второй номер в панели магазина, проверьте ответы и включите AI для всех.

@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.shop.service;
 
+import az.nizami.smartdirectaze.shop.AiMode;
 import az.nizami.smartdirectaze.shop.PhoneUtils;
 import az.nizami.smartdirectaze.identity.UserDto;
 import az.nizami.smartdirectaze.identity.UserService;
@@ -115,6 +116,7 @@ public class AiChannelServiceImpl implements AiChannelService {
             markConnected(aiChannelEntity);
             return WhatsAppQrResponse.builder()
                     .status(ChannelStatus.CONNECTED)
+                    .connectedPhone(aiChannelEntity.getWid())
                     .build();
         } else if ("qrCode".equals(type)) {
             log.debug("Qr code are received, waiting for client phone to be logged in [{}]", shopId);
@@ -271,6 +273,27 @@ public class AiChannelServiceImpl implements AiChannelService {
         channel.setChannelStatus(ChannelStatus.WAITING_FOR_INSTANCE);
         aiChannelRepository.save(channel);
         return toAdminDto(shop);
+    }
+
+    /**
+     * The merchant scanned the QR with the wrong phone: log that phone out of the instance and show a fresh QR.
+     * "For everyone" falls back to "Test", so a new number never answers all customers before it is checked.
+     */
+    @Override
+    @Transactional
+    public void disconnectWhatsApp(Long shopId) {
+        AiChannelEntity channel = findWhatsAppChannel(shopId);
+        if (channel.getInstanceExternalId() == null || channel.getApiToken() == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "WhatsApp магазина ещё не подготовлен");
+        }
+        whatsappService.logout(channel.getInstanceExternalId(), channel.getApiToken());
+        channel.setWid(null);
+        channel.setChannelStatus(ChannelStatus.WAITING_QR);
+        if (channel.getAiMode() == AiMode.ON) {
+            channel.setAiMode(AiMode.TEST);
+        }
+        aiChannelRepository.save(channel);
+        log.info("Merchant disconnected WhatsApp of shop {} to scan another phone", shopId);
     }
 
     /**

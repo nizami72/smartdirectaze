@@ -57,6 +57,15 @@ public class AiChannelController {
         return ResponseEntity.ok(aiChannelService.getWhatsAppQr(shopId));
     }
 
+    // Wrong phone scanned: log it out, the page then shows a new QR
+    @PostMapping("/whatsapp/disconnect")
+    public ResponseEntity<Void> disconnectWhatsApp(@RequestParam Long shopId,
+                                                   @AuthenticationPrincipal UserDetails userDetails) {
+        validateOwner(shopId, userDetails);
+        aiChannelService.disconnectWhatsApp(shopId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/whatsapp/ai")
     public ResponseEntity<AiSettingsDto> getWhatsAppAiSettings(@RequestParam Long shopId,
                                                                @AuthenticationPrincipal UserDetails userDetails) {
