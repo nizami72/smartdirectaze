@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.shop.service;
 
+import az.nizami.smartdirectaze.shop.PhoneUtils;
 import az.nizami.smartdirectaze.shop.NotificationService;
 import az.nizami.smartdirectaze.shop.OrderDTO;
 import az.nizami.smartdirectaze.shop.ProductService;
@@ -58,7 +59,7 @@ public class NotificationServiceImpl implements NotificationService {
         aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP)
                 .filter(channel -> channel.getInstanceExternalId() != null && channel.getApiToken() != null)
                 .ifPresentOrElse(
-                        channel -> sendToMerchant(channel, formatHumanHelpMessage(shopId, customerChatId, customerName, reason, lastMessage, aiPaused),
+                        channel -> sendToMerchant(channel, formatHumanHelpMessage(customerChatId, customerName, reason, lastMessage, aiPaused),
                                 "help alert for chat " + customerChatId),
                         () -> log.warn("Help alert for shop {} not sent: no WhatsApp channel", shopId));
     }
@@ -87,26 +88,24 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
-    String formatHumanHelpMessage(Long shopId, String customerChatId, String customerName, String reason, String lastMessage,
+    // One action and one link: the seller wants to answer this customer right now
+    String formatHumanHelpMessage(String customerChatId, String customerName, String reason, String lastMessage,
                                   boolean aiPaused) {
-        String phone = customerChatId.replaceAll("@.*$", "");
         return String.format(
                 "🙋 *Нужна ваша помощь*\n\n" +
-                "*Клиент:* +%s%s\n" +
+                "*Клиент:* %s%s\n" +
                 "*Причина:* %s\n" +
                 "*Последнее сообщение:* %s\n\n" +
-                "%s\n" +
-                "Написать клиенту: https://wa.me/%s\n" +
-                "Все такие чаты: %s/shops/%d",
-                phone,
+                "%s\n\n" +
+                "👉 Ответить клиенту:\n" +
+                "https://wa.me/%s",
+                PhoneUtils.pretty(customerChatId),
                 customerName != null && !customerName.isBlank() ? " (" + customerName + ")" : "",
                 reason,
                 lastMessage != null ? "«" + lastMessage + "»" : "—",
                 aiPaused ? "AI в этом чате молчит, пока вы не ответите."
                         : "AI отвечает клиенту на другие вопросы, а на этот ответьте вы.",
-                phone,
-                frontendBaseUrl,
-                shopId
+                PhoneUtils.digits(customerChatId)
         );
     }
 
