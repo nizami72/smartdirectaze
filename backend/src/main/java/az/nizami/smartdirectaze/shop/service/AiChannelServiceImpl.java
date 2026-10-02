@@ -1,6 +1,7 @@
 package az.nizami.smartdirectaze.shop.service;
 
 import az.nizami.smartdirectaze.shop.AiMode;
+import java.util.Set;
 import az.nizami.smartdirectaze.shop.PhoneUtils;
 import az.nizami.smartdirectaze.identity.UserDto;
 import az.nizami.smartdirectaze.identity.UserService;
@@ -150,16 +151,31 @@ public class AiChannelServiceImpl implements AiChannelService {
     @Transactional
     public AiSettingsDto updateWhatsAppAiSettings(Long shopId, AiSettingsDto settings) {
         AiChannelEntity channel = findWhatsAppChannel(shopId);
+        // Numbers saved before the format check stay as they are, so the merchant can still remove them
+        Set<String> testPhones = new TreeSet<>();
+        for (String phone : settings.getTestPhones()) {
+            String digits = PhoneUtils.digits(phone);
+            if (!digits.isEmpty()) {
+                testPhones.add(channel.getTestPhones().contains(digits) ? digits : validPhone(phone));
+            }
+        }
+        String notificationPhone = PhoneUtils.digits(settings.getNotificationPhone()).isEmpty()
+                ? null : validPhone(settings.getNotificationPhone());
         channel.setAiMode(settings.getAiMode());
         channel.getTestPhones().clear();
-        settings.getTestPhones().stream()
-                .map(PhoneUtils::digits)
-                .filter(phone -> !phone.isEmpty())
-                .forEach(channel.getTestPhones()::add);
-        String notificationPhone = PhoneUtils.digits(settings.getNotificationPhone());
-        channel.setNotificationPhone(notificationPhone.isEmpty() ? null : notificationPhone);
+        channel.getTestPhones().addAll(testPhones);
+        channel.setNotificationPhone(notificationPhone);
         log.info("WhatsApp AI settings of shop {} changed: mode {}, {} test phone(s)", shopId, channel.getAiMode(), channel.getTestPhones().size());
         return toAiSettings(channel);
+    }
+
+    private static String validPhone(String phone) {
+        String normalized = PhoneUtils.normalize(phone);
+        if (normalized == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(
+                    "Неверный номер %s: азербайджанский номер — 12 цифр, например +994 50 123 45 67", phone.trim()));
+        }
+        return normalized;
     }
 
     private AiChannelEntity findWhatsAppChannel(Long shopId) {
@@ -174,6 +190,7 @@ public class AiChannelServiceImpl implements AiChannelService {
                 .notificationPhone(channel.getNotificationPhone())
                 .channelStatus(channel.getChannelStatus().name())
                 .connectedPhone(channel.getWid())
+                .ownerPhone(ownerPhone(channel.getShop().getOwnerId()))
                 .build();
     }
 
@@ -333,6 +350,14 @@ public class AiChannelServiceImpl implements AiChannelService {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /** First valid phone the owner gave at registration, or null */
+    private String ownerPhone(Long ownerId) {
+        return userService.findById(ownerId)
+                .map(UserDto::getPhones)
+                .flatMap(phones -> phones.stream().map(PhoneUtils::normalize).filter(java.util.Objects::nonNull).findFirst())
+                .orElse(null);
     }
 
     private AdminWhatsappShopDto toAdminDto(ShopEntity shop) {

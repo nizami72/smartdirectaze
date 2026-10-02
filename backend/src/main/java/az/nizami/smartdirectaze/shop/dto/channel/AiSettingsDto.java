@@ -28,4 +28,7 @@ public class AiSettingsDto {
     // Phone for order alerts; empty = the merchant's own WhatsApp chat
     @Size(max = 32)
     private String notificationPhone;
+
+    // Read only: the owner's personal phone from registration, suggested for notifications (digits)
+    private String ownerPhone;
 }

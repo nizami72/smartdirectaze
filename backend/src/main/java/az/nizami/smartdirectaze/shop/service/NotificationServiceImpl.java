@@ -1,6 +1,9 @@
 package az.nizami.smartdirectaze.shop.service;
 
 import az.nizami.smartdirectaze.shop.PhoneUtils;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import az.nizami.smartdirectaze.shop.entities.ChannelStatus;
 import az.nizami.smartdirectaze.shop.NotificationService;
 import az.nizami.smartdirectaze.shop.OrderDTO;
 import az.nizami.smartdirectaze.shop.ProductService;
@@ -62,6 +65,28 @@ public class NotificationServiceImpl implements NotificationService {
                         channel -> sendToMerchant(channel, formatHumanHelpMessage(customerChatId, customerName, reason, lastMessage, aiPaused),
                                 "help alert for chat " + customerChatId),
                         () -> log.warn("Help alert for shop {} not sent: no WhatsApp channel", shopId));
+    }
+
+    @Override
+    public String sendTestNotification(Long shopId) {
+        AiChannelEntity channel = aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP)
+                .filter(c -> c.getInstanceExternalId() != null && c.getApiToken() != null)
+                .filter(c -> c.getChannelStatus() == ChannelStatus.CONNECTED)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "Сначала подключите WhatsApp магазина"));
+        String target = channel.getNotificationPhone() != null ? channel.getNotificationPhone() : channel.getWid();
+        if (target == null || target.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Номер магазина ещё не известен, обновите страницу");
+        }
+        try {
+            whatsappService.sendMessage(channel.getInstanceExternalId(), channel.getApiToken(), target + "@c.us",
+                    "✅ *Это номер для уведомлений SmartDirect*\n\n" +
+                    "Сюда будут приходить новые заказы и вопросы покупателей, на которые нужен ваш ответ.");
+        } catch (Exception e) {
+            log.error("Test notification of shop {} not sent: {}", shopId, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "WhatsApp не принял сообщение, попробуйте ещё раз");
+        }
+        log.info("Test notification of shop {} sent", shopId);
+        return target;
     }
 
     private void sendViaWhatsapp(AiChannelEntity channel, OrderDTO order) {

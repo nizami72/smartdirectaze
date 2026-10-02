@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.shop.service;
 
+import az.nizami.smartdirectaze.shop.PhoneUtils;
 import az.nizami.smartdirectaze.identity.UserDto;
 import az.nizami.smartdirectaze.telegram.service.TelegramService;
 import az.nizami.smartdirectaze.business.BusinessService;
@@ -62,8 +63,14 @@ public class ShopService {
         ShopEntity savedShop = shopRepository.save(shop);
         shop.setChannels(aiChannelService.createBaseChannels(savedShop));
 
+        // Order and help alerts go to the owner's personal phone from registration until the merchant changes it
+        var owner = userService.findById(ownerId);
+        String ownerPhone = owner.map(UserDto::getPhones).flatMap(phones -> phones.stream()
+                .map(PhoneUtils::normalize).filter(java.util.Objects::nonNull).findFirst()).orElse(null);
+        shop.getChannels().forEach(channel -> channel.setNotificationPhone(ownerPhone));
+
         // The operator binds a Green API instance to every new shop by hand
-        String ownerEmail = userService.findById(ownerId).map(UserDto::getEmail).orElse("—");
+        String ownerEmail = owner.map(UserDto::getEmail).orElse("—");
         telegramService.notifyAdmin(String.format(
                 "🏪 Новый магазин «%s» (#%d), владелец %s — нужно привязать idInstance и apiTokenInstance в админке.",
                 savedShop.getShopName(), savedShop.getId(), ownerEmail));

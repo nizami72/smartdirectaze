@@ -2,6 +2,7 @@ package az.nizami.smartdirectaze.shop.controller;
 
 import az.nizami.smartdirectaze.identity.RegistrationStep;
 import az.nizami.smartdirectaze.identity.UserService;
+import az.nizami.smartdirectaze.shop.NotificationService;
 import az.nizami.smartdirectaze.shop.dto.channel.AiSettingsDto;
 import az.nizami.smartdirectaze.shop.dto.channel.TelegramChannelRequest;
 import az.nizami.smartdirectaze.shop.dto.channel.WhatsAppInitRequest;
@@ -26,6 +27,7 @@ public class AiChannelController {
     private final AiChannelService aiChannelService;
     private final ShopRepository shopRepository;
     private final UserService userService;
+    private final NotificationService notificationService;
 
     @PostMapping("/telegram")
     public ResponseEntity<Void> connectTelegram(
@@ -64,6 +66,14 @@ public class AiChannelController {
         validateOwner(shopId, userDetails);
         aiChannelService.disconnectWhatsApp(shopId);
         return ResponseEntity.noContent().build();
+    }
+
+    // "Send a test notification": shows the merchant that order and help alerts reach the right phone
+    @PostMapping("/whatsapp/test-notification")
+    public ResponseEntity<java.util.Map<String, String>> sendTestNotification(@RequestParam Long shopId,
+                                                                           @AuthenticationPrincipal UserDetails userDetails) {
+        validateOwner(shopId, userDetails);
+        return ResponseEntity.ok(java.util.Map.of("sentTo", notificationService.sendTestNotification(shopId)));
     }
 
     @GetMapping("/whatsapp/ai")

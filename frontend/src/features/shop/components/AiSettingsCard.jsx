@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../api/api.ts';
-import { AlertTriangle, Bot, CheckCircle2, Loader2, Plus, X } from 'lucide-react';
+import { AlertTriangle, Bot, CheckCircle2, Loader2, Plus, Send, X } from 'lucide-react';
+import { normalizePhone, prettyPhone, PHONE_HINT } from '../../../utils/utils';
 
 const MODES = [
   { value: 'OFF', label: 'Выключен', hint: 'AI молчит, вы отвечаете клиентам сами.' },
@@ -17,39 +18,82 @@ const AiSettingsCard = ({ shopId }) => {
   const [notificationPhone, setNotificationPhone] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageIsError, setMessageIsError] = useState(false);
   // "For everyone" is switched on only after the merchant sees which number the AI will answer on
   const [confirmOn, setConfirmOn] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+  const [notificationError, setNotificationError] = useState('');
+  const [testResult, setTestResult] = useState(null); // { ok, text }
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     if (!shopId) return;
     api.get(`/api/v1/shops/channels/whatsapp/ai?shopId=${shopId}`)
       .then(res => {
         setSettings(res.data);
-        setNotificationPhone(res.data.notificationPhone ? `+${res.data.notificationPhone}` : '');
+        setNotificationPhone(prettyPhone(res.data.notificationPhone));
       })
       .catch(() => setSettings(null));
   }, [shopId]);
 
+  // Returns true when saved; the server's own explanation is shown when it refuses
   const save = async (next) => {
     setSaving(true);
     setMessage('');
     try {
       const res = await api.put(`/api/v1/shops/channels/whatsapp/ai?shopId=${shopId}`, next);
       setSettings(res.data);
+      setNotificationPhone(prettyPhone(res.data.notificationPhone));
       setMessage('Сохранено');
-    } catch {
-      setMessage('Не удалось сохранить, попробуйте ещё раз');
+      setMessageIsError(false);
+      return true;
+    } catch (err) {
+      setMessage(err.response?.data?.message || 'Не удалось сохранить, попробуйте ещё раз');
+      setMessageIsError(true);
+      return false;
     } finally {
       setSaving(false);
     }
   };
 
-  const addPhone = (e) => {
+  const addPhone = async (e) => {
     e.preventDefault();
-    const phone = newPhone.replace(/\D/g, '');
-    if (!phone) return;
-    setNewPhone('');
-    save({ ...settings, testPhones: [...new Set([...settings.testPhones, phone])] });
+    if (!newPhone.trim()) return;
+    const phone = normalizePhone(newPhone);
+    if (!phone) {
+      setPhoneError(`Неверный номер: ${PHONE_HINT}`);
+      return;
+    }
+    setPhoneError('');
+    if (await save({ ...settings, testPhones: [...new Set([...settings.testPhones, phone])] })) setNewPhone('');
+  };
+
+  const saveNotificationPhone = async (value) => {
+    setTestResult(null);
+    if (!value.trim()) {
+      setNotificationError('');
+      return save({ ...settings, notificationPhone: '' });
+    }
+    const phone = normalizePhone(value);
+    if (!phone) {
+      setNotificationError(`Неверный номер: ${PHONE_HINT}`);
+      return false;
+    }
+    setNotificationError('');
+    return save({ ...settings, notificationPhone: phone });
+  };
+
+  const sendTest = async () => {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const res = await api.post(`/api/v1/shops/channels/whatsapp/test-notification?shopId=${shopId}`);
+      setTestResult({ ok: true, text: `Отправлено на ${prettyPhone(res.data.sentTo)}. Проверьте WhatsApp на этом телефоне.` });
+    } catch (err) {
+      setTestResult({ ok: false, text: err.response?.data?.message || 'Не удалось отправить, попробуйте ещё раз' });
+    } finally {
+      setTesting(false);
+    }
   };
 
   const removePhone = (phone) =>
@@ -142,10 +186,13 @@ const AiSettingsCard = ({ shopId }) => {
           )}
           <div className="flex flex-wrap gap-2 mb-3">
             {settings.testPhones.map(phone => (
-              <span key={phone} className="inline-flex items-center gap-1 bg-slate-100 rounded-full pl-3 pr-1 py-1 text-sm text-slate-700">
-                +{phone}
+              <span key={phone} title={normalizePhone(phone) === phone ? '' : `Неверный номер: ${PHONE_HINT}`}
+                    className={`inline-flex items-center gap-1 rounded-full pl-3 pr-1 py-1 text-sm ${
+                      normalizePhone(phone) === phone ? 'bg-slate-100 text-slate-700' : 'bg-red-50 text-red-700 ring-1 ring-red-200'
+                    }`}>
+                {prettyPhone(phone)}{normalizePhone(phone) === phone ? '' : ' — неверный, удалите'}
                 <button type="button" onClick={() => removePhone(phone)} disabled={saving}
-                        className="p-1 rounded-full hover:bg-slate-200" aria-label={`Удалить +${phone}`}>
+                        className="p-1 rounded-full hover:bg-slate-200" aria-label={`Удалить ${prettyPhone(phone)}`}>
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -155,7 +202,7 @@ const AiSettingsCard = ({ shopId }) => {
             <input
               type="tel"
               value={newPhone}
-              onChange={e => setNewPhone(e.target.value)}
+              onChange={e => { setNewPhone(e.target.value); setPhoneError(''); }}
               placeholder="+994 55 123 45 67"
               className="flex-1 min-w-0 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
@@ -165,20 +212,36 @@ const AiSettingsCard = ({ shopId }) => {
               Добавить
             </button>
           </form>
+          {phoneError && <p className="text-sm text-red-600 mt-2">{phoneError}</p>}
         </div>
       )}
 
       <div className="mt-6 pt-5 border-t border-slate-100">
         <p className="text-sm font-semibold text-slate-700 mb-1">Уведомления о заказах</p>
         <p className="text-sm text-slate-500 mb-2">
-          Номер, на который придёт сообщение о новом заказе. Если пусто — в чат «с самим собой» на подключённом номере (без звука).
+          Номер, на который придут новые заказы и вопросы покупателей, где нужен ваш ответ.
         </p>
+        {!settings.notificationPhone && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-3">
+            <p className="flex items-start gap-2 text-sm text-amber-900">
+              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+              Номер не указан: уведомления приходят в чат «Вы» на номере магазина — без звука, их легко пропустить.
+            </p>
+            {settings.ownerPhone && (
+              <button type="button" disabled={saving}
+                      onClick={() => saveNotificationPhone(settings.ownerPhone)}
+                      className="mt-2 text-sm font-semibold text-amber-900 underline disabled:opacity-50">
+                Использовать мой номер {prettyPhone(settings.ownerPhone)}
+              </button>
+            )}
+          </div>
+        )}
         <form className="flex gap-2"
-              onSubmit={e => { e.preventDefault(); save({ ...settings, notificationPhone: notificationPhone.replace(/\D/g, '') }); }}>
+              onSubmit={e => { e.preventDefault(); saveNotificationPhone(notificationPhone); }}>
           <input
             type="tel"
             value={notificationPhone}
-            onChange={e => setNotificationPhone(e.target.value)}
+            onChange={e => { setNotificationPhone(e.target.value); setNotificationError(''); }}
             placeholder="+994 55 123 45 67"
             className="flex-1 min-w-0 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
@@ -187,9 +250,23 @@ const AiSettingsCard = ({ shopId }) => {
             Сохранить
           </button>
         </form>
+        {notificationError && <p className="text-sm text-red-600 mt-2">{notificationError}</p>}
+
+        {settings.channelStatus === 'CONNECTED' && (
+          <div className="mt-3">
+            <button type="button" onClick={sendTest} disabled={testing}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:underline disabled:opacity-50">
+              {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              Отправить тестовое уведомление
+            </button>
+            {testResult && (
+              <p className={`text-sm mt-1 ${testResult.ok ? 'text-emerald-700' : 'text-red-600'}`}>{testResult.text}</p>
+            )}
+          </div>
+        )}
       </div>
 
-      {message && <p className="text-xs text-slate-400 mt-3">{message}</p>}
+      {message && <p className={`mt-3 ${messageIsError ? 'text-sm text-red-600' : 'text-xs text-slate-400'}`}>{message}</p>}
     </section>
   );
 };
