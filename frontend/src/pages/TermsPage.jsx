@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 // Version of the text below; stored with each registration. Change it whenever the text changes.
-export const TERMS_VERSION = '2026-10-02';
+export const TERMS_VERSION = '2026-10-02.2';
 
 // Who runs SmartDirect and how to reach them (shown in the text as is)
 const OPERATOR = 'Nizami';
@@ -50,7 +50,7 @@ const TEXT = {
       </>],
       ['6. Условия пилота', <>
         Сервис предоставляется «как есть», без гарантии бесперебойной работы. Он может ненадолго останавливаться для обновлений.
-        Оплату инстанса Green API стороны согласуют отдельно.
+        Подключение WhatsApp через Green API на время пилота оплачивает SmartDirect, мерчант за него не платит.
       </>],
       ['7. Окончание пилота и удаление данных', <>
         Любая сторона может закончить пилот в любой момент. После окончания номер отключается от SmartDirect, а данные магазина
@@ -98,7 +98,7 @@ const TEXT = {
       </>],
       ['6. Pilotun şərtləri', <>
         Xidmət «olduğu kimi», fasiləsiz işləmə zəmanəti olmadan təqdim olunur. Yeniləmələr üçün qısa müddətə dayana bilər.
-        Green API instansının ödənişi tərəflər arasında ayrıca razılaşdırılır.
+        Pilot müddətində WhatsApp-ın Green API vasitəsilə qoşulmasını SmartDirect ödəyir, satıcı bunun üçün ödəniş etmir.
       </>],
       ['7. Pilotun bitməsi və məlumatların silinməsi', <>
         İstənilən tərəf pilotu istənilən an bitirə bilər. Bitdikdən sonra nömrə SmartDirect-dən ayrılır, mağazanın və müştərilərinin
