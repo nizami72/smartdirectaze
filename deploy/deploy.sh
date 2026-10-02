@@ -20,6 +20,13 @@ echo "== backend"
 rsync -a --exclude target --exclude logs "$ROOT/backend/" "$BUILD/backend/"
 # Commit shown by /webhooks/w/alive; "-dirty" when uncommitted changes went into the build
 COMMIT=$(git -C "$ROOT" rev-parse --short HEAD)$(git -C "$ROOT" diff --quiet HEAD -- backend frontend || echo -dirty)
+# Released code carries the tag v<pom version> (deploy/release.sh); anything else is shipped with a warning
+VERSION=$(sed -n '/<artifactId>smartdirectaze<\/artifactId>/{n;s/.*<version>\(.*\)<\/version>.*/\1/p;}' "$ROOT/backend/pom.xml")
+if [ "$(git -C "$ROOT" describe --tags --exact-match HEAD 2>/dev/null || true)" = "v$VERSION" ] && [[ $COMMIT != *-dirty ]]; then
+  echo "   version $VERSION = tag v$VERSION ($COMMIT)"
+else
+  echo "   WARNING: not a release: pom says $VERSION, commit $COMMIT has no tag v$VERSION (bash deploy/release.sh <version>)"
+fi
 (cd "$BUILD/backend" && ./mvnw -o -q package -DskipTests -Dgit.commit="$COMMIT" || ./mvnw -q package -DskipTests -Dgit.commit="$COMMIT")
 JAR=$(ls "$BUILD"/backend/target/smartdirectaze-*.jar | grep -v plain | head -1)
 
