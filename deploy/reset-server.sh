@@ -36,4 +36,4 @@ for i in $(seq 1 60); do curl -sf http://127.0.0.1:8083/webhooks/w/alive >/dev/n
 curl -sf http://127.0.0.1:8083/webhooks/w/alive >/dev/null || { journalctl -u smartdirect -n 30 --no-pager; exit 1; }
 echo "fresh: $(docker exec smartdirect-db psql -U smartdirect -d smartdirect_db -Atc "select (select count(*) from users) || ' users, ' || (select count(*) from shops) || ' shops'")"
 REMOTE
-echo "Done. Register again with the admin email right away (ADMIN_EMAILS)."
+echo "Done. Create the admin account again: bash deploy/create-admin.sh (the site refuses admin emails)."
