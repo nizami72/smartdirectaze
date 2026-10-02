@@ -12,6 +12,7 @@ import TestSellerPage from './pages/TestSellerPage';
 import OrdersPage from './pages/OrdersPage';
 import AdminPage from './pages/AdminPage';
 import DashboardPage from './pages/DashboardPage';
+import AccountBar from './components/AccountBar';
 import EventsDashboardPage from './features/dashboard/pages/EventsDashboardPage';
 import './App.css';
 import GuestListPage from './features/guests/pages/GuestListPage';
@@ -20,6 +21,7 @@ import GuestPage from './features/guests/pages/GuestPage';
 function App() {
   return (
     <Router>
+      <AccountBar />
       <Routes>
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
