@@ -21,14 +21,14 @@
 <a id="server"></a>
 ## 1. Сервер
 
-- [ ] **1.1 👤 Выложить текущий master**
+- [x] **1.1 👤 Выложить текущий master**
   ```bash
   bash deploy/deploy.sh
   ```
   Готово, когда в конце `backend is up`, а в ответе версии `"commit"` без `-dirty`.
 
 
-- [ ] **1.2 👤 Включить профиль `prod` (новый systemd-юнит)**
+- [x] **1.2 👤 Включить профиль `prod` (новый systemd-юнит)**
   ```bash
   scp -i ~/.ssh/key2 deploy/smartdirect.service root@157.180.16.28:/etc/systemd/system/smartdirect.service
   ssh -i ~/.ssh/key2 root@157.180.16.28 'systemctl daemon-reload && systemctl restart smartdirect && sleep 40 && curl -s http://127.0.0.1:8083/webhooks/w/alive'
@@ -36,7 +36,7 @@
   Готово, когда ответ `"status":"UP"`. Если нет: `journalctl -u smartdirect -n 50 --no-pager`.
 
 
-- [ ] **1.3 👤 Поставить автоматическую проверку (сообщения в Telegram)**
+- [x] **1.3 👤 Поставить автоматическую проверку (сообщения в Telegram)**
   ```bash
   scp -i ~/.ssh/key2 deploy/healthcheck.sh root@157.180.16.28:/opt/smartdirect/healthcheck.sh
   ssh -i ~/.ssh/key2 root@157.180.16.28 'chmod 755 /opt/smartdirect/healthcheck.sh && (crontab -l; echo "* * * * * /opt/smartdirect/healthcheck.sh") | crontab -'
@@ -44,7 +44,7 @@
   Проверка: остановить сервис на 3 минуты (`systemctl stop smartdirect`), должно прийти «🔴 SmartDirect: …», после `systemctl start smartdirect` — «🟢 SmartDirect снова работает».
 
 
-- [ ] **1.4 👤 Остановить и запустить SmartDirect вручную**
+- [x] **1.4 👤 Остановить и запустить SmartDirect вручную**
 
   Остановить:
   ```bash
@@ -98,6 +98,9 @@
 
 - [ ] **2.5 🤖 Кнопка «Написать в поддержку»**
   Задать `VITE_SUPPORT_WHATSAPP` в `frontend/.env.production`. 👤 нужен номер поддержки.
+
+- [ ] **2.6 🤖 Кнопка «Отправить тестовое уведомление»**
+  Рядом с полем «Уведомления о заказах»: магазин сам пишет на этот номер «Это номер для уведомлений SmartDirect ✅». Пришло — номер верный. Вместо OTP: отправляет инстанс магазина своему владельцу, риска блокировки нет.
 
 ---
 
