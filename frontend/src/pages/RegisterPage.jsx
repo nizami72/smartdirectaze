@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/api.ts';
 import { formatAzerbaijanPhone } from '../utils/utils';
 import { Mail, Lock, User, Phone, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
+import { TERMS_VERSION } from './TermsPage';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -12,6 +13,7 @@ const RegisterPage = () => {
     name: '',
     phone: '+994',
   });
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
@@ -27,6 +29,8 @@ const RegisterPage = () => {
     if (!formData.name) errors.name = 'Имя обязательно';
 
     if (!formData.phone || formData.phone.length < 13) errors.phone = 'Введите полный номер телефона';
+
+    if (!termsAccepted) errors.terms = 'Примите условия пилота';
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -53,7 +57,7 @@ const RegisterPage = () => {
     try {
       // The backend keeps phones as a list
       const { phone, ...rest } = formData;
-      const response = await api.post('/api/v1/auth/register', { ...rest, phones: phone ? [phone] : [] });
+      const response = await api.post('/api/v1/auth/register', { ...rest, phones: phone ? [phone] : [], termsVersion: TERMS_VERSION });
       // After registration: the shops list sends a new user straight to creating a shop
       navigate('/shops');
       return;
@@ -200,6 +204,24 @@ const RegisterPage = () => {
                     <p className="mt-1 text-xs text-red-600 font-medium">{validationErrors.password}</p>
                 )}
               </div>
+            </div>
+
+            <div>
+              <label className="flex items-start gap-3 text-sm text-slate-700 cursor-pointer">
+                <input type="checkbox" checked={termsAccepted}
+                       onChange={e => { setTermsAccepted(e.target.checked); setValidationErrors(prev => ({ ...prev, terms: '' })); }}
+                       className="mt-0.5 w-4 h-4 accent-slate-900" />
+                <span>
+                  Я принимаю{' '}
+                  <Link to="/terms" target="_blank" className="font-semibold text-slate-900 underline underline-offset-4">
+                    условия пилота
+                  </Link>
+                  {' '}/ <Link to="/terms" target="_blank" className="underline underline-offset-4">pilot şərtlərini</Link> qəbul edirəm
+                </span>
+              </label>
+              {validationErrors.terms && (
+                  <p className="mt-1 text-xs text-red-600 font-medium">{validationErrors.terms}</p>
+              )}
             </div>
 
             <div className="pt-2">

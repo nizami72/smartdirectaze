@@ -37,6 +37,13 @@ public class User {
     @Builder.Default
     private RegistrationStep registrationStep = RegistrationStep.ACCOUNT_CREATED;
 
+    // Pilot terms (/terms) accepted at registration: when and which version of the text
+    @Column(name = "terms_accepted_at")
+    private LocalDateTime termsAcceptedAt;
+
+    @Column(name = "terms_version", length = 32)
+    private String termsVersion;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;

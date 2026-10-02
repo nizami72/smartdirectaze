@@ -13,6 +13,7 @@ import OrdersPage from './pages/OrdersPage';
 import AdminPage from './pages/AdminPage';
 import DashboardPage from './pages/DashboardPage';
 import AccountBar from './components/AccountBar';
+import TermsPage from './pages/TermsPage';
 import EventsDashboardPage from './features/dashboard/pages/EventsDashboardPage';
 import './App.css';
 import GuestListPage from './features/guests/pages/GuestListPage';
@@ -25,6 +26,7 @@ function App() {
       <Routes>
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/terms" element={<TermsPage />} />
         <Route path="/choose-business" element={<ChooseBusinessPage />} />
         {/* Shop onboarding and management: the shop id is always in the URL */}
         <Route path="/shops" element={<MyBusinessesPage />} />

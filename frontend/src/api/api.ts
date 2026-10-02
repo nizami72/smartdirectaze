@@ -14,7 +14,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const isAuthRequest = error.config?.url?.includes('/api/v1/auth/');
-    const onAuthPage = ['/login', '/register'].includes(window.location.pathname);
+    const onAuthPage = ['/login', '/register', '/terms'].includes(window.location.pathname);
     if (error.response?.status === 401 && !isAuthRequest && !onAuthPage) {
       window.location.assign('/login');
     }

@@ -53,6 +53,9 @@ const ShopRow = ({ shop, onChanged }) => {
             Риск блокировки: {shop.riskAcceptedAt
               ? `подтверждён ${new Date(shop.riskAcceptedAt).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}`
               : 'не подтверждён'}
+            {' · '}Условия пилота: {shop.ownerTermsAcceptedAt
+              ? `приняты ${new Date(shop.ownerTermsAcceptedAt).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}`
+              : 'не приняты'}
           </p>
         </div>
         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status.className}`}>{status.label}</span>

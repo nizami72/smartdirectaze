@@ -47,8 +47,13 @@ public class AuthController {
                                                  @RequestHeader(value = "X-Admin-Bootstrap", required = false) String bootstrapToken,
                                                  HttpServletResponse response) {
         // Admin accounts are created only by deploy/create-admin.sh (over SSH), never through the site
-        if (adminAccess.isAdmin(userDto.getEmail()) && !isValidBootstrapToken(bootstrapToken)) {
+        boolean admin = adminAccess.isAdmin(userDto.getEmail());
+        if (admin && !isValidBootstrapToken(bootstrapToken)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Эта почта зарезервирована");
+        }
+        // Merchants accept the pilot terms (/terms) in the form; the admin is created over SSH and has none
+        if (!admin && (userDto.getTermsVersion() == null || userDto.getTermsVersion().isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Примите условия пилота, чтобы зарегистрироваться");
         }
         UserDto registeredUser = userService.registerUser(userDto);
         String token = jwtService.generateToken(registeredUser.getEmail());

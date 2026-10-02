@@ -381,13 +381,15 @@ public class AiChannelServiceImpl implements AiChannelService {
 
     private AdminWhatsappShopDto toAdminDto(ShopEntity shop) {
         var channel = aiChannelRepository.findByShopIdAndChannelType(shop.getId(), ChannelType.WHATSAPP);
-        String ownerEmail = userService.findById(shop.getOwnerId()).map(UserDto::getEmail).orElse(null);
+        var owner = userService.findById(shop.getOwnerId());
+        String ownerEmail = owner.map(UserDto::getEmail).orElse(null);
         return new AdminWhatsappShopDto(shop.getId(), shop.getShopName(), ownerEmail,
                 channel.map(c -> c.getChannelStatus().name()).orElse(null),
                 channel.map(AiChannelEntity::getInstanceExternalId).orElse(null),
                 channel.map(AiChannelEntity::getWid).orElse(null),
                 channel.map(c -> c.getAiMode().name()).orElse(null),
-                channel.map(AiChannelEntity::getRiskAcceptedAt).map(Object::toString).orElse(null));
+                channel.map(AiChannelEntity::getRiskAcceptedAt).map(Object::toString).orElse(null),
+                owner.map(UserDto::getTermsAcceptedAt).map(Object::toString).orElse(null));
     }
 
     @Override

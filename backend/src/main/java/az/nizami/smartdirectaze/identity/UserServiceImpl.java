@@ -81,6 +81,8 @@ public class UserServiceImpl implements UserService {
                 .email(userDto.getEmail())
                 .password(passwordEncoder.encode(userDto.getPassword()))
                 .registrationStep(RegistrationStep.ACCOUNT_CREATED)
+                .termsVersion(userDto.getTermsVersion() == null || userDto.getTermsVersion().isBlank() ? null : userDto.getTermsVersion().trim())
+                .termsAcceptedAt(userDto.getTermsVersion() == null || userDto.getTermsVersion().isBlank() ? null : java.time.LocalDateTime.now())
                 .build();
 
         UserProfile profile = UserProfile.builder()

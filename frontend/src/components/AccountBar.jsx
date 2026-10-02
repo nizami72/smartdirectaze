@@ -4,7 +4,7 @@ import { LogOut, Shield, UserRound } from 'lucide-react';
 import api from '../api/api.ts';
 
 // Pages without a logged-in user
-const PUBLIC_PATHS = ['/', '/login', '/register'];
+const PUBLIC_PATHS = ['/', '/login', '/register', '/terms'];
 
 // Thin bar above every page after login: which account is logged in, admin mark, logout.
 // One browser holds one session, so this is how you tell accounts apart when switching between them.

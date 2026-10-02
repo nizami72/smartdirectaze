@@ -26,6 +26,10 @@ public class UserDto {
     private Integer emailSubscription;
     private Boolean isActive;
     private RegistrationStep registrationStep;
+    // Sent by the registration form: version of the pilot terms the user accepted
+    private String termsVersion;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private LocalDateTime termsAcceptedAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

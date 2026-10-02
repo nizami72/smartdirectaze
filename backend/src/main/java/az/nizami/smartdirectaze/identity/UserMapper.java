@@ -20,6 +20,8 @@ public class UserMapper {
                 .locale(user.getProfile() != null ? user.getProfile().getLocale() : null)
                 .emailSubscription(user.getProfile() != null ? user.getProfile().getEmailSubscription() : null)
                 .isActive(user.getProfile() != null ? user.getProfile().getIsActive() : null)
+                .termsVersion(user.getTermsVersion())
+                .termsAcceptedAt(user.getTermsAcceptedAt())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
