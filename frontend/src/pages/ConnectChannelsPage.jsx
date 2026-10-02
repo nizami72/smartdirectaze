@@ -28,6 +28,10 @@ const ConnectChannelsPage = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [connectedPhone, setConnectedPhone] = useState('');
   const [disconnecting, setDisconnecting] = useState(false);
+  // The server gives no QR until the merchant has confirmed the WhatsApp ban risk
+  const [riskAccepted, setRiskAccepted] = useState(true);
+  const [riskChecked, setRiskChecked] = useState(false);
+  const [accepting, setAccepting] = useState(false);
 
   useEffect(() => {
     api.get('/api/v1/admin/me').then(res => setIsAdmin(res.data.admin === true)).catch(() => setIsAdmin(false));
@@ -39,7 +43,8 @@ const ConnectChannelsPage = () => {
 
     try {
       const response = await api.get(`/api/v1/shops/channels/whatsapp/qr?shopId=${shopId}`);
-      const { status: backendStatus, qrCode: backendQr, connectedPhone: backendPhone } = response.data;
+      const { status: backendStatus, qrCode: backendQr, connectedPhone: backendPhone, riskAccepted: backendRisk } = response.data;
+      setRiskAccepted(backendRisk !== false);
       
       console.log('Backend status:', backendStatus); // Добавим лог для отладки
       setStatus(backendStatus);
@@ -85,6 +90,21 @@ const ConnectChannelsPage = () => {
       setError('Не удалось завершить регистрацию. Попробуйте еще раз.');
     } finally {
       setCompleting(false);
+    }
+  };
+
+  const acceptRisk = async () => {
+    setAccepting(true);
+    setError('');
+    try {
+      await api.post(`/api/v1/shops/channels/whatsapp/accept-risk?shopId=${shopId}`);
+      setRiskAccepted(true);
+      await checkStatus();
+    } catch (err) {
+      console.error('Accept risk error:', err);
+      setError('Не удалось сохранить. Попробуйте ещё раз.');
+    } finally {
+      setAccepting(false);
     }
   };
 
@@ -172,6 +192,42 @@ const ConnectChannelsPage = () => {
         );
 
       case 'WAITING_QR':
+        if (!riskAccepted) {
+          return (
+            <div className="space-y-5 animate-in fade-in duration-500 text-left">
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+                <p className="flex items-center gap-2 font-bold text-slate-900 mb-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600" />
+                  Перед подключением
+                </p>
+                <div className="space-y-2 text-sm text-slate-700 leading-relaxed">
+                  <p>
+                    SmartDirect подключается к WhatsApp как связанное устройство — так же, как WhatsApp Web на компьютере.
+                    Это не официальный сервис WhatsApp, поэтому есть небольшой риск, что WhatsApp ограничит
+                    или заблокирует номер.
+                  </p>
+                  <p className="font-semibold">Как снизить риск:</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>подключайте номер, который давно работает в WhatsApp, а не только что созданный;</li>
+                    <li>держите телефон магазина включённым и в сети;</li>
+                    <li>не отправляйте с этого номера рассылки людям, которые вам не писали.</li>
+                  </ul>
+                </div>
+              </div>
+              <label className="flex items-start gap-3 text-sm text-slate-800 cursor-pointer">
+                <input type="checkbox" checked={riskChecked} onChange={e => setRiskChecked(e.target.checked)}
+                       className="mt-0.5 w-4 h-4 accent-slate-900" />
+                Я понимаю риск и подключаю номер под свою ответственность
+              </label>
+              <button type="button" onClick={acceptRisk} disabled={!riskChecked || accepting}
+                      className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white font-bold py-3 rounded-2xl transition-all">
+                {accepting ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
+                Показать QR-код
+              </button>
+              {error && <p className="text-sm text-red-600">{error}</p>}
+            </div>
+          );
+        }
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center">

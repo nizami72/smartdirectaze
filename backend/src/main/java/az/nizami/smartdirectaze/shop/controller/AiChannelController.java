@@ -59,6 +59,15 @@ public class AiChannelController {
         return ResponseEntity.ok(aiChannelService.getWhatsAppQr(shopId));
     }
 
+    // "I understand the risk" on the WhatsApp page: only after this the QR is given
+    @PostMapping("/whatsapp/accept-risk")
+    public ResponseEntity<Void> acceptWhatsAppRisk(@RequestParam Long shopId,
+                                                   @AuthenticationPrincipal UserDetails userDetails) {
+        validateOwner(shopId, userDetails);
+        aiChannelService.acceptWhatsAppRisk(shopId);
+        return ResponseEntity.noContent().build();
+    }
+
     // Wrong phone scanned: log it out, the page then shows a new QR
     @PostMapping("/whatsapp/disconnect")
     public ResponseEntity<Void> disconnectWhatsApp(@RequestParam Long shopId,

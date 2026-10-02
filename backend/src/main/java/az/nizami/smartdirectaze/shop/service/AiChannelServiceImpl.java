@@ -107,6 +107,14 @@ public class AiChannelServiceImpl implements AiChannelService {
                     .build();
         }
 
+        // No QR before the merchant has read and confirmed the ban risk (numbers connected earlier keep working)
+        if (aiChannelEntity.getRiskAcceptedAt() == null && aiChannelEntity.getChannelStatus() != ChannelStatus.CONNECTED) {
+            return WhatsAppQrResponse.builder()
+                    .status(ChannelStatus.WAITING_QR)
+                    .riskAccepted(false)
+                    .build();
+        }
+
         // 2. ДЕЛАЕМ СЕТЕВЫЕ ВЫЗОВЫ (Соединение с БД СЕЙЧАС НЕ ИСПОЛЬЗУЕТСЯ)
         GreenApiResponseDto responseDto = whatsappService.getQrCode(instanceId, token);
         String type = responseDto.type();
@@ -292,6 +300,17 @@ public class AiChannelServiceImpl implements AiChannelService {
         return toAdminDto(shop);
     }
 
+    @Override
+    @Transactional
+    public void acceptWhatsAppRisk(Long shopId) {
+        AiChannelEntity channel = findWhatsAppChannel(shopId);
+        if (channel.getRiskAcceptedAt() == null) {
+            channel.setRiskAcceptedAt(java.time.LocalDateTime.now());
+            aiChannelRepository.save(channel);
+            log.info("Merchant of shop {} confirmed the WhatsApp ban risk", shopId);
+        }
+    }
+
     /**
      * The merchant scanned the QR with the wrong phone: log that phone out of the instance and show a fresh QR.
      * "For everyone" falls back to "Test", so a new number never answers all customers before it is checked.
@@ -367,7 +386,8 @@ public class AiChannelServiceImpl implements AiChannelService {
                 channel.map(c -> c.getChannelStatus().name()).orElse(null),
                 channel.map(AiChannelEntity::getInstanceExternalId).orElse(null),
                 channel.map(AiChannelEntity::getWid).orElse(null),
-                channel.map(c -> c.getAiMode().name()).orElse(null));
+                channel.map(c -> c.getAiMode().name()).orElse(null),
+                channel.map(AiChannelEntity::getRiskAcceptedAt).map(Object::toString).orElse(null));
     }
 
     @Override

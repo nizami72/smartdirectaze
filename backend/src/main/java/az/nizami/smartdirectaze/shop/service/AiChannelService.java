@@ -31,6 +31,7 @@ public interface AiChannelService {
      */
     AdminWhatsappShopDto unbindInstance(Long shopId);
     void disconnectWhatsApp(Long shopId);
+    void acceptWhatsAppRisk(Long shopId);
 
     /**
      * Sets the current webhook URL and token in every bound instance (after moving to another address).

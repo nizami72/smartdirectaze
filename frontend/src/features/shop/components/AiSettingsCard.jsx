@@ -162,6 +162,9 @@ const AiSettingsCard = ({ shopId }) => {
               : 'подключённый номер WhatsApp'}
             . Это номер, на который пишут ваши покупатели?
           </p>
+          <p className="text-sm text-amber-900 mt-2">
+            Не отправляйте с этого номера рассылки незнакомым людям — это главный повод для блокировки номера в WhatsApp.
+          </p>
           <div className="flex flex-wrap gap-2 mt-3">
             <button type="button" disabled={saving}
                     onClick={() => { setConfirmOn(false); save({ ...settings, aiMode: 'ON' }); }}

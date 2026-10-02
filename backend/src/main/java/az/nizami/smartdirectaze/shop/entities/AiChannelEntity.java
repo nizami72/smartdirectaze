@@ -52,6 +52,10 @@ public class AiChannelEntity {
     @Column(name = "notification_phone", length = 32)
     private String notificationPhone;
 
+    // When the merchant confirmed the WhatsApp ban risk before seeing the QR; null = not yet, no QR is given
+    @Column(name = "risk_accepted_at")
+    private LocalDateTime riskAcceptedAt;
+
     // Digits only, e.g. "994551112233"
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "ai_channel_test_phones", joinColumns = @JoinColumn(name = "ai_channel_id"))

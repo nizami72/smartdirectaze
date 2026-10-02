@@ -49,6 +49,11 @@ const ShopRow = ({ shop, onChanged }) => {
         <div>
           <p className="font-bold text-slate-900">#{shop.shopId} {shop.shopName}</p>
           <p className="text-xs text-slate-500">{shop.ownerEmail || 'владелец не найден'} · AI: {shop.aiMode || '—'}</p>
+          <p className="text-xs text-slate-500">
+            Риск блокировки: {shop.riskAcceptedAt
+              ? `подтверждён ${new Date(shop.riskAcceptedAt).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' })}`
+              : 'не подтверждён'}
+          </p>
         </div>
         <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${status.className}`}>{status.label}</span>
       </div>

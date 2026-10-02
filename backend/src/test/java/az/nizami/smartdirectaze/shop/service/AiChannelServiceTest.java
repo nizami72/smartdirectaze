@@ -112,6 +112,7 @@ class AiChannelServiceTest {
                 .channelType(ChannelType.WHATSAPP)
                 .instanceExternalId("inst123")
                 .apiToken("tok123")
+                .riskAcceptedAt(java.time.LocalDateTime.now())
                 .build();
         
         when(aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP))
@@ -139,6 +140,7 @@ class AiChannelServiceTest {
                 .channelType(ChannelType.WHATSAPP)
                 .instanceExternalId("inst123")
                 .apiToken("tok123")
+                .riskAcceptedAt(java.time.LocalDateTime.now())
                 .build();
         
         when(aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP))
@@ -151,6 +153,26 @@ class AiChannelServiceTest {
         assertEquals(mockQr, response.getQrCode());
         assertEquals(ChannelStatus.WAITING_QR, channel.getChannelStatus());
         verify(aiChannelRepository).save(channel);
+    }
+
+    @Test
+    void getWhatsAppQr_GivesNoQrBeforeTheRiskIsConfirmed() {
+        Long shopId = 1L;
+        AiChannelEntity channel = AiChannelEntity.builder()
+                .channelType(ChannelType.WHATSAPP)
+                .channelStatus(ChannelStatus.WAITING_QR)
+                .instanceExternalId("inst123")
+                .apiToken("tok123")
+                .build();
+        when(aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP))
+                .thenReturn(Optional.of(channel));
+
+        WhatsAppQrResponse response = aiChannelService.getWhatsAppQr(shopId);
+
+        assertEquals(ChannelStatus.WAITING_QR, response.getStatus());
+        assertEquals(false, response.getRiskAccepted());
+        assertEquals(null, response.getQrCode());
+        verifyNoInteractions(whatsappService);
     }
 
     @Test

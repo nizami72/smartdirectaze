@@ -15,4 +15,6 @@ public class WhatsAppQrResponse {
     private ChannelStatus status;
     /** Digits of the number that scanned the QR; set once connected */
     private String connectedPhone;
+    /** false = show the risk warning first; the QR is not given until the merchant confirms it */
+    private Boolean riskAccepted;
 }
