@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.instagram.internal.web;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import az.nizami.smartdirectaze.shop.ProductService;
 import az.nizami.smartdirectaze.instagram.internal.client.InstagramClient;
 import lombok.extern.log4j.Log4j2;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+// Legacy channel, not used by the WhatsApp pilot: off unless enabled explicitly
+@ConditionalOnProperty(name = "app.legacy.instagram.enabled", havingValue = "true")
 @RestController
 @RequestMapping("${app.url.component.webhook.i}")
 @Log4j2

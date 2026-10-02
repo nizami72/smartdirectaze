@@ -1,5 +1,6 @@
 package az.nizami.smartdirectaze.telegram.masterbot.controller;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import az.nizami.smartdirectaze.shop.ShopDto;
 import az.nizami.smartdirectaze.ai.AiService;
 import az.nizami.smartdirectaze.shop.ProductService;
@@ -16,6 +17,8 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.util.Optional;
 
+// Legacy channel, not used by the WhatsApp pilot: off unless enabled explicitly
+@ConditionalOnProperty(name = "app.legacy.telegram-bot.enabled", havingValue = "true")
 @RestController
 @RequestMapping("${app.url.component.webhook.t}")
 @Log4j2
