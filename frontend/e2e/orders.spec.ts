@@ -60,3 +60,30 @@ test.describe('Orders page with an order', () => {
     expect(patches).toEqual(['CONFIRMED']);
   });
 });
+
+test.describe('Final statuses ask to confirm', () => {
+  for (const [status, label] of [['COMPLETED', 'orders.statusCompleted'], ['CANCELLED', 'orders.statusCancelled']] as const) {
+    test(`${status}: Cancel keeps the status, Yes sets it`, async ({ page }) => {
+      const patches = await openOrdersWithOneOrder(page);
+
+      await page.getByTestId('order-status').click();
+      await page.getByTestId(`order-status-${status}`).click();
+      const confirm = page.getByTestId('order-status-confirm');
+      await expect(confirm).toContainText(text('az', 'orders.confirmFinal', { id: 1, status: text('az', label) }));
+
+      await confirm.getByRole('button', { name: text('az', 'common.cancel') }).click();
+      await expect(confirm).toHaveCount(0);
+      await expect(page.getByTestId('order-status')).toContainText(text('az', 'orders.statusNew'));
+      expect(patches).toEqual([]);
+
+      await page.getByTestId('order-status').click();
+      await page.getByTestId(`order-status-${status}`).click();
+      await page.getByTestId('order-status-confirm-yes').click();
+      // A finished or cancelled order leaves the "Active" tab and is listed under "All"
+      await expect(page.getByText(text('az', 'orders.noActive'))).toBeVisible();
+      await page.getByRole('button', { name: text('az', 'orders.all', { count: 1 }) }).click();
+      await expect(page.getByTestId('order-status')).toContainText(text('az', label));
+      expect(patches).toEqual([status]);
+    });
+  }
+});

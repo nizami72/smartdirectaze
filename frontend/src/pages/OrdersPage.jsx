@@ -14,6 +14,8 @@ const ORDER_STATUSES = [
 ];
 
 const ACTIVE = ['NEW', 'CONFIRMED', 'IN_DELIVERY'];
+// Final statuses: asked to confirm before they are set, the others change at once
+const FINAL = ['COMPLETED', 'CANCELLED'];
 
 const formatDate = formatShortDateTime;
 
@@ -70,6 +72,10 @@ const StatusMenu = ({ status, disabled, onChange }) => {
 
 const OrderCard = ({ order, onStatusChange, saving }) => {
   const { t } = useTranslation();
+  // A final status waiting for "Yes" (null = nothing to confirm)
+  const [pending, setPending] = useState(null);
+  const choose = (status) => (FINAL.includes(status) ? setPending(status) : onStatusChange(order.id, status));
+  const pendingLabel = pending && t(ORDER_STATUSES.find(s => s.value === pending).label);
   const status = ORDER_STATUSES.find(s => s.value === order.status) || ORDER_STATUSES[0];
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5 text-left">
@@ -116,9 +122,25 @@ const OrderCard = ({ order, onStatusChange, saving }) => {
 
       <div className="mt-4 flex items-center gap-2 text-sm">
         <span className="text-slate-500">{t('orders.status')}</span>
-        <StatusMenu status={order.status} disabled={saving} onChange={status => onStatusChange(order.id, status)} />
+        <StatusMenu status={order.status} disabled={saving || pending !== null} onChange={choose} />
         {saving && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
       </div>
+      {pending && (
+        <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm" data-testid="order-status-confirm">
+          <p className="text-amber-900">{t('orders.confirmFinal', { id: order.id, status: pendingLabel })}</p>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <button type="button" data-testid="order-status-confirm-yes"
+                    onClick={() => { onStatusChange(order.id, pending); setPending(null); }}
+                    className="bg-slate-900 hover:bg-slate-800 text-white rounded-lg px-3 py-1.5 font-semibold">
+              {t('orders.confirmYes')}
+            </button>
+            <button type="button" onClick={() => setPending(null)}
+                    className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg px-3 py-1.5 font-semibold">
+              {t('common.cancel')}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

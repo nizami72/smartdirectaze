@@ -182,7 +182,9 @@
     "active": "Aktiv ({{count}})",
     "all": "Hamısı ({{count}})",
     "noActive": "Aktiv sifariş yoxdur.",
-    "none": "Hələ sifariş yoxdur. Müştəri almağa hazır olanda onları AI satıcı rəsmiləşdirir."
+    "none": "Hələ sifariş yoxdur. Müştəri almağa hazır olanda onları AI satıcı rəsmiləşdirir.",
+    "confirmFinal": "#{{id}} sifarişi «{{status}}» kimi qeyd edilsin? Bu, son statusdur.",
+    "confirmYes": "Bəli, qeyd et"
   },
   "handoff": {
     "resumeFailed": "AI-ni qaytarmaq mümkün olmadı. Yenidən cəhd edin.",
