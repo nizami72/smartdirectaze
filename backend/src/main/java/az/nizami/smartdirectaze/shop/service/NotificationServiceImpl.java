@@ -126,7 +126,8 @@ public class NotificationServiceImpl implements NotificationService {
             whatsappService.sendMessage(instanceId, token, chatId, text);
             log.info("{} sent to the merchant's WhatsApp", what);
         } catch (Exception e) {
-            log.error("NotificationServiceImpl: operation failed");
+            // The merchant does not get this alert: visible in the log with the Green API cause
+            log.error("{} NOT sent to the merchant (instance {}): {}", what, instanceId, e.getMessage());
         }
     }
 
@@ -169,7 +170,7 @@ public class NotificationServiceImpl implements NotificationService {
             telegramClient.execute(sendMessage);
             log.info("Notification sent to owner {} for shop {}", shop.ownerId(), shopId);
         } catch (TelegramApiException e) {
-            log.error("NotificationServiceImpl: operation failed");
+            log.error("Order alert for shop {} NOT sent via Telegram: {}", shopId, e.getClass().getSimpleName());
         }
     }
 

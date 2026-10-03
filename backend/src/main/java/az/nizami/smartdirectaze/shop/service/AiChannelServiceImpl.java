@@ -136,7 +136,8 @@ public class AiChannelServiceImpl implements AiChannelService {
                     .qrCode(message)
                     .build();
         } else if ("error".equals(type)) {
-            log.error("AiChannelServiceImpl: operation failed");
+            // Green API explains in "message" why it gives no QR (e.g. the instance is starting)
+            log.error("Green API gave no QR for instance {} (shop {}): {}", instanceId, shopId, message);
             return WhatsAppQrResponse.builder()
                     .status(ChannelStatus.PENDING_ACTIVATION)
                     .build();
@@ -237,7 +238,8 @@ public class AiChannelServiceImpl implements AiChannelService {
                 channel.setWid(PhoneUtils.digits(wid));
             }
         } catch (Exception e) {
-            log.warn("AiChannelServiceImpl: operation failed");
+            // Connected anyway; the number is shown once Green API answers next time
+            log.warn("Connected number of instance {} unknown yet: {}", channel.getInstanceExternalId(), e.getMessage());
         }
         aiChannelRepository.save(channel);
     }
@@ -268,8 +270,9 @@ public class AiChannelServiceImpl implements AiChannelService {
         try {
             whatsappService.configureWebhooks(instanceId, apiToken);
         } catch (Exception e) {
+            // Admin page: the cause (HTTP status / network) helps tell a wrong token from Green API being down
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Green API не принял инстанс или токен. Проверьте idInstance и apiTokenInstance.");
+                    "Green API не принял инстанс или токен. Проверьте idInstance и apiTokenInstance. (" + e.getMessage() + ")");
         }
 
         initWhatsApp(shopId, instanceId, apiToken);
@@ -358,7 +361,8 @@ public class AiChannelServiceImpl implements AiChannelService {
                         result.put(c.getShop().getId(), e.getMessage());
                     }
                 });
-        log.info("AiChannelServiceImpl: event processed");
+        log.info("Webhooks reconfigured for {} instance(s), failed: {}", result.size(),
+                result.values().stream().filter(r -> !"ok".equals(r)).count());
         return result;
     }
 

@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.util.Map;
 
@@ -54,8 +56,7 @@ public class GreenApiClient {
                         .build();
             }
         } catch (Exception e) {
-            log.error("GreenApiClient: operation failed");
-            throw new RuntimeException("Failed to fetch QR code from Green-API", e);
+            throw failure("qr", instanceId, e);
         }
         return null;
     }
@@ -68,24 +69,20 @@ public class GreenApiClient {
                     .body(SettingsResponse.class);
             return response != null ? response.getWid() : null;
         } catch (Exception e) {
-            log.error("GreenApiClient: operation failed");
-            throw new RuntimeException("Failed to fetch settings from Green-API", e);
+            throw failure("getSettings", instanceId, e);
         }
     }
 
     public void logout(String instanceId, String token) {
         try {
-            restClient.get() // Green-API uses GET for logout according to common usage, but if doc says POST/DELETE we might need to adjust.
-                    // Re-checking description: "makes GET request to .../getSettings... logout makes DELETE (or POST according to doc)"
-                    // Actually, most Green-API methods are GET or POST. 
-                    // Let's use GET as it's common for simple triggers in their API, or check if I should use POST.
-                    // Description says: "делает DELETE (или POST согласно доке Green-API)"
+            // Green API: GET .../waInstance{id}/logout/{token}
+            restClient.get()
                     .uri(urlLogout, instanceId, token)
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception e) {
-            log.error("GreenApiClient: operation failed");
-            // We don't want to throw here to allow retry logic to proceed
+            // Not thrown: the caller goes on (shows a new QR, unbinds the instance) even if the phone was already logged out
+            failure("logout", instanceId, e);
         }
     }
 
@@ -100,8 +97,7 @@ public class GreenApiClient {
                     .body(StateResponse.class);
             return response != null ? response.getStateInstance() : null;
         } catch (Exception e) {
-            log.error("GreenApiClient: operation failed");
-            throw new RuntimeException("Failed to fetch instance state from Green-API", e);
+            throw failure("getStateInstance", instanceId, e);
         }
     }
 
@@ -117,8 +113,7 @@ public class GreenApiClient {
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception e) {
-            log.error("GreenApiClient: operation failed");
-            throw new RuntimeException("Failed to send message via Green-API", e);
+            throw failure("sendMessage", instanceId, e);
         }
     }
 
@@ -134,8 +129,46 @@ public class GreenApiClient {
                     .retrieve()
                     .toBodilessEntity();
         } catch (Exception e) {
-            log.error("GreenApiClient: operation failed");
-            throw new RuntimeException("Failed to configure the Green-API instance: " + e.getMessage(), e);
+            throw failure("setSettings", instanceId, e);
+        }
+    }
+
+    /**
+     * Logs a failed call so that the cause is clear from the log alone, and returns an exception with the same text.
+     * The token is part of every Green API URL and Spring puts the URL into I/O error messages,
+     * so only the HTTP status or the network cause is used, never the original message. Message texts are not logged.
+     */
+    private RuntimeException failure(String method, String instanceId, Exception e) {
+        String cause = describe(e);
+        log.error("Green API {} failed for instance {}: {}", method, instanceId, cause);
+        return new GreenApiException("Green API " + method + " failed: " + cause);
+    }
+
+    static String describe(Exception e) {
+        if (e instanceof RestClientResponseException http) {
+            String hint = switch (http.getStatusCode().value()) {
+                case 400 -> "bad request";
+                case 401, 403 -> "wrong idInstance or apiTokenInstance";
+                case 429 -> "too many requests";
+                case 466 -> "instance limit or tariff exceeded";
+                default -> http.getStatusCode().is5xxServerError() ? "Green API server error" : "";
+            };
+            return "HTTP " + http.getStatusCode().value() + (hint.isEmpty() ? "" : " (" + hint + ")");
+        }
+        if (e instanceof ResourceAccessException) {
+            Throwable root = e;
+            while (root.getCause() != null && root.getCause() != root) {
+                root = root.getCause();
+            }
+            return "network error: " + root.getClass().getSimpleName();
+        }
+        return e.getClass().getSimpleName();
+    }
+
+    /** A Green API call failed; the message is safe to log and show to the operator (no token, no message text) */
+    public static class GreenApiException extends RuntimeException {
+        public GreenApiException(String message) {
+            super(message);
         }
     }
 
