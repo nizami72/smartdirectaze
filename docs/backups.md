@@ -63,6 +63,88 @@
 | Дампы на сервере | `ssh -i ~/.ssh/key2 root@157.180.16.28 ls -lh /var/backups/smartdirect` |
 | Сделать дамп на сервере сейчас | `ssh -i ~/.ssh/key2 root@157.180.16.28 /opt/smartdirect/backup-db.sh` |
 
+## Что установлено и где (инвентарь)
+
+Полный список всего, что создано для бэкапов, — чтобы не искать, если понадобится изменить, отключить или удалить. Проверено 2026-10-03.
+
+### На сервере Hetzner (`ssh -i ~/.ssh/key2 root@157.180.16.28`)
+
+| Что | Где | Зачем |
+|---|---|---|
+| Скрипт ночного дампа | `/opt/smartdirect/backup-db.sh` (копия `deploy/backup-db.sh` из репозитория) | Делает дамп и оставляет 4 последних |
+| Задача cron (пользователь root) | строка `30 3 * * * /opt/smartdirect/backup-db.sh` в `crontab -l` | Запуск каждую ночь в 03:30 |
+| Папка с дампами | `/var/backups/smartdirect/` | Ночные `smartdirect_*.sql.gz` и ручные `before-reset_*`, `before-restore_*` |
+
+Рядом в том же crontab есть `* * * * * /opt/smartdirect/healthcheck.sh` — это **не бэкапы**, а ежеминутная проверка сайта с сообщениями в Telegram; её не трогать.
+
+### На домашнем компьютере
+
+| Что | Где | Зачем |
+|---|---|---|
+| Таймер systemd (пользователь, без root) | `~/.config/systemd/user/smartdirect-fetch-dump.timer` | Запуск через 3 мин после входа и каждый час |
+| Сервис systemd | `~/.config/systemd/user/smartdirect-fetch-dump.service` | Запускает скрипт скачивания |
+| Включение таймера | ссылка `~/.config/systemd/user/timers.target.wants/smartdirect-fetch-dump.timer` | Создаётся командой `enable` |
+| Скрипт скачивания | `deploy/fetch-dump.sh` в репозитории (`~/projects/java/smartdirectaze`) | Сервис вызывает его по этому пути: если перенести репозиторий, переустановить таймер |
+| Скачанные дампы | `~/.dumps/smartdirectaze/smartdirect_*.sql.gz` | Копии с сервера |
+| Отметка «сегодня уже забирал» | `~/.dumps/smartdirectaze/.checked` (внутри дата) | Чтобы работать раз в сутки |
+| Журнал работы | `journalctl --user -u smartdirect-fetch-dump` | Что скачано, ошибки |
+
+Ничего не установлено в системные папки и в crontab компьютера; root не нужен.
+
+### В репозитории
+
+| Файл | Где запускается |
+|---|---|
+| `deploy/backup-db.sh` | на сервере (cron) |
+| `deploy/fetch-dump.sh` | на компьютере (таймер) |
+| `deploy/install-fetch-dump.sh` | на компьютере, один раз — ставит таймер |
+| `deploy/restore-db.sh` | на компьютере, вручную — восстановление |
+| `deploy/server-setup.sh` | при установке нового сервера — ставит `backup-db.sh` и cron |
+
+## Как отключить или убрать
+
+### Скачивание на компьютер
+
+Временно остановить (всё остаётся на месте, можно включить обратно `enable --now`):
+```bash
+systemctl --user disable --now smartdirect-fetch-dump.timer
+```
+
+Убрать полностью:
+```bash
+systemctl --user disable --now smartdirect-fetch-dump.timer
+rm ~/.config/systemd/user/smartdirect-fetch-dump.timer ~/.config/systemd/user/smartdirect-fetch-dump.service
+systemctl --user daemon-reload
+rm ~/.dumps/smartdirectaze/.checked
+# Сами дампы — только если они точно больше не нужны:
+# rm -r ~/.dumps/smartdirectaze
+```
+Проверить, что ничего не осталось: `systemctl --user list-timers --all | grep smartdirect` — пусто.
+
+Вернуть: `bash deploy/install-fetch-dump.sh`.
+
+### Ночные дампы на сервере
+
+Не рекомендуется: без них нечего восстанавливать. Если всё же нужно:
+```bash
+ssh -i ~/.ssh/key2 root@157.180.16.28 '(crontab -l | grep -v "/opt/smartdirect/backup-db.sh") | crontab -'
+```
+Скрипт `/opt/smartdirect/backup-db.sh` и папку `/var/backups/smartdirect/` можно оставить: без строки cron они ничего не делают.
+
+Вернуть:
+```bash
+ssh -i ~/.ssh/key2 root@157.180.16.28 '(crontab -l; echo "30 3 * * * /opt/smartdirect/backup-db.sh") | crontab -'
+```
+
+### Поменять настройки
+
+| Что | Где поменять |
+|---|---|
+| Время ночного дампа | строка cron на сервере (`crontab -e` под root) и `deploy/server-setup.sh` |
+| Сколько дампов хранить на сервере | `KEEP=4` в `deploy/backup-db.sh`, затем скопировать на сервер: `scp -i ~/.ssh/key2 deploy/backup-db.sh root@157.180.16.28:/opt/smartdirect/backup-db.sh` |
+| Как часто компьютер проверяет | `OnStartupSec` / `OnCalendar` в `deploy/install-fetch-dump.sh`, затем запустить его снова |
+| Папка на компьютере | `LOCAL_DIR` в `deploy/fetch-dump.sh` и `deploy/restore-db.sh` |
+
 ## Восстановление
 
 Одной командой: `bash deploy/restore-db.sh <имя дампа>`, пошагово — в [how-to.md, раздел 12](how-to.md#restore). Если сервер потерян, дамп берётся с компьютера (`~/.dumps/smartdirectaze/`) и сначала загружается на новый сервер через `scp`.
