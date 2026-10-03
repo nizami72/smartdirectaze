@@ -7,7 +7,7 @@ Server: Hetzner 157.180.16.28 (shared with qrfood, carhub, legalai). Address: ht
 | Backend | systemd `smartdirect`, `/opt/smartdirect/smartdirect.jar`, 127.0.0.1:8083, max ~500 MB |
 | Settings | `/etc/smartdirect/smartdirect.env` (see `smartdirect.env.example`) |
 | Database | Docker `smartdirect-db` (Postgres 16), 127.0.0.1:5433, volume `smartdirect_pgdata` |
-| Backups | `/var/backups/smartdirect`, daily 02:30, 14 days |
+| Backups | `/var/backups/smartdirect`, nightly 03:30, the 4 newest; copied to the laptop `~/.dumps/smartdirectaze` |
 | Frontend | `/var/www/smartdirect.qrfood.az/dist` |
 | Nginx | `/etc/nginx/sites-available/smartdirect.qrfood.az.conf` |
 | Logs | `journalctl -u smartdirect`, `/opt/smartdirect/logs` |
@@ -47,3 +47,8 @@ Then log in on the usual /login page and open /admin. After a wipe run the scrip
 Another catalog: `bash deploy/seed-demo-shop.sh <shop id> deploy/demo/<file>.sql`. Closed together with the wipe
 (needs `/etc/smartdirect/allow-reset`).
 
+## Backups on the laptop
+
+`bash deploy/install-fetch-dump.sh` once: a systemd user timer runs `deploy/fetch-dump.sh` after login and hourly;
+it takes the newest nightly dump into `~/.dumps/smartdirectaze/` once a day (a day starts at 00:00) and shows a
+desktop notification. By hand: `bash deploy/fetch-dump.sh --force`. Log: `journalctl --user -u smartdirect-fetch-dump`.

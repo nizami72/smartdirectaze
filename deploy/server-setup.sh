@@ -27,7 +27,7 @@ systemctl enable smartdirect.service
 
 # Daily database backup at 02:30, 14 days kept
 install -m 755 "$HERE/backup-db.sh" /opt/smartdirect/backup-db.sh
-( crontab -l 2>/dev/null | grep -v "/opt/smartdirect/backup-db.sh"; echo "30 2 * * * /opt/smartdirect/backup-db.sh" ) | crontab -
+( crontab -l 2>/dev/null | grep -v "/opt/smartdirect/backup-db.sh"; echo "30 3 * * * /opt/smartdirect/backup-db.sh" ) | crontab -
 
 # Health check every minute, Telegram alert to the operator
 install -m 755 "$HERE/healthcheck.sh" /opt/smartdirect/healthcheck.sh
