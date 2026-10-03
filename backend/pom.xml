@@ -10,7 +10,7 @@
     </parent>
     <groupId>az.nizami</groupId>
     <artifactId>smartdirectaze</artifactId>
-    <version>0.6.0</version>
+    <version>0.6.1</version>
     <name>smartdirectaze</name>
     <description>Smart Direct Aze project</description>
     <url/>
