@@ -84,7 +84,7 @@ const LoginPage = () => {
 
         <form className="space-y-5" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50/70 border border-red-100 rounded-xl p-4 flex items-start animate-in fade-in duration-200">
+            <div data-testid="login-error" className="bg-red-50/70 border border-red-100 rounded-xl p-4 flex items-start animate-in fade-in duration-200">
               <AlertCircle className="h-5 w-5 text-red-500 mr-2.5 mt-0.5 flex-shrink-0" />
               <span className="text-sm text-red-800 font-medium">{error}</span>
             </div>
@@ -151,6 +151,7 @@ const LoginPage = () => {
           <div className="pt-2">
             <button
               type="submit"
+              data-testid="login-submit"
               disabled={loading}
               className="w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-4 focus:ring-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm active:scale-[0.98]"
             >

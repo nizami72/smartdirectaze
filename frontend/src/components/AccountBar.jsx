@@ -51,12 +51,12 @@ const AccountBar = () => {
   if (isPublic || !account) return null;
 
   return (
-    <div className="bg-slate-900 text-slate-100 text-sm">
+    <div className="bg-slate-900 text-slate-100 text-sm" data-testid="account-bar">
       <div className="max-w-7xl mx-auto px-4 h-9 flex items-center justify-end gap-3">
         <LanguageSwitcher dark saveToProfile />
         <span className="flex items-center gap-1.5 min-w-0" title={account.email}>
           <UserRound className="w-4 h-4 shrink-0 text-slate-400" />
-          <span className="truncate max-w-[45vw] sm:max-w-none">{account.email}</span>
+          <span className="truncate max-w-[45vw] sm:max-w-none" data-testid="account-email">{account.email}</span>
         </span>
         {account.admin && (
           <button type="button" onClick={() => navigate('/admin')}
@@ -65,7 +65,7 @@ const AccountBar = () => {
             {t('common.admin')}
           </button>
         )}
-        <button type="button" onClick={logout}
+        <button type="button" onClick={logout} data-testid="logout"
                 className="flex items-center gap-1 text-slate-300 hover:text-white">
           <LogOut className="w-4 h-4" />
           <span className="hidden sm:inline">{t('common.logout')}</span>

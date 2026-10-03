@@ -9,7 +9,7 @@ const LanguageSwitcher = ({ dark = false, saveToProfile = false }) => {
       {LANGUAGES.map(({ code, label }) => {
         const active = i18n.language === code;
         return (
-          <button key={code} type="button" onClick={() => setLanguage(code, { saveToProfile })}
+          <button key={code} type="button" onClick={() => setLanguage(code, { saveToProfile })} data-testid={`lang-${code}`}
                   aria-pressed={active}
                   className={`px-2 py-0.5 rounded-md transition-colors ${
                     active
