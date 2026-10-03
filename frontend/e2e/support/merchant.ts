@@ -109,3 +109,12 @@ export async function createShopAndOpenDashboard(page: Page, name = `E2E Shop ${
   await expect(page.getByTestId('product-form')).toBeVisible({ timeout: 15_000 });
   return shopId;
 }
+
+/** Adds a product with the form on the "Products and delivery" page and waits for its card */
+export async function addProduct(page: Page, name: string, price: string) {
+  const form = page.getByTestId('product-form');
+  await form.locator('[name="name"]').fill(name);
+  await form.locator('[name="salePrice"]').fill(price);
+  await form.locator('button[type="submit"]').click();
+  await expect(page.getByTestId('product-card').filter({ hasText: name })).toBeVisible({ timeout: 15_000 });
+}

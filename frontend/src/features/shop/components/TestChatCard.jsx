@@ -53,7 +53,7 @@ const TestChatCard = ({ shopId }) => {
   };
 
   return (
-    <section className="bg-white rounded-3xl border border-slate-200 p-6 mb-8 text-left">
+    <section className="bg-white rounded-3xl border border-slate-200 p-6 mb-8 text-left" data-testid="test-chat">
       <div className="flex items-center justify-between gap-3 mb-1">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
@@ -85,7 +85,8 @@ const TestChatCard = ({ shopId }) => {
           </div>
         )}
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.from === 'customer' ? 'justify-end' : 'justify-start'}`}>
+          <div key={i} data-testid="chat-message" data-from={m.from}
+               className={`flex ${m.from === 'customer' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap break-words shadow-sm ${
               m.from === 'customer' ? 'bg-[#D9FDD3] text-slate-900'
                 : m.from === 'error' ? 'bg-red-50 text-red-700' : 'bg-white text-slate-900'
@@ -95,7 +96,7 @@ const TestChatCard = ({ shopId }) => {
           </div>
         ))}
         {sending && (
-          <div className="flex justify-start">
+          <div className="flex justify-start" data-testid="chat-typing">
             <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
               <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />
             </div>
@@ -107,11 +108,12 @@ const TestChatCard = ({ shopId }) => {
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
+          data-testid="chat-input"
           maxLength={500}
           placeholder={t('testChat.placeholder')}
           className="flex-1 min-w-0 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
         />
-        <button type="submit" disabled={sending || !input.trim()} aria-label={t('testChat.send')}
+        <button type="submit" disabled={sending || !input.trim()} aria-label={t('testChat.send')} data-testid="chat-send"
                 className="inline-flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl px-4">
           <Send className="w-4 h-4" />
         </button>
