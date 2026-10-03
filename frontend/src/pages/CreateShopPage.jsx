@@ -55,7 +55,7 @@ const CreateShopPage = () => {
 
         <form className="space-y-5 mt-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50/70 border border-red-100 rounded-xl p-4 flex items-start">
+            <div data-testid="create-shop-error" className="bg-red-50/70 border border-red-100 rounded-xl p-4 flex items-start">
               <AlertCircle className="h-5 w-5 text-red-500 mr-2.5 mt-0.5 flex-shrink-0" />
               <span className="text-sm text-red-800 font-medium">{error}</span>
             </div>
@@ -92,7 +92,7 @@ const CreateShopPage = () => {
             </div>
           </div>
 
-          <button type="submit" disabled={loading}
+          <button type="submit" disabled={loading} data-testid="create-shop-submit"
                   className="w-full flex items-center justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-slate-900 hover:bg-slate-800 disabled:opacity-50 transition-all">
             {loading ? <Loader2 className="animate-spin h-5 w-5" /> : <>{t('common.continue')} <ArrowRight className="ml-2 h-4 w-4" /></>}
           </button>

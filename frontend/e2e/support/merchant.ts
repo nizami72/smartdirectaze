@@ -35,6 +35,19 @@ export async function chooseLanguage(page: Page, lang: Lang) {
  * lands on "create a shop".
  */
 export async function registerMerchant(page: Page, lang: Lang = 'az', merchant: Merchant = newMerchant()) {
+  await submitRegistration(page, merchant, { lang });
+
+  await expectLoggedIn(page, merchant.email);
+  await expect(page).toHaveURL(/\/shops\/new$/);
+  return { page, merchant };
+}
+
+/**
+ * Opens the registration page, fills the form and sends it, without checking the outcome:
+ * for tests of refused registrations. acceptTerms: false leaves the pilot terms unticked.
+ */
+export async function submitRegistration(page: Page, merchant: Merchant,
+                                         { lang = 'az', acceptTerms = true }: { lang?: Lang; acceptTerms?: boolean } = {}) {
   await page.goto('/register');
   await chooseLanguage(page, lang);
   await expect(page.getByRole('heading', { name: text(lang, 'register.title') })).toBeVisible();
@@ -43,26 +56,36 @@ export async function registerMerchant(page: Page, lang: Lang = 'az', merchant: 
   await page.locator('#email').fill(merchant.email);
   await page.locator('#phone').fill(merchant.phone);
   await page.locator('#password').fill(merchant.password);
-  await page.getByTestId('register-terms').check();
+  if (acceptTerms) {
+    await page.getByTestId('register-terms').check();
+  }
   await page.getByTestId('register-submit').click();
-
-  await expectLoggedIn(page, merchant.email);
-  await expect(page).toHaveURL(/\/shops\/new$/);
-  return { page, merchant };
 }
 
 /** Logs an existing merchant in through the login page */
-export async function login(page: Page, merchant: Pick<Merchant, 'email' | 'password'>, lang: Lang = 'az') {
-  await page.goto('/login');
-  await chooseLanguage(page, lang);
-  await expect(page.getByRole('heading', { name: text(lang, 'login.title') })).toBeVisible();
+export async function login(page: Page, merchant: Pick<Merchant, 'email' | 'password'>, lang: Lang | null = 'az') {
+  await submitLogin(page, merchant, lang);
+  await expectLoggedIn(page, merchant.email);
+  return page;
+}
 
+/** Fills and sends the login form without checking the outcome. lang: null keeps the language already chosen */
+export async function submitLogin(page: Page, merchant: Pick<Merchant, 'email' | 'password'>, lang: Lang | null = 'az') {
+  await page.goto('/login');
+  if (lang) {
+    await chooseLanguage(page, lang);
+  }
+  await expect(page.getByTestId('login-submit')).toBeVisible();
   await page.locator('#email').fill(merchant.email);
   await page.locator('#password').fill(merchant.password);
   await page.getByTestId('login-submit').click();
+}
 
-  await expectLoggedIn(page, merchant.email);
-  return page;
+/** Logout with the button in the account bar */
+export async function logout(page: Page) {
+  await page.getByTestId('logout').click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByTestId('account-bar')).toHaveCount(0);
 }
 
 /** Logged in = the account bar shows this email */
