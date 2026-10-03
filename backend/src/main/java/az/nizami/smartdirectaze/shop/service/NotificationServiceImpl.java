@@ -1,5 +1,8 @@
 package az.nizami.smartdirectaze.shop.service;
 
+import az.nizami.smartdirectaze.identity.Locales;
+import az.nizami.smartdirectaze.identity.UserDto;
+import az.nizami.smartdirectaze.identity.UserService;
 import az.nizami.smartdirectaze.shop.PhoneUtils;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -31,15 +34,29 @@ public class NotificationServiceImpl implements NotificationService {
     private final AiChannelRepository aiChannelRepository;
     private final WhatsappService whatsappService;
     private final String frontendBaseUrl;
+    private final UserService userService;
 
     public NotificationServiceImpl(ProductService productService,
                                    AiChannelRepository aiChannelRepository,
                                    WhatsappService whatsappService,
-                                   @Value("${app.frontend.base-url}") String frontendBaseUrl) {
+                                   @Value("${app.frontend.base-url}") String frontendBaseUrl,
+                                   UserService userService) {
         this.productService = productService;
         this.aiChannelRepository = aiChannelRepository;
         this.whatsappService = whatsappService;
         this.frontendBaseUrl = frontendBaseUrl;
+        this.userService = userService;
+    }
+
+    /** Language of the shop owner's interface: alerts to the merchant are written in it */
+    private boolean ownerReadsRussian(Long shopId) {
+        try {
+            ShopDto shop = productService.getShopById(shopId);
+            return shop != null && shop.ownerId() != null && Locales.RU.equals(userService.findById(shop.ownerId())
+                    .map(UserDto::getLocale).map(Locales::supported).orElse(Locales.DEFAULT));
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     /**
@@ -50,7 +67,7 @@ public class NotificationServiceImpl implements NotificationService {
         Optional<AiChannelEntity> whatsapp = aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP)
                 .filter(channel -> channel.getInstanceExternalId() != null && channel.getApiToken() != null);
         if (whatsapp.isPresent()) {
-            sendViaWhatsapp(whatsapp.get(), order);
+            sendToMerchant(whatsapp.get(), formatWhatsappMessage(order, ownerReadsRussian(shopId)), "order #" + order.getId() + " alert");
         } else {
             sendViaTelegram(shopId, order);
         }
@@ -62,7 +79,8 @@ public class NotificationServiceImpl implements NotificationService {
         aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP)
                 .filter(channel -> channel.getInstanceExternalId() != null && channel.getApiToken() != null)
                 .ifPresentOrElse(
-                        channel -> sendToMerchant(channel, formatHumanHelpMessage(customerChatId, customerName, reason, lastMessage, aiPaused),
+                        channel -> sendToMerchant(channel, formatHumanHelpMessage(customerChatId, customerName, reason, lastMessage, aiPaused,
+                                ownerReadsRussian(shopId)),
                                 "help alert for chat " + customerChatId),
                         () -> log.warn("Help alert for shop {} not sent: no WhatsApp channel", shopId));
     }
@@ -72,25 +90,24 @@ public class NotificationServiceImpl implements NotificationService {
         AiChannelEntity channel = aiChannelRepository.findByShopIdAndChannelType(shopId, ChannelType.WHATSAPP)
                 .filter(c -> c.getInstanceExternalId() != null && c.getApiToken() != null)
                 .filter(c -> c.getChannelStatus() == ChannelStatus.CONNECTED)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "Сначала подключите WhatsApp магазина"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "error.whatsappNotConnected"));
         String target = channel.getNotificationPhone() != null ? channel.getNotificationPhone() : channel.getWid();
         if (target == null || target.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Номер магазина ещё не известен, обновите страницу");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.shopNumberUnknown");
         }
         try {
             whatsappService.sendMessage(channel.getInstanceExternalId(), channel.getApiToken(), target + "@c.us",
-                    "✅ *Это номер для уведомлений SmartDirect*\n\n" +
-                    "Сюда будут приходить новые заказы и вопросы покупателей, на которые нужен ваш ответ.");
+                    ownerReadsRussian(shopId)
+                            ? "✅ *Это номер для уведомлений SmartDirect*\n\n" +
+                              "Сюда будут приходить новые заказы и вопросы покупателей, на которые нужен ваш ответ."
+                            : "✅ *Bu, SmartDirect bildirişləri üçün nömrədir*\n\n" +
+                              "Yeni sifarişlər və sizin cavabınız lazım olan müştəri sualları bura gələcək.");
         } catch (Exception e) {
             log.error("Test notification of shop {} not sent: {}", shopId, e.getMessage());
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "WhatsApp не принял сообщение, попробуйте ещё раз");
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "error.whatsappRejected");
         }
         log.info("Test notification of shop {} sent", shopId);
         return target;
-    }
-
-    private void sendViaWhatsapp(AiChannelEntity channel, OrderDTO order) {
-        sendToMerchant(channel, formatWhatsappMessage(order), "order #" + order.getId() + " alert");
     }
 
     private void sendToMerchant(AiChannelEntity channel, String text, String what) {
@@ -115,21 +132,21 @@ public class NotificationServiceImpl implements NotificationService {
 
     // One action and one link: the seller wants to answer this customer right now
     String formatHumanHelpMessage(String customerChatId, String customerName, String reason, String lastMessage,
-                                  boolean aiPaused) {
+                                  boolean aiPaused, boolean russian) {
         return String.format(
-                "🙋 *Нужна ваша помощь*\n\n" +
-                "*Клиент:* %s%s\n" +
-                "*Причина:* %s\n" +
-                "*Последнее сообщение:* %s\n\n" +
-                "%s\n\n" +
-                "👉 Ответить клиенту:\n" +
-                "https://wa.me/%s",
+                (russian
+                        ? "🙋 *Нужна ваша помощь*\n\n*Клиент:* %s%s\n*Причина:* %s\n*Последнее сообщение:* %s\n\n%s\n\n👉 Ответить клиенту:\n"
+                        : "🙋 *Köməyiniz lazımdır*\n\n*Müştəri:* %s%s\n*Səbəb:* %s\n*Son mesaj:* %s\n\n%s\n\n👉 Müştəriyə cavab verin:\n")
+                        + "https://wa.me/%s",
                 PhoneUtils.pretty(customerChatId),
                 customerName != null && !customerName.isBlank() ? " (" + customerName + ")" : "",
                 reason,
                 lastMessage != null ? "«" + lastMessage + "»" : "—",
-                aiPaused ? "AI в этом чате молчит, пока вы не ответите."
-                        : "AI отвечает клиенту на другие вопросы, а на этот ответьте вы.",
+                russian
+                        ? (aiPaused ? "AI в этом чате молчит, пока вы не ответите."
+                                    : "AI отвечает клиенту на другие вопросы, а на этот ответьте вы.")
+                        : (aiPaused ? "Siz cavab verənə qədər AI bu çatda susur."
+                                    : "AI müştərinin digər suallarına cavab verir, bu suala isə siz cavab verin."),
                 PhoneUtils.digits(customerChatId)
         );
     }
@@ -156,15 +173,12 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
-    String formatWhatsappMessage(OrderDTO order) {
-        return String.format(
-                "🛒 *Новая заявка на заказ #%d*\n\n" +
-                "*Клиент:* %s\n" +
-                "*Телефон:* %s\n" +
-                "*Адрес:* %s\n\n" +
-                "*Товары:*\n%s\n\n" +
-                "*Оплата:* %s\n\n" +
-                "Подтвердите наличие и окончательную стоимость покупателю.\nЗаказы магазина: %s/shops/%d/orders",
+    String formatWhatsappMessage(OrderDTO order, boolean russian) {
+        return String.format(russian
+                        ? "🛒 *Новая заявка на заказ #%d*\n\n*Клиент:* %s\n*Телефон:* %s\n*Адрес:* %s\n\n*Товары:*\n%s\n\n" +
+                          "*Оплата:* %s\n\nПодтвердите наличие и окончательную стоимость покупателю.\nЗаказы магазина: %s/shops/%d/orders"
+                        : "🛒 *Yeni sifariş sorğusu #%d*\n\n*Müştəri:* %s\n*Telefon:* %s\n*Ünvan:* %s\n\n*Məhsullar:*\n%s\n\n" +
+                          "*Ödəniş:* %s\n\nMüştəriyə stoku və yekun qiyməti təsdiqləyin.\nMağazanın sifarişləri: %s/shops/%d/orders",
                 order.getId(),
                 order.getCustomerName(),
                 order.getPhoneNumber(),

@@ -18,5 +18,8 @@ public interface UserService {
 
     void updateRegistrationStep(Long userId, RegistrationStep step);
 
+    /** Interface language of the user ("az" or "ru"); also the language of their WhatsApp alerts */
+    void updateLocale(String email, String locale);
+
     Optional<UserDto> findByEmail(String email);
 }

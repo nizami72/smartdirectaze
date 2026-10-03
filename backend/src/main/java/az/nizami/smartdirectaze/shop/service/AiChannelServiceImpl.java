@@ -180,8 +180,7 @@ public class AiChannelServiceImpl implements AiChannelService {
     private static String validPhone(String phone) {
         String normalized = PhoneUtils.normalize(phone);
         if (normalized == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format(
-                    "Неверный номер %s: азербайджанский номер — 12 цифр, например +994 50 123 45 67", phone.trim()));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.invalidPhone");
         }
         return normalized;
     }
@@ -320,7 +319,7 @@ public class AiChannelServiceImpl implements AiChannelService {
     public void disconnectWhatsApp(Long shopId) {
         AiChannelEntity channel = findWhatsAppChannel(shopId);
         if (channel.getInstanceExternalId() == null || channel.getApiToken() == null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "WhatsApp магазина ещё не подготовлен");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "error.whatsappNotPrepared");
         }
         whatsappService.logout(channel.getInstanceExternalId(), channel.getApiToken());
         channel.setWid(null);

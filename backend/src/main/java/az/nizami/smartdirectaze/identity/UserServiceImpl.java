@@ -89,6 +89,7 @@ public class UserServiceImpl implements UserService {
                 .user(user)
                 .name(userDto.getName())
                 .phones(userDto.getPhones() != null ? userDto.getPhones() : new HashSet<>())
+                .locale(Locales.supported(userDto.getLocale()))
                 .build();
 
         user.setProfile(profile);
@@ -109,6 +110,14 @@ public class UserServiceImpl implements UserService {
             user.setRegistrationStep(step);
             userRepository.save(user);
         });
+    }
+
+    @Override
+    @Transactional
+    public void updateLocale(String email, String locale) {
+        userRepository.findByEmail(email)
+                .filter(user -> user.getProfile() != null)
+                .ifPresent(user -> user.getProfile().setLocale(locale));
     }
 
     @Override

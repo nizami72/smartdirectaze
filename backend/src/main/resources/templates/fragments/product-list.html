@@ -183,6 +183,18 @@
 <div th:fragment="scripts">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Texts used by the scripts, in the merchant's language -->
+    <script th:inline="javascript">
+        var INVENTORY_TEXT = {
+            saveFailed: /*[[#{inv.jsSaveFailed}]]*/ '',
+            editProduct: /*[[#{inv.jsEditProduct}]]*/ '',
+            newProduct: /*[[#{inv.newProduct}]]*/ '',
+            saveProduct: /*[[#{inv.saveProduct}]]*/ '',
+            deleteConfirm: /*[[#{inv.jsDeleteConfirm}]]*/ '',
+            zoneName: /*[[#{inv.zoneName}]]*/ '',
+            zonePrice: /*[[#{inv.zonePrice}]]*/ ''
+        };
+    </script>
     <script>
         // Two hosts of this fragment:
         // - the React shop dashboard: sets the backend address, auth by the JWT cookie;
@@ -214,7 +226,7 @@
                 })
                 .catch(error => {
                     console.error('Inventory request failed', error);
-                    alert('Не удалось сохранить изменения. Попробуйте ещё раз.');
+                    alert(INVENTORY_TEXT.saveFailed);
                 });
         }
 
@@ -249,10 +261,10 @@
                     newRow.className = 'row g-2 mb-2 zone-row';
                     newRow.innerHTML = `
                         <div class="col-7">
-                            <input type="text" name="zoneNames" class="form-control rounded-3" placeholder="Название зоны (например, Ясамал)">
+                            <input type="text" name="zoneNames" class="form-control rounded-3" placeholder="${INVENTORY_TEXT.zoneName}">
                         </div>
                         <div class="col-3">
-                            <input type="number" step="0.01" name="zonePrices" class="form-control rounded-3" placeholder="Цена">
+                            <input type="number" step="0.01" name="zonePrices" class="form-control rounded-3" placeholder="${INVENTORY_TEXT.zonePrice}">
                         </div>
                         <div class="col-2">
                             <button type="button" class="btn btn-outline-danger w-100 rounded-3 remove-zone-btn"><i class="fas fa-trash"></i></button>
@@ -352,8 +364,8 @@
             const titleElement = isMobile ? document.querySelector('#addProductModal .modal-title') : document.querySelector('.form-panel h5');
             const submitBtn = targetForm.querySelector('button[type="submit"]');
             
-            if (titleElement) titleElement.innerText = 'Изменить товар';
-            if (submitBtn) submitBtn.innerText = 'Сохранить товар';
+            if (titleElement) titleElement.innerText = INVENTORY_TEXT.editProduct;
+            if (submitBtn) submitBtn.innerText = INVENTORY_TEXT.saveProduct;
             targetForm.action = '/webhooks/inventory/update';
             
             // Show action buttons (Cancel, Delete)
@@ -457,8 +469,8 @@
             const titleElement = isMobile ? document.querySelector('#addProductModal .modal-title') : document.querySelector('.form-panel h5');
             const submitBtn = targetForm.querySelector('button[type="submit"]');
             
-            if (titleElement) titleElement.innerText = 'Новый товар';
-            if (submitBtn) submitBtn.innerText = 'Сохранить товар';
+            if (titleElement) titleElement.innerText = INVENTORY_TEXT.newProduct;
+            if (submitBtn) submitBtn.innerText = INVENTORY_TEXT.saveProduct;
             targetForm.action = '/webhooks/inventory/add';
             
             // Handle action buttons
@@ -502,7 +514,7 @@
         }
 
         function deleteProduct(productId) {
-            if (!confirm('Удалить этот товар?')) return;
+            if (!confirm(INVENTORY_TEXT.deleteConfirm)) return;
             
             const shopId = document.querySelector('input[name="shopId"]').value;
             const form = document.createElement('form');
@@ -561,12 +573,12 @@
         <ul class="nav nav-pills mb-4" id="productTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active fw-bold px-4 py-2 rounded-pill" id="inventory-tab" data-bs-toggle="pill" data-bs-target="#inventory-content-pane" type="button" role="tab" aria-controls="inventory-content-pane" aria-selected="true">
-                    <i class="fas fa-boxes me-2"></i> Товары
+                    <i class="fas fa-boxes me-2"></i> [[#{inv.tabProducts}]]
                 </button>
             </li>
             <li class="nav-item ms-2" role="presentation">
                 <button class="nav-link fw-bold px-4 py-2 rounded-pill" id="delivery-tab" data-bs-toggle="pill" data-bs-target="#delivery-content-pane" type="button" role="tab" aria-controls="delivery-content-pane" aria-selected="false">
-                    <i class="fas fa-truck me-2"></i> Доставка
+                    <i class="fas fa-truck me-2"></i> [[#{inv.tabDelivery}]]
                 </button>
             </li>
         </ul>
@@ -578,7 +590,7 @@
                 <div class="mobile-only mb-4">
                     <button class="primary-btn w-100 py-3 d-flex align-items-center justify-content-center gap-2"
                             onclick="resetAddForm()">
-                        <i class="fas fa-plus"></i> Добавить товар
+                        <i class="fas fa-plus"></i> [[#{inv.addProduct}]]
                     </button>
                 </div>
 
@@ -587,7 +599,7 @@
                     <div class="col-lg-4 desktop-only">
                         <div class="form-panel shadow-sm">
                             <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h5 class="fw-bold mb-0">Новый товар</h5>
+                                <h5 class="fw-bold mb-0">[[#{inv.newProduct}]]</h5>
                                 <button class="btn btn-sm btn-outline-secondary border-0" onclick="resetAddForm()" title="Clear form">
                                     <i class="fas fa-redo-alt"></i>
                                 </button>
@@ -596,7 +608,7 @@
                                 <input type="hidden" name="shopId" th:value="${shopId}">
                                 <div th:replace="~{fragments/product-list :: productFormFields}"></div>
                                 <div class="action-buttons d-flex gap-2 mt-4">
-                                    <button type="submit" class="primary-btn flex-grow-1">Сохранить товар</button>
+                                    <button type="submit" class="primary-btn flex-grow-1">[[#{inv.saveProduct}]]</button>
                                     <button type="button" class="btn btn-outline-danger delete-btn d-none" title="Delete product">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -611,7 +623,7 @@
                     <!-- Right Column: Product Inventory -->
                     <div class="col-lg-8">
                         <h5 class="fw-bold mb-4 d-flex align-items-center gap-2">
-                            📦 Ваши товары
+                            [[#{inv.yourProducts}]]
                             <span class="badge bg-light text-muted border fw-normal" th:text="${products.size()}">0</span>
                         </h5>
 
@@ -625,13 +637,13 @@
                                         <div th:unless="${product.mainImageUrl != null && !product.mainImageUrl.isEmpty()}"
                                              class="product-thumb product-thumb-placeholder"><i class="fas fa-box"></i></div>
                                         <div class="flex-grow-1 min-w-0">
-                                            <h6 class="product-title fw-bold mb-2" th:text="${product.titles != null ? (product.titles.get('ru') ?: product.titles.get('az')) : 'Unnamed'}">Product Title</h6>
+                                            <h6 class="product-title fw-bold mb-2" th:text="${product.titles != null ? (product.titles.get('ru') ?: product.titles.get('az')) : null} ?: #{inv.unnamed}">-</h6>
                                             <div class="badge-price mb-2 d-inline-block" th:text="${product.salePrice} + ' ' + ${product.currency}">0.00 AZN</div>
                                             <div class="form-check form-switch mb-0 d-flex align-items-center">
                                                 <input class="form-check-input" type="checkbox" role="switch"
                                                        th:checked="${product.isAvailable}" th:id="'stockSwitch' + ${product.id}">
                                                 <label class="form-check-label small text-muted ps-2" th:for="'stockSwitch' + ${product.id}"
-                                                       th:text="${product.isAvailable ? 'В наличии' : 'Нет в наличии'}">В наличии</label>
+                                                       th:text="${product.isAvailable} ? #{inv.inStock} : #{inv.outOfStock}">Stokda var</label>
                                             </div>
                                         </div>
                                         <button class="edit-btn" type="button" title="Edit product" aria-label="Edit product"
@@ -647,7 +659,7 @@
                             <!-- Empty State -->
                             <div class="col-12 text-center py-5" th:if="${products.isEmpty()}">
                                 <div class="text-muted mb-3"><i class="fas fa-box-open fa-3x opacity-25"></i></div>
-                                <p class="text-muted">Товаров пока нет. Добавьте первый!</p>
+                                <p class="text-muted">[[#{inv.empty}]]</p>
                             </div>
                         </div>
                     </div>
@@ -659,22 +671,22 @@
                 <div class="row justify-content-center">
                     <div class="col-lg-8">
                         <div class="form-panel shadow-sm">
-                            <h5 class="fw-bold mb-4"><i class="fas fa-truck me-2 text-success"></i> Условия доставки</h5>
+                            <h5 class="fw-bold mb-4"><i class="fas fa-truck me-2 text-success"></i> [[#{inv.deliveryTitle}]]</h5>
                             <form th:action="@{/webhooks/inventory/delivery-config}" method="post">
                                 <input type="hidden" name="shopId" th:value="${shopId}">
 
                                 <!-- Section 1: Basic Terms -->
                                 <div class="mb-4">
-                                    <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">1. Основное: зоны и цены</h6>
+                                    <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">[[#{inv.secZones}]]</h6>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-semibold text-muted">Зоны доставки по Баку</label>
+                                        <label class="form-label small fw-semibold text-muted">[[#{inv.zones}]]</label>
                                         <div id="delivery-zones-container">
                                             <div th:each="zone, iterStat : ${shop?.zones}" class="row g-2 mb-2 zone-row">
                                                 <div class="col-7">
-                                                    <input type="text" name="zoneNames" class="form-control rounded-3" placeholder="Название зоны (например, Ясамал)" th:value="${zone.name}">
+                                                    <input type="text" name="zoneNames" class="form-control rounded-3" th:placeholder="#{inv.zoneName}" th:value="${zone.name}">
                                                 </div>
                                                 <div class="col-3">
-                                                    <input type="number" step="0.01" name="zonePrices" class="form-control rounded-3" placeholder="Цена" th:value="${zone.price}">
+                                                    <input type="number" step="0.01" name="zonePrices" class="form-control rounded-3" th:placeholder="#{inv.zonePrice}" th:value="${zone.price}">
                                                 </div>
                                                 <div class="col-2">
                                                     <button type="button" class="btn btn-outline-danger w-100 rounded-3 remove-zone-btn"><i class="fas fa-trash"></i></button>
@@ -683,10 +695,10 @@
                                             <!-- Empty row if no zones exist -->
                                             <div th:if="${#lists.isEmpty(shop?.zones)}" class="row g-2 mb-2 zone-row">
                                                 <div class="col-7">
-                                                    <input type="text" name="zoneNames" class="form-control rounded-3" placeholder="Название зоны (например, Ясамал)">
+                                                    <input type="text" name="zoneNames" class="form-control rounded-3" th:placeholder="#{inv.zoneName}">
                                                 </div>
                                                 <div class="col-3">
-                                                    <input type="number" step="0.01" name="zonePrices" class="form-control rounded-3" placeholder="Цена">
+                                                    <input type="number" step="0.01" name="zonePrices" class="form-control rounded-3" th:placeholder="#{inv.zonePrice}">
                                                 </div>
                                                 <div class="col-2">
                                                     <button type="button" class="btn btn-outline-danger w-100 rounded-3 remove-zone-btn"><i class="fas fa-trash"></i></button>
@@ -694,84 +706,84 @@
                                             </div>
                                         </div>
                                         <button type="button" id="add-zone-btn" class="btn btn-sm btn-outline-success mt-1 rounded-pill">
-                                            <i class="fas fa-plus me-1"></i> Добавить зону
+                                            <i class="fas fa-plus me-1"></i> [[#{inv.addZone}]]
                                         </button>
                                     </div>
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-6">
-                                            <label class="form-label small fw-semibold text-muted">Бесплатная доставка от (AZN)</label>
+                                            <label class="form-label small fw-semibold text-muted">[[#{inv.freeFrom}]]</label>
                                             <input type="number" step="0.01" name="freeDeliveryThreshold" class="form-control rounded-3" placeholder="50.00" th:value="${shop?.freeDeliveryThreshold}">
                                         </div>
                                         <div class="col-md-6">
-                                            <label class="form-label small fw-semibold text-muted">Цена доставки (AZN)</label>
+                                            <label class="form-label small fw-semibold text-muted">[[#{inv.deliveryPrice}]]</label>
                                             <input type="number" step="0.01" name="regionalDeliveryCost" class="form-control rounded-3" th:value="${shop?.deliveryPrice ?: 5.00}">
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-semibold text-muted">Доставка в регионы</label>
-                                        <textarea name="regionsDeliveryInfo" class="form-control rounded-3" rows="2" placeholder='Например: «В регионы отправляем Azerpost, 5 AZN, 2–3 дня»' th:text="${shop?.regionsDeliveryInfo}"></textarea>
+                                        <label class="form-label small fw-semibold text-muted">[[#{inv.regions}]]</label>
+                                        <textarea name="regionsDeliveryInfo" class="form-control rounded-3" rows="2" th:placeholder="#{inv.regionsPh}" th:text="${shop?.regionsDeliveryInfo}"></textarea>
                                     </div>
                                 </div>
 
                                 <div class="mb-4">
-                                    <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">2. Магазин и время работы</h6>
+                                    <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">[[#{inv.secShop}]]</h6>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-semibold text-muted">Адрес магазина</label>
-                                        <input type="text" name="address" class="form-control rounded-3" placeholder='Например: «Баку, ул. Низами 10»' th:value="${shop?.address}">
+                                        <label class="form-label small fw-semibold text-muted">[[#{inv.address}]]</label>
+                                        <input type="text" name="address" class="form-control rounded-3" th:placeholder="#{inv.addressPh}" th:value="${shop?.address}">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-semibold text-muted">Часы работы магазина</label>
-                                        <input type="text" name="workingHours" class="form-control rounded-3" placeholder='Например: «Пн–Пт 09:00–18:00»' th:value="${shop?.workingHours}">
+                                        <label class="form-label small fw-semibold text-muted">[[#{inv.hours}]]</label>
+                                        <input type="text" name="workingHours" class="form-control rounded-3" th:placeholder="#{inv.hoursPh}" th:value="${shop?.workingHours}">
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-semibold text-muted">Способы оплаты</label>
+                                        <label class="form-label small fw-semibold text-muted">[[#{inv.payment}]]</label>
                                         <div class="d-flex gap-3">
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" name="paymentMethods" value="CASH" id="payCash" th:checked="${shop?.paymentMethods != null && shop.paymentMethods.contains(T(az.nizami.smartdirectaze.shop.PaymentMethod).CASH)}">
-                                                <label class="form-check-label small" for="payCash">Наличные</label>
+                                                <label class="form-check-label small" for="payCash">[[#{inv.payCash}]]</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" name="paymentMethods" value="CARD" id="payCard" th:checked="${shop?.paymentMethods != null && shop.paymentMethods.contains(T(az.nizami.smartdirectaze.shop.PaymentMethod).CARD)}">
-                                                <label class="form-check-label small" for="payCard">Карта</label>
+                                                <label class="form-check-label small" for="payCard">[[#{inv.payCard}]]</label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" name="paymentMethods" value="TRANSFER" id="payTransfer" th:checked="${shop?.paymentMethods != null && shop.paymentMethods.contains(T(az.nizami.smartdirectaze.shop.PaymentMethod).TRANSFER)}">
-                                                <label class="form-check-label small" for="payTransfer">Перевод</label>
+                                                <label class="form-check-label small" for="payTransfer">[[#{inv.payTransfer}]]</label>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-semibold text-muted">Сроки обработки заказа</label>
-                                        <textarea name="processingTimeRules" class="form-control rounded-3" rows="2" placeholder='Например: «Заказы до 17:00 доставляем сегодня, позже — завтра до обеда»' th:text="${shop?.processingTimeRules}"></textarea>
+                                        <label class="form-label small fw-semibold text-muted">[[#{inv.processing}]]</label>
+                                        <textarea name="processingTimeRules" class="form-control rounded-3" rows="2" th:placeholder="#{inv.processingPh}" th:text="${shop?.processingTimeRules}"></textarea>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-semibold text-muted">Часы и дни доставки</label>
-                                        <input type="text" name="deliveryWorkingHours" class="form-control rounded-3" placeholder='Например: «С 10:00 до 20:00, в воскресенье без доставки»' th:value="${shop?.deliveryWorkingHours}">
+                                        <label class="form-label small fw-semibold text-muted">[[#{inv.deliveryHours}]]</label>
+                                        <input type="text" name="deliveryWorkingHours" class="form-control rounded-3" th:placeholder="#{inv.deliveryHoursPh}" th:value="${shop?.deliveryWorkingHours}">
                                     </div>
                                 </div>
 
                                 <!-- Section 3: Data Collection -->
                                 <div class="mb-4">
-                                    <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">3. Что AI спрашивает у клиента при заказе</h6>
+                                    <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">[[#{inv.secAsk}]]</h6>
                                     <div class="row g-3">
                                         <div class="col-md-6">
                                             <div class="form-check form-switch mb-2 d-flex align-items-center">
                                                 <input class="form-check-input" type="checkbox" name="collectPhone" id="collectPhone" th:checked="${shop?.collectPhone}">
-                                                <label class="form-check-label small fw-semibold ps-2" for="collectPhone">Номер телефона (+994)</label>
+                                                <label class="form-check-label small fw-semibold ps-2" for="collectPhone">[[#{inv.askPhone}]]</label>
                                             </div>
                                             <div class="form-check form-switch mb-2 d-flex align-items-center">
                                                 <input class="form-check-input" type="checkbox" name="collectAddress" id="collectAddress" th:checked="${shop?.collectAddress}">
-                                                <label class="form-check-label small fw-semibold ps-2" for="collectAddress">Точный адрес (улица и т.д.)</label>
+                                                <label class="form-check-label small fw-semibold ps-2" for="collectAddress">[[#{inv.askAddress}]]</label>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-check form-switch mb-2 d-flex align-items-center">
                                                 <input class="form-check-input" type="checkbox" name="collectLandmark" id="collectLandmark" th:checked="${shop?.collectLandmark}">
-                                                <label class="form-check-label small fw-semibold ps-2" for="collectLandmark">Метро / ориентир</label>
+                                                <label class="form-check-label small fw-semibold ps-2" for="collectLandmark">[[#{inv.askLandmark}]]</label>
                                             </div>
                                             <div class="form-check form-switch mb-2 d-flex align-items-center">
                                                 <input class="form-check-input" type="checkbox" name="collectLocation" id="collectLocation" th:checked="${shop?.collectLocation}">
-                                                <label class="form-check-label small fw-semibold ps-2" for="collectLocation">Геолокация в WhatsApp</label>
+                                                <label class="form-check-label small fw-semibold ps-2" for="collectLocation">[[#{inv.askLocation}]]</label>
                                             </div>
                                         </div>
                                     </div>
@@ -779,32 +791,32 @@
 
                                 <!-- Section 4: Trying & Returns -->
                                 <div class="mb-4">
-                                    <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">4. Примерка и возврат</h6>
+                                    <h6 class="fw-bold text-muted border-bottom pb-2 mb-3">[[#{inv.secFitting}]]</h6>
                                     <div class="row g-3 mb-3">
                                         <div class="col-md-4">
-                                            <label class="form-label small fw-semibold text-muted">Ожидание курьера (мин)</label>
+                                            <label class="form-label small fw-semibold text-muted">[[#{inv.courierWait}]]</label>
                                             <input type="number" name="courierWaitingTime" class="form-control rounded-3" placeholder="15" th:value="${shop?.courierWaitingTime}">
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label small fw-semibold text-muted">Примерка разрешена?</label>
+                                            <label class="form-label small fw-semibold text-muted">[[#{inv.fittingAllowed}]]</label>
                                             <select name="fittingAllowed" class="form-select rounded-3">
-                                                <option value="true" th:selected="${shop?.fittingAllowed == true}">Да</option>
-                                                <option value="false" th:selected="${shop?.fittingAllowed == false}">Нет</option>
+                                                <option value="true" th:selected="${shop?.fittingAllowed == true}">[[#{inv.yes}]]</option>
+                                                <option value="false" th:selected="${shop?.fittingAllowed == false}">[[#{inv.no}]]</option>
                                             </select>
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label small fw-semibold text-muted">Плата за отказ после примерки (AZN)</label>
+                                            <label class="form-label small fw-semibold text-muted">[[#{inv.refusalFee}]]</label>
                                             <input type="number" step="0.01" name="refusalFee" class="form-control rounded-3" placeholder="3.00" th:value="${shop?.refusalFee}">
                                         </div>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label small fw-semibold text-muted">Полные правила примерки и возврата</label>
-                                        <textarea name="tryingReturnsPolicy" class="form-control rounded-3" rows="3" placeholder='Например: «Можно примерить до 3 вещей. Если ничего не купили — 3 AZN за выезд. Вернуть товар можно в течение 14 дней в исходном виде»' th:text="${shop?.tryingReturnsPolicy}"></textarea>
+                                        <label class="form-label small fw-semibold text-muted">[[#{inv.fittingRules}]]</label>
+                                        <textarea name="tryingReturnsPolicy" class="form-control rounded-3" rows="3" th:placeholder="#{inv.fittingRulesPh}" th:text="${shop?.tryingReturnsPolicy}"></textarea>
                                     </div>
                                 </div>
 
                                 <button type="submit" class="primary-btn w-100 py-3 mt-2 shadow-sm">
-                                    <i class="fas fa-save me-2"></i> Сохранить условия доставки
+                                    <i class="fas fa-save me-2"></i> [[#{inv.saveDelivery}]]
                                 </button>
                             </form>
                         </div>
@@ -819,7 +831,7 @@
         <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
             <div class="modal-content border-0 rounded-4">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title fw-bold">Добавить товар</h5>
+                    <h5 class="modal-title fw-bold">[[#{inv.addProduct}]]</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
@@ -827,7 +839,7 @@
                         <input type="hidden" name="shopId" th:value="${shopId}">
                         <div th:replace="~{fragments/product-list :: productFormFields}"></div>
                         <div class="action-buttons d-flex gap-2 mt-4">
-                            <button type="submit" class="primary-btn flex-grow-1">Сохранить товар</button>
+                            <button type="submit" class="primary-btn flex-grow-1">[[#{inv.saveProduct}]]</button>
                             <button type="button" class="btn btn-outline-danger delete-btn d-none" title="Delete product">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -847,11 +859,11 @@
 <!-- Reusable Form Fields Fragment -->
 <div th:fragment="productFormFields">
     <div class="mb-3">
-        <label class="form-label small fw-semibold text-muted">Название</label>
-        <input type="text" name="name" class="form-control rounded-3" placeholder="Введите название" required>
+        <label class="form-label small fw-semibold text-muted">[[#{inv.fName}]]</label>
+        <input type="text" name="name" class="form-control rounded-3" th:placeholder="#{inv.fNamePh}" required>
     </div>
     <div class="mb-3">
-        <label class="form-label small fw-semibold text-muted">Цена (AZN)</label>
+        <label class="form-label small fw-semibold text-muted">[[#{inv.fPrice}]]</label>
         <input type="number" step="0.01" name="salePrice" class="form-control rounded-3" placeholder="0.00" required>
     </div>
 
@@ -859,69 +871,69 @@
     <div class="mt-4">
         <div class="advanced-toggle mb-3" onclick="toggleAdvanced(this)">
             <i class="fas fa-cog"></i>
-            <span>Дополнительно</span>
+            <span>[[#{inv.fMore}]]</span>
             <i class="fas fa-chevron-down ms-auto fa-xs transition" style="transition: transform 0.2s"></i>
         </div>
 
         <div class="advanced-fields d-none">
             <div class="mb-3">
-                <label class="form-label small fw-semibold text-muted">Артикул</label>
-                <input type="text" name="sku" class="form-control rounded-3" placeholder="Уникальный код">
+                <label class="form-label small fw-semibold text-muted">[[#{inv.fSku}]]</label>
+                <input type="text" name="sku" class="form-control rounded-3" th:placeholder="#{inv.fSkuPh}">
             </div>
             <div class="mb-3">
-                <label class="form-label small fw-semibold text-muted">Описание</label>
-                <textarea name="description" class="form-control rounded-3" rows="3" placeholder="Подробности…"></textarea>
+                <label class="form-label small fw-semibold text-muted">[[#{inv.fDescription}]]</label>
+                <textarea name="description" class="form-control rounded-3" rows="3" th:placeholder="#{inv.fDescriptionPh}"></textarea>
             </div>
             <div class="row g-2 mb-3">
                 <div class="col-6">
-                    <label class="form-label small fw-semibold text-muted">Себестоимость</label>
+                    <label class="form-label small fw-semibold text-muted">[[#{inv.fCost}]]</label>
                     <input type="number" step="0.01" name="basePrice" class="form-control rounded-3" placeholder="0.00">
                 </div>
                 <div class="col-6">
-                    <label class="form-label small fw-semibold text-muted">Валюта</label>
+                    <label class="form-label small fw-semibold text-muted">[[#{inv.fCurrency}]]</label>
                     <input type="text" name="currency" class="form-control rounded-3" value="AZN">
                 </div>
             </div>
             <div class="row g-2 mb-3">
                 <div class="col-6">
-                    <label class="form-label small fw-semibold text-muted">Бренд</label>
-                    <input type="text" name="brandName" class="form-control rounded-3" placeholder="Название бренда">
+                    <label class="form-label small fw-semibold text-muted">[[#{inv.fBrand}]]</label>
+                    <input type="text" name="brandName" class="form-control rounded-3" th:placeholder="#{inv.fBrandPh}">
                 </div>
                 <div class="col-6">
-                    <label class="form-label small fw-semibold text-muted">Штрихкод</label>
+                    <label class="form-label small fw-semibold text-muted">[[#{inv.fBarcode}]]</label>
                     <input type="text" name="barcode" class="form-control rounded-3" placeholder="UPC / EAN">
                 </div>
             </div>
             <div class="row g-2 mb-3">
                 <div class="col-4">
-                    <label class="form-label small fw-semibold text-muted">Остаток</label>
-                    <input type="number" name="stockQuantity" class="form-control rounded-3" placeholder="Кол-во">
+                    <label class="form-label small fw-semibold text-muted">[[#{inv.fStock}]]</label>
+                    <input type="number" name="stockQuantity" class="form-control rounded-3" th:placeholder="#{inv.fStockPh}">
                 </div>
                 <div class="col-4">
-                    <label class="form-label small fw-semibold text-muted">Вес (кг)</label>
+                    <label class="form-label small fw-semibold text-muted">[[#{inv.fWeight}]]</label>
                     <input type="number" step="0.01" name="weight" class="form-control rounded-3" placeholder="0.00">
                 </div>
                 <div class="col-4">
-                    <label class="form-label small fw-semibold text-muted">Размер</label>
+                    <label class="form-label small fw-semibold text-muted">[[#{inv.fSize}]]</label>
                     <input type="text" name="size" class="form-control rounded-3" placeholder="38, M, XL">
                 </div>
             </div>
             <div class="mb-3">
-                <label class="form-label small fw-semibold text-muted">Фото товара</label>
+                <label class="form-label small fw-semibold text-muted">[[#{inv.fPhoto}]]</label>
                 <input type="file" name="photo" class="form-control rounded-3" accept="image/*">
             </div>
             <div class="mb-3">
-                <label class="form-label small fw-semibold text-muted">Ссылка на фото</label>
+                <label class="form-label small fw-semibold text-muted">[[#{inv.fPhotoUrl}]]</label>
                 <input type="text" name="mainImageUrl" class="form-control rounded-3" placeholder="https://...">
             </div>
             <div class="mb-3">
-                <label class="form-label small fw-semibold text-muted">Единица</label>
-                <input type="text" name="unitOfMeasure" class="form-control rounded-3" placeholder="пара, шт, кг">
+                <label class="form-label small fw-semibold text-muted">[[#{inv.fUnit}]]</label>
+                <input type="text" name="unitOfMeasure" class="form-control rounded-3" th:placeholder="#{inv.fUnitPh}">
             </div>
             <div class="form-check form-switch mb-2">
                 <input class="form-check-input" type="checkbox" name="isAvailable" id="isAvailableMain" value="true" checked>
                 <input type="hidden" name="_isAvailable" value="on"/>
-                <label class="form-check-label small" for="isAvailableMain">В продаже</label>
+                <label class="form-check-label small" for="isAvailableMain">[[#{inv.fOnSale}]]</label>
             </div>
         </div>
     </div>

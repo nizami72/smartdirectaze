@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/api.ts';
 import { Mail, Lock, Loader2, AlertCircle, ArrowRight, Store, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -17,10 +20,10 @@ const LoginPage = () => {
 
   const validate = () => {
     const errors = {};
-    if (!formData.email) errors.email = 'Email обязателен';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Некорректный формат email';
+    if (!formData.email) errors.email = t('validation.emailRequired');
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = t('validation.emailFormat');
 
-    if (!formData.password) errors.password = 'Пароль обязателен';
+    if (!formData.password) errors.password = t('validation.passwordRequired');
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -53,7 +56,7 @@ const LoginPage = () => {
       return;
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Неверный email или пароль');
+      setError(err.response?.status === 401 || !err.response?.data?.message ? t('login.invalid') : err.response.data.message);
     } finally {
       setLoading(false);
     }
@@ -68,11 +71,14 @@ const LoginPage = () => {
         </div>
 
         <div className="mb-8">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-            Вход в кабинет
-          </h2>
+          <div className="flex items-start justify-between gap-3">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+              {t('login.title')}
+            </h2>
+            <LanguageSwitcher />
+          </div>
           <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-            Авторизуйтесь, чтобы продолжить настройку вашего ИИ-ассистента.
+            {t('login.subtitle')}
           </p>
         </div>
 
@@ -88,7 +94,7 @@ const LoginPage = () => {
             {/* Email */}
             <div>
               <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wide text-slate-600 mb-1.5">
-                Электронная почта
+                {t('field.email')}
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -116,7 +122,7 @@ const LoginPage = () => {
             {/* Пароль */}
             <div>
               <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wide text-slate-600 mb-1.5">
-                Пароль
+                {t('field.password')}
               </label>
               <div className="relative rounded-xl shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -152,7 +158,7 @@ const LoginPage = () => {
                 <Loader2 className="animate-spin h-5 w-5" />
               ) : (
                 <span className="flex items-center gap-2">
-                  Войти <ArrowRight className="h-4 w-4" />
+                  {t('common.login')} <ArrowRight className="h-4 w-4" />
                 </span>
               )}
             </button>
@@ -161,9 +167,9 @@ const LoginPage = () => {
 
         <div className="mt-6 text-center">
           <p className="text-sm text-slate-500">
-            Нет аккаунта?{' '}
+            {t('login.noAccount')}{' '}
             <Link to="/register" className="font-semibold text-slate-900 hover:underline underline-offset-4">
-              Зарегистрироваться
+              {t('login.register')}
             </Link>
           </p>
         </div>
@@ -175,7 +181,7 @@ const LoginPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900">Выберите магазин</h3>
+              <h3 className="font-bold text-slate-900">{t('login.chooseShop')}</h3>
               <button onClick={() => setShowShopSelection(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
                 <X className="h-5 w-5" />
               </button>

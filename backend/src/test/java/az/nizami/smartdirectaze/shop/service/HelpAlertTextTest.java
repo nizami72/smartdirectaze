@@ -7,11 +7,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HelpAlertTextTest {
 
-    private final NotificationServiceImpl service = new NotificationServiceImpl(null, null, null, "https://smartdirect.qrfood.az");
+    private final NotificationServiceImpl service = new NotificationServiceImpl(null, null, null, "https://smartdirect.qrfood.az", null);
+
+    @Test
+    void azerbaijaniByDefault() {
+        String text = service.formatHumanHelpMessage("994504679933@c.us", "Leyla", "endirim", "Endirim var?", false, false);
+
+        assertTrue(text.startsWith("🙋 *Köməyiniz lazımdır*"));
+        assertTrue(text.contains("👉 Müştəriyə cavab verin:\nhttps://wa.me/994504679933"));
+    }
 
     @Test
     void oneReplyLinkAndReadableNumber() {
-        String text = service.formatHumanHelpMessage("994504679933@c.us", "Leyla", "скидка", "Endirim var?", false);
+        String text = service.formatHumanHelpMessage("994504679933@c.us", "Leyla", "скидка", "Endirim var?", false, true);
 
         assertTrue(text.contains("*Клиент:* +994 50 467 99 33 (Leyla)"));
         assertTrue(text.contains("👉 Ответить клиенту:\nhttps://wa.me/994504679933"));

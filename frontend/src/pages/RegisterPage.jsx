@@ -4,9 +4,12 @@ import api from '../api/api.ts';
 import { formatAzerbaijanPhone } from '../utils/utils';
 import { Mail, Lock, User, Phone, Loader2, AlertCircle, ArrowRight } from 'lucide-react';
 import { TERMS_VERSION } from './TermsPage';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -20,17 +23,17 @@ const RegisterPage = () => {
 
   const validate = () => {
     const errors = {};
-    if (!formData.email) errors.email = 'Email обязателен';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Некорректный формат email';
+    if (!formData.email) errors.email = t('validation.emailRequired');
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = t('validation.emailFormat');
 
-    if (!formData.password) errors.password = 'Пароль обязателен';
-    else if (formData.password.length < 6) errors.password = 'Минимум 6 символов';
+    if (!formData.password) errors.password = t('validation.passwordRequired');
+    else if (formData.password.length < 6) errors.password = t('validation.passwordMin');
 
-    if (!formData.name) errors.name = 'Имя обязательно';
+    if (!formData.name) errors.name = t('validation.nameRequired');
 
-    if (!formData.phone || formData.phone.length < 13) errors.phone = 'Введите полный номер телефона';
+    if (!formData.phone || formData.phone.length < 13) errors.phone = t('validation.phoneFull');
 
-    if (!termsAccepted) errors.terms = 'Примите условия пилота';
+    if (!termsAccepted) errors.terms = t('validation.termsRequired');
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -57,13 +60,13 @@ const RegisterPage = () => {
     try {
       // The backend keeps phones as a list
       const { phone, ...rest } = formData;
-      const response = await api.post('/api/v1/auth/register', { ...rest, phones: phone ? [phone] : [], termsVersion: TERMS_VERSION });
+      const response = await api.post('/api/v1/auth/register', { ...rest, phones: phone ? [phone] : [], termsVersion: TERMS_VERSION, locale: i18n.language });
       // After registration: the shops list sends a new user straight to creating a shop
       navigate('/shops');
       return;
     } catch (err) {
       console.error('Registration error:', err);
-      setError(err.response?.data?.message || 'Произошла ошибка при регистрации. Попробуйте еще раз.');
+      setError(err.response?.data?.message || t('register.failed'));
     } finally {
       setLoading(false);
     }
@@ -75,14 +78,17 @@ const RegisterPage = () => {
 
           {/* Заголовок и Индикатор шага */}
           <div className="mb-8">
-            <span className="inline-block mb-4 text-xs font-semibold uppercase tracking-wider text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md">
-              Создание аккаунта
-            </span>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <span className="inline-block text-xs font-semibold uppercase tracking-wider text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md">
+                {t('register.step')}
+              </span>
+              <LanguageSwitcher />
+            </div>
             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-              Регистрация партнера
+              {t('register.title')}
             </h2>
             <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-              Зарегистрируйте личный кабинет ИИ-ассистента для автоматизации продаж вашего бизнеса.
+              {t('register.subtitle')}
             </p>
           </div>
 
@@ -98,7 +104,7 @@ const RegisterPage = () => {
               {/* Имя */}
               <div>
                 <label htmlFor="name" className="block text-xs font-semibold uppercase tracking-wide text-slate-600 mb-1.5">
-                  Ваше имя
+                  {t('register.name')}
                 </label>
                 <div className="relative rounded-xl shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -112,7 +118,7 @@ const RegisterPage = () => {
                       className={`block w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border ${
                           validationErrors.name ? 'border-red-300 focus:ring-red-50' : 'border-slate-200 focus:border-slate-400 focus:ring-slate-100'
                       } rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 transition-all sm:text-sm`}
-                      placeholder="Например, Низами"
+                      placeholder={t('register.namePlaceholder')}
                       value={formData.name}
                       onChange={handleChange}
                   />
@@ -125,7 +131,7 @@ const RegisterPage = () => {
               {/* Email */}
               <div>
                 <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wide text-slate-600 mb-1.5">
-                  Электронная почта
+                  {t('field.email')}
                 </label>
                 <div className="relative rounded-xl shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -153,7 +159,7 @@ const RegisterPage = () => {
               {/* Телефон */}
               <div>
                 <label htmlFor="phone" className="block text-xs font-semibold uppercase tracking-wide text-slate-600 mb-1.5">
-                  Контактный телефон
+                  {t('register.phone')}
                 </label>
                 <div className="relative rounded-xl shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -180,7 +186,7 @@ const RegisterPage = () => {
               {/* Пароль */}
               <div>
                 <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wide text-slate-600 mb-1.5">
-                  Пароль для входа
+                  {t('register.password')}
                 </label>
                 <div className="relative rounded-xl shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
@@ -212,11 +218,11 @@ const RegisterPage = () => {
                        onChange={e => { setTermsAccepted(e.target.checked); setValidationErrors(prev => ({ ...prev, terms: '' })); }}
                        className="mt-0.5 w-4 h-4 accent-slate-900" />
                 <span>
-                  Я принимаю{' '}
+                  {t('register.acceptTerms')}{' '}
                   <Link to="/terms" target="_blank" className="font-semibold text-slate-900 underline underline-offset-4">
-                    условия пилота
+                    {t('register.termsLink')}
                   </Link>
-                  {' '}/ <Link to="/terms" target="_blank" className="underline underline-offset-4">pilot şərtlərini</Link> qəbul edirəm
+                  {t('register.acceptTermsEnd') && ` ${t('register.acceptTermsEnd')}`}
                 </span>
               </label>
               {validationErrors.terms && (
@@ -234,7 +240,7 @@ const RegisterPage = () => {
                     <Loader2 className="animate-spin h-5 w-5" />
                 ) : (
                     <span className="flex items-center gap-2">
-                  Продолжить <ArrowRight className="h-4 w-4" />
+                  {t('common.continue')} <ArrowRight className="h-4 w-4" />
                 </span>
                 )}
               </button>
@@ -244,9 +250,9 @@ const RegisterPage = () => {
           {/* Ссылка на Авторизацию */}
           <div className="mt-6 text-center">
             <p className="text-sm text-slate-500">
-              Уже есть аккаунт?{' '}
+              {t('register.haveAccount')}{' '}
               <Link to="/login" className="font-semibold text-slate-900 hover:underline underline-offset-4">
-                Войти
+                {t('common.login')}
               </Link>
             </p>
           </div>

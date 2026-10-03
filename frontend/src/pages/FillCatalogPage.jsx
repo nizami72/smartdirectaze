@@ -12,9 +12,11 @@ import {
   DollarSign
 } from 'lucide-react';
 import OnboardingSteps from '../features/shop/components/OnboardingSteps.jsx';
+import { useTranslation } from 'react-i18next';
 
 const FillCatalogPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { shopId } = useParams();
   const [products, setProducts] = useState([]);
   const [formData, setFormData] = useState({
@@ -49,7 +51,7 @@ const FillCatalogPage = () => {
       setFormData({ name: '', price: '', description: '' });
     } catch (err) {
       console.error('Add product error:', err);
-      setError(err.response?.data?.message || 'Не удалось добавить товар. Попробуйте снова.');
+      setError(err.response?.data?.message || t('catalog.addFailed'));
     } finally {
       setLoading(false);
     }
@@ -64,9 +66,9 @@ const FillCatalogPage = () => {
         {/* Шапка с прогрессом */}
         <div className="mb-10 text-center">
           <div className="max-w-md mx-auto"><OnboardingSteps current={2} /></div>
-          <h1 className="text-3xl font-bold text-slate-900">Добавьте первые товары</h1>
+          <h1 className="text-3xl font-bold text-slate-900">{t('catalog.title')}</h1>
           <p className="mt-2 text-slate-500 max-w-md mx-auto">
-            ИИ-ассистенту нужны данные о ваших товарах, чтобы он мог отвечать на вопросы клиентов о ценах и наличии.
+            {t('catalog.intro')}
           </p>
         </div>
 
@@ -76,7 +78,7 @@ const FillCatalogPage = () => {
           <div className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
             <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
               <Plus className="w-5 h-5 text-slate-900" />
-              Новый товар
+              {t('catalog.newProduct')}
             </h2>
 
             <form onSubmit={handleAddProduct} className="space-y-5">
@@ -88,7 +90,7 @@ const FillCatalogPage = () => {
               )}
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide px-1">Название товара</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide px-1">{t('catalog.name')}</label>
                 <div className="relative">
                   <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
@@ -96,7 +98,7 @@ const FillCatalogPage = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    placeholder="Например: Шелковое платье"
+                    placeholder={t('catalog.namePlaceholder')}
                     className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all"
                     required
                   />
@@ -104,7 +106,7 @@ const FillCatalogPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide px-1">Цена (AZN)</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide px-1">{t('catalog.price')}</label>
                 <div className="relative">
                   <DollarSign className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                   <input
@@ -121,7 +123,7 @@ const FillCatalogPage = () => {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide px-1">Описание</label>
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide px-1">{t('catalog.description')}</label>
                 <div className="relative">
                   <AlignLeft className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
                   <textarea
@@ -129,7 +131,7 @@ const FillCatalogPage = () => {
                     value={formData.description}
                     onChange={handleChange}
                     rows="3"
-                    placeholder="Размеры, состав, доступные цвета..."
+                    placeholder={t('catalog.descriptionPlaceholder')}
                     className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/5 focus:border-slate-900 transition-all resize-none"
                   />
                 </div>
@@ -141,7 +143,7 @@ const FillCatalogPage = () => {
                 className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-slate-200"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus className="w-5 h-5" />}
-                Добавить в каталог
+                {t('catalog.add')}
               </button>
             </form>
           </div>
@@ -149,7 +151,7 @@ const FillCatalogPage = () => {
           {/* Список карточек */}
           <div className="space-y-6">
             <div className="flex items-center justify-between px-2">
-              <h2 className="text-xl font-bold text-slate-900">Добавленные товары</h2>
+              <h2 className="text-xl font-bold text-slate-900">{t('catalog.added')}</h2>
               <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2.5 py-1 rounded-lg">
                 {products.length}
               </span>
@@ -159,7 +161,7 @@ const FillCatalogPage = () => {
               {products.length === 0 ? (
                 <div className="text-center py-20 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl">
                   <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-400 text-sm">Вы еще не добавили ни одного товара</p>
+                  <p className="text-slate-400 text-sm">{t('catalog.empty')}</p>
                 </div>
               ) : (
                 products.map((product, idx) => (
@@ -170,14 +172,14 @@ const FillCatalogPage = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <h3 className="font-bold text-slate-900 truncate">
-                          {product.titles?.ru || 'Без названия'}
+                          {product.titles?.ru || t('catalog.noName')}
                         </h3>
                         <span className="text-slate-900 font-bold whitespace-nowrap">
                           {product.salePrice} AZN
                         </span>
                       </div>
                       <p className="text-sm text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                        {product.descriptions?.ru || 'Описание отсутствует'}
+                        {product.descriptions?.ru || t('catalog.noDescription')}
                       </p>
                     </div>
                   </div>
@@ -189,7 +191,7 @@ const FillCatalogPage = () => {
               onClick={handleFinish}
               className="w-full mt-4 flex items-center justify-center gap-2 bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50 font-bold py-3.5 rounded-xl transition-all"
             >
-              {products.length > 0 ? 'Продолжить' : 'Пропустить, добавлю позже'}
+              {products.length > 0 ? t('common.continue') : t('catalog.skip')}
               <ArrowRight className="w-5 h-5" />
             </button>
           </div>

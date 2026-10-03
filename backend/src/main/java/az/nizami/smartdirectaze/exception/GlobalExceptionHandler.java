@@ -10,6 +10,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -18,6 +20,20 @@ import java.util.Map;
 @RestControllerAdvice
 @Log4j2
 public class GlobalExceptionHandler {
+
+    private final MessageSource messages;
+
+    public GlobalExceptionHandler(MessageSource messages) {
+        this.messages = messages;
+    }
+
+    // Reasons like "error.emailReserved" are keys of messages*.properties: answered in the request's language
+    private String text(String reason) {
+        if (reason == null || !reason.startsWith("error.")) {
+            return reason;
+        }
+        return messages.getMessage(reason, null, reason, LocaleContextHolder.getLocale());
+    }
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
@@ -34,7 +50,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> duplicateEmailException(DuplicateEmailException ex) {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                "Email already registered",
+                text("error.emailTaken"),
                 LocalDateTime.now(),
                 null
         );
@@ -77,7 +93,7 @@ public class GlobalExceptionHandler {
         log.warn("Request rejected: {}", ex.getStatusCode().value());
         ErrorResponse error = new ErrorResponse(
                 ex.getStatusCode().value(),
-                ex.getReason(),
+                text(ex.getReason()),
                 LocalDateTime.now(),
                 null
         );

@@ -49,11 +49,11 @@ public class AuthController {
         // Admin accounts are created only by deploy/create-admin.sh (over SSH), never through the site
         boolean admin = adminAccess.isAdmin(userDto.getEmail());
         if (admin && !isValidBootstrapToken(bootstrapToken)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Эта почта зарезервирована");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "error.emailReserved");
         }
         // Merchants accept the pilot terms (/terms) in the form; the admin is created over SSH and has none
         if (!admin && (userDto.getTermsVersion() == null || userDto.getTermsVersion().isBlank())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Примите условия пилота, чтобы зарегистрироваться");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "error.termsRequired");
         }
         UserDto registeredUser = userService.registerUser(userDto);
         String token = jwtService.generateToken(registeredUser.getEmail());
@@ -77,6 +77,15 @@ public class AuthController {
         if (userDetails == null) return ResponseEntity.status(401).build();
         return ResponseEntity.ok(userService.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found")));
+    }
+
+    // Language switch (AZ / RU): remembered in the profile, used for WhatsApp alerts too
+    @org.springframework.web.bind.annotation.PutMapping("/me/locale")
+    public ResponseEntity<Void> updateLocale(@RequestBody java.util.Map<String, String> body,
+                                             @org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(401).build();
+        userService.updateLocale(userDetails.getUsername(), az.nizami.smartdirectaze.identity.Locales.supported(body.get("locale")));
+        return ResponseEntity.noContent().build();
     }
 
     private boolean isValidBootstrapToken(String token) {

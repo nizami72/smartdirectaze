@@ -2,17 +2,19 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../../api/api.ts';
 import { AlertTriangle, Bot, CheckCircle2, Loader2, Plus, Send, X } from 'lucide-react';
-import { normalizePhone, prettyPhone, PHONE_HINT } from '../../../utils/utils';
+import { normalizePhone, prettyPhone } from '../../../utils/utils';
+import { useTranslation } from 'react-i18next';
 
 const MODES = [
-  { value: 'OFF', label: 'Выключен', hint: 'AI молчит, вы отвечаете клиентам сами.' },
-  { value: 'TEST', label: 'Тест', hint: 'AI отвечает только номерам из списка ниже. Остальные клиенты его не видят.' },
-  { value: 'ON', label: 'Для всех', hint: 'AI отвечает всем клиентам, которые пишут на ваш WhatsApp.' },
+  { value: 'OFF', label: 'ai.modeOff', hint: 'ai.modeOffHint' },
+  { value: 'TEST', label: 'ai.modeTest', hint: 'ai.modeTestHint' },
+  { value: 'ON', label: 'ai.modeOn', hint: 'ai.modeOnHint' },
 ];
 
 // Settings of the AI seller on the shop's WhatsApp: who it answers
 const AiSettingsCard = ({ shopId }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [settings, setSettings] = useState(null);
   const [newPhone, setNewPhone] = useState('');
   const [notificationPhone, setNotificationPhone] = useState('');
@@ -44,11 +46,11 @@ const AiSettingsCard = ({ shopId }) => {
       const res = await api.put(`/api/v1/shops/channels/whatsapp/ai?shopId=${shopId}`, next);
       setSettings(res.data);
       setNotificationPhone(prettyPhone(res.data.notificationPhone));
-      setMessage('Сохранено');
+      setMessage(t('ai.saved'));
       setMessageIsError(false);
       return true;
     } catch (err) {
-      setMessage(err.response?.data?.message || 'Не удалось сохранить, попробуйте ещё раз');
+      setMessage(err.response?.data?.message || t('ai.saveFailed'));
       setMessageIsError(true);
       return false;
     } finally {
@@ -61,7 +63,7 @@ const AiSettingsCard = ({ shopId }) => {
     if (!newPhone.trim()) return;
     const phone = normalizePhone(newPhone);
     if (!phone) {
-      setPhoneError(`Неверный номер: ${PHONE_HINT}`);
+      setPhoneError(t('ai.invalidPhone'));
       return;
     }
     setPhoneError('');
@@ -76,7 +78,7 @@ const AiSettingsCard = ({ shopId }) => {
     }
     const phone = normalizePhone(value);
     if (!phone) {
-      setNotificationError(`Неверный номер: ${PHONE_HINT}`);
+      setNotificationError(t('ai.invalidPhone'));
       return false;
     }
     setNotificationError('');
@@ -88,9 +90,9 @@ const AiSettingsCard = ({ shopId }) => {
     setTestResult(null);
     try {
       const res = await api.post(`/api/v1/shops/channels/whatsapp/test-notification?shopId=${shopId}`);
-      setTestResult({ ok: true, text: `Отправлено на ${prettyPhone(res.data.sentTo)}. Проверьте WhatsApp на этом телефоне.` });
+      setTestResult({ ok: true, text: t('ai.testSent', { phone: prettyPhone(res.data.sentTo) }) });
     } catch (err) {
-      setTestResult({ ok: false, text: err.response?.data?.message || 'Не удалось отправить, попробуйте ещё раз' });
+      setTestResult({ ok: false, text: err.response?.data?.message || t('ai.testFailed') });
     } finally {
       setTesting(false);
     }
@@ -111,7 +113,7 @@ const AiSettingsCard = ({ shopId }) => {
           <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
             <Bot className="w-5 h-5 text-emerald-600" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900">AI-продавец в WhatsApp</h2>
+          <h2 className="text-lg font-bold text-slate-900">{t('ai.title')}</h2>
         </div>
         {saving && <Loader2 className="w-5 h-5 text-slate-400 animate-spin" />}
       </div>
@@ -119,17 +121,17 @@ const AiSettingsCard = ({ shopId }) => {
       {settings.channelStatus === 'CONNECTED' ? (
         <p className="flex items-center gap-2 text-sm text-emerald-700 mb-4">
           <CheckCircle2 className="w-4 h-4" />
-          WhatsApp подключён{settings.connectedPhone ? `: +${settings.connectedPhone}` : ''}
+          {t('ai.connected')}{settings.connectedPhone ? `: +${settings.connectedPhone}` : ''}
         </p>
       ) : (
         <div className="flex flex-wrap items-center justify-between gap-2 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-4">
           <p className="flex items-center gap-2 text-sm text-amber-800">
             <AlertTriangle className="w-4 h-4" />
-            WhatsApp не подключён — AI не сможет отвечать клиентам.
+            {t('ai.notConnected')}
           </p>
           <button type="button" onClick={() => navigate(`/shops/${shopId}/connect`)}
                   className="text-sm font-semibold text-amber-900 underline">
-            Подключить
+            {t('ai.connect')}
           </button>
         </div>
       )}
@@ -149,53 +151,53 @@ const AiSettingsCard = ({ shopId }) => {
               settings.aiMode === mode.value ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            {mode.label}
+            {t(mode.label)}
           </button>
         ))}
       </div>
       {confirmOn ? (
         <div className="mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
           <p className="text-sm text-amber-900">
-            AI будет отвечать всем, кто пишет на{' '}
+            {t('ai.confirmOnBefore')}{' '}
             {settings.connectedPhone
               ? <b className="whitespace-nowrap">+{settings.connectedPhone}</b>
-              : 'подключённый номер WhatsApp'}
-            . Это номер, на который пишут ваши покупатели?
+              : t('ai.confirmOnNoNumber')}
+            {t('ai.confirmOnAfter')}
           </p>
           <p className="text-sm text-amber-900 mt-2">
-            Не отправляйте с этого номера рассылки незнакомым людям — это главный повод для блокировки номера в WhatsApp.
+            {t('ai.confirmOnWarning')}
           </p>
           <div className="flex flex-wrap gap-2 mt-3">
             <button type="button" disabled={saving}
                     onClick={() => { setConfirmOn(false); save({ ...settings, aiMode: 'ON' }); }}
                     className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-sm font-semibold">
-              Да, включить для всех
+              {t('ai.confirmOnYes')}
             </button>
             <button type="button" onClick={() => setConfirmOn(false)}
                     className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl px-4 py-2 text-sm font-semibold">
-              Отмена
+              {t('common.cancel')}
             </button>
           </div>
         </div>
       ) : (
-        <p className="text-sm text-slate-500 mt-3">{currentMode?.hint}</p>
+        <p className="text-sm text-slate-500 mt-3">{currentMode && t(currentMode.hint)}</p>
       )}
 
       {settings.aiMode === 'TEST' && (
         <div className="mt-5">
-          <p className="text-sm font-semibold text-slate-700 mb-2">Тестовые номера</p>
+          <p className="text-sm font-semibold text-slate-700 mb-2">{t('ai.testPhones')}</p>
           {settings.testPhones.length === 0 && (
-            <p className="text-sm text-amber-600 mb-2">Добавьте свой второй номер, чтобы проверить ответы AI.</p>
+            <p className="text-sm text-amber-600 mb-2">{t('ai.testPhonesEmpty')}</p>
           )}
           <div className="flex flex-wrap gap-2 mb-3">
             {settings.testPhones.map(phone => (
-              <span key={phone} title={normalizePhone(phone) === phone ? '' : `Неверный номер: ${PHONE_HINT}`}
+              <span key={phone} title={normalizePhone(phone) === phone ? '' : t('ai.invalidPhone')}
                     className={`inline-flex items-center gap-1 rounded-full pl-3 pr-1 py-1 text-sm ${
                       normalizePhone(phone) === phone ? 'bg-slate-100 text-slate-700' : 'bg-red-50 text-red-700 ring-1 ring-red-200'
                     }`}>
-                {prettyPhone(phone)}{normalizePhone(phone) === phone ? '' : ' — неверный, удалите'}
+                {prettyPhone(phone)}{normalizePhone(phone) === phone ? '' : t('ai.invalidSaved')}
                 <button type="button" onClick={() => removePhone(phone)} disabled={saving}
-                        className="p-1 rounded-full hover:bg-slate-200" aria-label={`Удалить ${prettyPhone(phone)}`}>
+                        className="p-1 rounded-full hover:bg-slate-200" aria-label={t('ai.remove', { phone: prettyPhone(phone) })}>
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -212,7 +214,7 @@ const AiSettingsCard = ({ shopId }) => {
             <button type="submit" disabled={saving || !newPhone.trim()}
                     className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-sm font-semibold">
               <Plus className="w-4 h-4" />
-              Добавить
+              {t('ai.add')}
             </button>
           </form>
           {phoneError && <p className="text-sm text-red-600 mt-2">{phoneError}</p>}
@@ -220,21 +222,21 @@ const AiSettingsCard = ({ shopId }) => {
       )}
 
       <div className="mt-6 pt-5 border-t border-slate-100">
-        <p className="text-sm font-semibold text-slate-700 mb-1">Уведомления о заказах</p>
+        <p className="text-sm font-semibold text-slate-700 mb-1">{t('ai.notifyTitle')}</p>
         <p className="text-sm text-slate-500 mb-2">
-          Номер, на который придут новые заказы и вопросы покупателей, где нужен ваш ответ.
+          {t('ai.notifyText')}
         </p>
         {!settings.notificationPhone && (
           <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-3">
             <p className="flex items-start gap-2 text-sm text-amber-900">
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-              Номер не указан: уведомления приходят в чат «Вы» на номере магазина — без звука, их легко пропустить.
+              {t('ai.notifyEmpty')}
             </p>
             {settings.ownerPhone && (
               <button type="button" disabled={saving}
                       onClick={() => saveNotificationPhone(settings.ownerPhone)}
                       className="mt-2 text-sm font-semibold text-amber-900 underline disabled:opacity-50">
-                Использовать мой номер {prettyPhone(settings.ownerPhone)}
+                {t('ai.useMyNumber', { phone: prettyPhone(settings.ownerPhone) })}
               </button>
             )}
           </div>
@@ -250,7 +252,7 @@ const AiSettingsCard = ({ shopId }) => {
           />
           <button type="submit" disabled={saving}
                   className="bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-sm font-semibold">
-            Сохранить
+            {t('common.save')}
           </button>
         </form>
         {notificationError && <p className="text-sm text-red-600 mt-2">{notificationError}</p>}
@@ -260,7 +262,7 @@ const AiSettingsCard = ({ shopId }) => {
             <button type="button" onClick={sendTest} disabled={testing}
                     className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-700 hover:underline disabled:opacity-50">
               {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              Отправить тестовое уведомление
+              {t('ai.sendTest')}
             </button>
             {testResult && (
               <p className={`text-sm mt-1 ${testResult.ok ? 'text-emerald-700' : 'text-red-600'}`}>{testResult.text}</p>

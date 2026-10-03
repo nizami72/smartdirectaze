@@ -25,6 +25,7 @@ class NotificationServiceImplTest {
     private final ProductService productService = mock(ProductService.class);
     private final AiChannelRepository aiChannelRepository = mock(AiChannelRepository.class);
     private final WhatsappService whatsappService = mock(WhatsappService.class);
+    private final az.nizami.smartdirectaze.identity.UserService userService = mock(az.nizami.smartdirectaze.identity.UserService.class);
     private NotificationServiceImpl notificationService;
 
     private final OrderDTO order = OrderDTO.builder()
@@ -34,7 +35,28 @@ class NotificationServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        notificationService = new NotificationServiceImpl(productService, aiChannelRepository, whatsappService, "https://app.example");
+        notificationService = new NotificationServiceImpl(productService, aiChannelRepository, whatsappService, "https://app.example", userService);
+        ownerLocale("ru");
+    }
+
+    // Shop 4 belongs to user 7 whose interface language is the given one
+    private void ownerLocale(String locale) {
+        az.nizami.smartdirectaze.shop.ShopDto shop = mock(az.nizami.smartdirectaze.shop.ShopDto.class);
+        when(shop.ownerId()).thenReturn(7L);
+        when(productService.getShopById(4L)).thenReturn(shop);
+        when(userService.findById(7L)).thenReturn(Optional.of(az.nizami.smartdirectaze.identity.UserDto.builder().locale(locale).build()));
+    }
+
+    @Test
+    void orderAlertInAzerbaijaniForAzerbaijaniOwner() {
+        ownerLocale("az");
+        whatsappChannel("994701234567");
+
+        notificationService.sendNewOrderAlertToOwner(4L, order);
+
+        ArgumentCaptor<String> text = ArgumentCaptor.forClass(String.class);
+        verify(whatsappService).sendMessage(eq("7107000000"), eq("token"), eq("994701234567@c.us"), text.capture());
+        assertTrue(text.getValue().contains("Yeni sifariş sorğusu #12"));
     }
 
     private void whatsappChannel(String notificationPhone) {

@@ -14,9 +14,11 @@ import {
   ShoppingBag,
   Package
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const { shopId } = useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -39,7 +41,7 @@ const DashboardPage = () => {
         if (cancelled) return;
         const shop = (response.data || []).find(s => String(s.id) === shopId);
         if (!shop) {
-          setError('Магазин не найден.');
+          setError(t('dashboard.notFound'));
           setLoading(false);
           return;
         }
@@ -50,7 +52,7 @@ const DashboardPage = () => {
           .catch(() => { if (!cancelled) setNewOrders(0); });
 
         // 2. Fetch inventory fragment
-        const fragmentResponse = await api.get(`/api/v1/dashboard/inventory?shopId=${currentShopId}`, {
+        const fragmentResponse = await api.get(`/api/v1/dashboard/inventory?shopId=${currentShopId}&lang=${i18n.language}`, {
           headers: { 'Accept': 'text/html' },
           responseType: 'text'
         });
@@ -61,14 +63,14 @@ const DashboardPage = () => {
       } catch (err) {
         if (cancelled) return;
         console.error('Dashboard init error:', err);
-        setError('Failed to load dashboard. Please try again.');
+        setError(t('dashboard.loadFailed'));
         setLoading(false);
       }
     };
 
     initDashboard();
     return () => { cancelled = true; };
-  }, [shopId]);
+  }, [shopId, t, i18n.language]);
 
   useEffect(() => {
     if (!loading && inventoryHtml !== null && contentRef.current) {
@@ -100,7 +102,7 @@ const DashboardPage = () => {
       sessionStorage.clear();
       navigate('/login', { replace: true });
     } catch {
-      setLogoutError('Не удалось выйти. Проверьте соединение и повторите.');
+      setLogoutError(t('dashboard.logoutFailed'));
     } finally {
       setLoggingOut(false);
     }
@@ -110,7 +112,7 @@ const DashboardPage = () => {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
         <Loader2 className="w-10 h-10 text-slate-900 animate-spin mb-4" />
-        <p className="text-slate-500 font-medium animate-pulse">Loading your shop dashboard...</p>
+        <p className="text-slate-500 font-medium animate-pulse">{t('dashboard.loading')}</p>
       </div>
     );
   }
@@ -122,13 +124,13 @@ const DashboardPage = () => {
           <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Error Loading Dashboard</h2>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">{t('dashboard.errorTitle')}</h2>
           <p className="text-slate-500 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl hover:bg-slate-800 transition-colors"
           >
-            Try Again
+            {t('common.retry')}
           </button>
         </div>
       </div>
@@ -150,7 +152,7 @@ const DashboardPage = () => {
                 <p className="text-lg font-bold text-slate-900 leading-tight truncate" data-testid="shop-name">{shopInfo.name}</p>
                 <div className="flex items-center gap-1.5 mt-1 text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Активный магазин
+                  {t('dashboard.activeShop')}
                 </div>
               </div>
             </div>
@@ -160,17 +162,17 @@ const DashboardPage = () => {
               <button type="button" onClick={() => navigate('/shops')}
                       className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all">
                 <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Мои магазины</span>
+                <span className="hidden sm:inline">{t('dashboard.myShops')}</span>
               </button>
               <button type="button" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}
                       className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all">
                 <Package className="w-4 h-4" />
-                <span className="hidden sm:inline">Товары</span>
+                <span className="hidden sm:inline">{t('dashboard.products')}</span>
               </button>
               <button type="button" onClick={() => navigate(`/shops/${shopId}/orders`)}
                       className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all">
                 <ShoppingBag className="w-4 h-4" />
-                <span className="hidden sm:inline">Заказы</span>
+                <span className="hidden sm:inline">{t('dashboard.orders')}</span>
                 {newOrders > 0 && (
                   <span className="min-w-5 h-5 px-1.5 rounded-full bg-amber-500 text-white text-xs font-bold flex items-center justify-center">{newOrders}</span>
                 )}
@@ -186,7 +188,7 @@ const DashboardPage = () => {
                 className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl transition-all"
               >
                 <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Выйти</span>
+                <span className="hidden sm:inline">{t('common.logout')}</span>
               </button>
             </div>
           </div>

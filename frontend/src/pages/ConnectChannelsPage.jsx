@@ -13,12 +13,14 @@ import {
   Clock
 } from 'lucide-react';
 import OnboardingSteps from '../features/shop/components/OnboardingSteps.jsx';
+import { useTranslation } from 'react-i18next';
 
 // Operator's WhatsApp for merchants waiting for activation (digits); no button when not set
 const SUPPORT_WHATSAPP = (import.meta.env.VITE_SUPPORT_WHATSAPP || '').replace(/\D/g, '');
 
 const ConnectChannelsPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { shopId } = useParams();
   const [status, setStatus] = useState('LOADING'); // LOADING, PENDING_ACTIVATION, WAITING_QR, CONNECTED, ERROR
   const [qrCode, setQrCode] = useState('');
@@ -60,12 +62,12 @@ const ConnectChannelsPage = () => {
       // Не прерываем опрос при временных ошибках сети, но показываем ответ сервера с ошибкой
       if (err.response) {
         setStatus('ERROR');
-        setError('Не удалось получить статус WhatsApp для этого магазина.');
+        setError(t('connect.statusFailed'));
       }
     } finally {
       setLoading(false);
     }
-  }, [shopId]);
+  }, [shopId, t]);
 
   useEffect(() => {
     if (!shopId) return;
@@ -87,7 +89,7 @@ const ConnectChannelsPage = () => {
       navigate(`/shops/${shopId}`);
     } catch (err) {
       console.error('Complete onboarding error:', err);
-      setError('Не удалось завершить регистрацию. Попробуйте еще раз.');
+      setError(t('connect.completeFailed'));
     } finally {
       setCompleting(false);
     }
@@ -102,7 +104,7 @@ const ConnectChannelsPage = () => {
       await checkStatus();
     } catch (err) {
       console.error('Accept risk error:', err);
-      setError('Не удалось сохранить. Попробуйте ещё раз.');
+      setError(t('connect.saveFailed'));
     } finally {
       setAccepting(false);
     }
@@ -121,7 +123,7 @@ const ConnectChannelsPage = () => {
       setStatus('WAITING_QR');
     } catch (err) {
       console.error('Disconnect error:', err);
-      setError('Не удалось отключить номер. Попробуйте ещё раз.');
+      setError(t('connect.disconnectFailed'));
     } finally {
       setDisconnecting(false);
     }
@@ -133,7 +135,7 @@ const ConnectChannelsPage = () => {
       return (
         <div className="flex flex-col items-center justify-center py-12">
           <Loader2 className="w-12 h-12 text-slate-900 animate-spin mb-4" />
-          <p className="text-slate-500 font-medium">Загрузка конфигурации...</p>
+          <p className="text-slate-500 font-medium">{t('connect.loading')}</p>
         </div>
       );
     }
@@ -145,14 +147,14 @@ const ConnectChannelsPage = () => {
           <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
-          <p className="text-slate-800 font-bold mb-2">Упс! Что-то пошло не так</p>
-          <p className="text-slate-500 text-sm mb-6 max-w-xs mx-auto">{error || 'Не удалось загрузить данные.'}</p>
+          <p className="text-slate-800 font-bold mb-2">{t('connect.errorTitle')}</p>
+          <p className="text-slate-500 text-sm mb-6 max-w-xs mx-auto">{error || t('connect.loadFailed')}</p>
           <button 
               onClick={() => window.location.reload()}
               className="text-slate-900 font-bold text-sm flex items-center gap-2 mx-auto hover:underline"
           >
               <RefreshCw className="w-4 h-4" />
-              Попробовать снова
+              {t('connect.tryAgain')}
           </button>
         </div>
       );
@@ -166,25 +168,24 @@ const ConnectChannelsPage = () => {
               <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
                 <Clock className="w-8 h-8 text-amber-500 animate-pulse" />
               </div>
-              <p className="text-lg font-bold text-slate-900 mb-2">Подключаем WhatsApp</p>
+              <p className="text-lg font-bold text-slate-900 mb-2">{t('connect.preparingTitle')}</p>
               <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                Мы готовим подключение WhatsApp для вашего магазина — обычно в течение рабочего дня.
-                Когда всё будет готово, на этой странице появится QR-код.
+                {t('connect.preparingText')}
               </p>
               <p className="text-slate-500 text-sm">
-                А пока можно добавить товары и проверить продавца в панели магазина.
+                {t('connect.preparingHint')}
               </p>
               {SUPPORT_WHATSAPP && (
                 <a href={`https://wa.me/${SUPPORT_WHATSAPP}`} target="_blank" rel="noopener noreferrer"
                    className="mt-6 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba56] text-white px-6 py-3 rounded-xl font-bold transition-all">
                   <MessageSquare className="w-5 h-5" />
-                  Написать в поддержку
+                  {t('connect.support')}
                 </a>
               )}
               {isAdmin && (
                 <button type="button" onClick={() => navigate('/admin')}
                         className="mt-4 block mx-auto text-sm font-semibold text-slate-700 underline">
-                  Привязать инстанс (админ)
+                  {t('connect.bindInstance')}
                 </button>
               )}
             </div>
@@ -198,31 +199,29 @@ const ConnectChannelsPage = () => {
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
                 <p className="flex items-center gap-2 font-bold text-slate-900 mb-3">
                   <AlertCircle className="w-5 h-5 text-amber-600" />
-                  Перед подключением
+                  {t('connect.riskTitle')}
                 </p>
                 <div className="space-y-2 text-sm text-slate-700 leading-relaxed">
                   <p>
-                    SmartDirect подключается к WhatsApp как связанное устройство — так же, как WhatsApp Web на компьютере.
-                    Это не официальный сервис WhatsApp, поэтому есть небольшой риск, что WhatsApp ограничит
-                    или заблокирует номер.
+                    {t('connect.riskText')}
                   </p>
-                  <p className="font-semibold">Как снизить риск:</p>
+                  <p className="font-semibold">{t('connect.riskHow')}</p>
                   <ul className="list-disc pl-5 space-y-1">
-                    <li>подключайте номер, который давно работает в WhatsApp, а не только что созданный;</li>
-                    <li>держите телефон магазина включённым и в сети;</li>
-                    <li>не отправляйте с этого номера рассылки людям, которые вам не писали.</li>
+                    <li>{t('connect.riskTip1')}</li>
+                    <li>{t('connect.riskTip2')}</li>
+                    <li>{t('connect.riskTip3')}</li>
                   </ul>
                 </div>
               </div>
               <label className="flex items-start gap-3 text-sm text-slate-800 cursor-pointer">
                 <input type="checkbox" checked={riskChecked} onChange={e => setRiskChecked(e.target.checked)}
                        className="mt-0.5 w-4 h-4 accent-slate-900" />
-                Я понимаю риск и подключаю номер под свою ответственность
+                {t('connect.riskAccept')}
               </label>
               <button type="button" onClick={acceptRisk} disabled={!riskChecked || accepting}
                       className="w-full flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 text-white font-bold py-3 rounded-2xl transition-all">
                 {accepting ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
-                Показать QR-код
+                {t('connect.showQr')}
               </button>
               {error && <p className="text-sm text-red-600">{error}</p>}
             </div>
@@ -232,7 +231,7 @@ const ConnectChannelsPage = () => {
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="text-center">
               <p className="text-slate-500 text-sm mb-6">
-                Откройте WhatsApp на телефоне → Настройки → Связанные устройства → Привязка устройства
+                {t('connect.scanHowTo')}
               </p>
               
               <div className="relative mx-auto w-64 h-64 bg-white p-4 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] border border-slate-100 flex items-center justify-center overflow-hidden">
@@ -253,7 +252,7 @@ const ConnectChannelsPage = () => {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-400"></span>
                 </span>
-                Ожидание сканирования
+                {t('connect.waitingScan')}
               </div>
             </div>
           </div>
@@ -266,22 +265,21 @@ const ConnectChannelsPage = () => {
               <div className="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-200">
                 <CheckCircle2 className="w-10 h-10 text-white" />
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">Успешно подключено!</h3>
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">{t('connect.connected')}</h3>
               {connectedPhone && (
                 <div className="bg-white rounded-2xl border border-emerald-100 px-4 py-4 my-5">
                   <p className="text-3xl font-bold text-slate-900 tracking-wide whitespace-nowrap">+{connectedPhone}</p>
-                  <p className="text-slate-600 text-sm mt-2">Это номер, на который пишут покупатели?</p>
+                  <p className="text-slate-600 text-sm mt-2">{t('connect.isCustomerNumber')}</p>
                   <button type="button" onClick={handleConnectAnother} disabled={disconnecting}
                           className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:underline disabled:opacity-50">
                     {disconnecting && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Нет, подключить другой
+                    {t('connect.connectAnother')}
                   </button>
                   {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
                 </div>
               )}
               <p className="text-emerald-700 font-medium">
-                AI сейчас в режиме «Тест» и отвечает только вашим тестовым номерам.
-                Добавьте свой второй номер в панели магазина, проверьте ответы и включите AI для всех.
+                {t('connect.testModeHint')}
               </p>
             </div>
 
@@ -294,7 +292,7 @@ const ConnectChannelsPage = () => {
                 <Loader2 className="w-6 h-6 animate-spin" />
               ) : (
                 <>
-                  Войти в панель управления
+                  {t('connect.toDashboard')}
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
@@ -310,7 +308,7 @@ const ConnectChannelsPage = () => {
         return (
           <div className="flex flex-col items-center justify-center py-12">
             <Loader2 className="w-12 h-12 text-slate-900 animate-spin mb-4" />
-            <p className="text-slate-500 font-medium">Обновление статуса...</p>
+            <p className="text-slate-500 font-medium">{t('connect.updating')}</p>
           </div>
         );
     }
@@ -324,9 +322,9 @@ const ConnectChannelsPage = () => {
           <OnboardingSteps current={4} />
         </div>
         <div className="mb-8 text-center">
-          <p className="text-3xl font-bold text-slate-900 tracking-tight">Подключите WhatsApp</p>
+          <p className="text-3xl font-bold text-slate-900 tracking-tight">{t('connect.title')}</p>
           <p className="mt-3 text-slate-500 text-sm">
-            Последний шаг, чтобы AI начал отвечать вашим клиентам.
+            {t('connect.subtitle')}
           </p>
         </div>
 
@@ -338,7 +336,7 @@ const ConnectChannelsPage = () => {
         {status !== 'CONNECTED' && (
           <button type="button" onClick={() => navigate(`/shops/${shopId}`)}
                   className="mt-6 w-full text-sm font-semibold text-slate-500 hover:text-slate-800">
-            Подключу позже — перейти в панель магазина
+            {t('connect.later')}
           </button>
         )}
 

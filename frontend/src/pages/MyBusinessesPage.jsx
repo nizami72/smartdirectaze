@@ -14,6 +14,7 @@ import {
   Typography,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
+import { useTranslation } from 'react-i18next';
 
 const pluralized = (count, industry) => {
   const word = industry === 'EVENTS' ? 'event' : 'item';
@@ -23,6 +24,7 @@ const pluralized = (count, industry) => {
 
 const MyBusinessesPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [cards, setCards] = useState([]);
@@ -42,7 +44,7 @@ const MyBusinessesPage = () => {
         const shopCards = (shopsRes.data || []).map((shop) => ({
           key: `shop-${shop.id}`,
           title: shop.shopName,
-          subtitle: `Shop #${shop.id}`,
+          subtitle: t('shops.shopNumber', { id: shop.id }),
           path: `/shops/${shop.id}`,
         }));
         // Other industries (events) keep their summary card
@@ -64,7 +66,7 @@ const MyBusinessesPage = () => {
         if (isMounted) setCards(items);
       } catch (e) {
         console.error('Failed to load businesses', e);
-        if (isMounted) setError('Failed to load your businesses. Please try again.');
+        if (isMounted) setError(t('shops.loadFailed'));
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -73,7 +75,7 @@ const MyBusinessesPage = () => {
     return () => {
       isMounted = false;
     };
-  }, [navigate]);
+  }, [navigate, t]);
 
   useEffect(() => {
     api.get('/api/v1/admin/me').then(res => setIsAdmin(res.data.admin === true)).catch(() => setIsAdmin(false));
@@ -89,18 +91,18 @@ const MyBusinessesPage = () => {
     <Container maxWidth="lg" sx={{ py: { xs: 3, md: 6 } }}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
         <Typography variant="h4" fontWeight={700} gutterBottom sx={{ mb: 0 }}>
-          Мои магазины
+          {t('shops.title')}
         </Typography>
 
         <Stack direction="row" spacing={1}>
           {isAdmin && (
             <Button variant="text" color="inherit" onClick={() => navigate('/admin')}>
-              Админ
+              {t('common.admin')}
             </Button>
           )}
           {hasBusinesses && (
             <Button variant="text" color="primary" onClick={handleCreateShop}>
-              + Новый магазин
+              {t('shops.new')}
             </Button>
           )}
         </Stack>
@@ -120,13 +122,13 @@ const MyBusinessesPage = () => {
           }}
         >
           <Typography variant="h5" fontWeight={700} gutterBottom>
-            У вас пока нет магазинов.
+            {t('shops.emptyTitle')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Создайте первый магазин — это займёт минуту.
+            {t('shops.emptyText')}
           </Typography>
           <Button variant="contained" color="primary" size="large" onClick={handleCreateShop}>
-            Создать магазин
+            {t('shops.create')}
           </Button>
         </Box>
       )}
@@ -136,7 +138,7 @@ const MyBusinessesPage = () => {
         <Box sx={{ py: 4 }}>
           <Typography color="error" align="center">{error}</Typography>
           <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
-            <Button onClick={() => window.location.reload()}>Retry</Button>
+            <Button onClick={() => window.location.reload()}>{t('common.retry')}</Button>
           </Stack>
         </Box>
       )}
@@ -157,7 +159,7 @@ const MyBusinessesPage = () => {
                 </CardContent>
                 <CardActions sx={{ px: 2, pb: 2 }}>
                   <Button variant="contained" onClick={() => navigate(c.path)}>
-                    Open
+                    {t('common.open')}
                   </Button>
                 </CardActions>
               </Card>

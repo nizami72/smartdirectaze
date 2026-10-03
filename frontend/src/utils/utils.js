@@ -40,5 +40,3 @@ export const prettyPhone = (digits) => {
   }
   return d ? `+${d}` : '';
 };
-
-export const PHONE_HINT = 'азербайджанский номер — 12 цифр, например +994 50 123 45 67';
