@@ -11,6 +11,8 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_URL || 'http://localhost:5173',
     trace: 'on-first-retry',
+    // Failed tests leave a screenshot of the moment they failed (test-results/, HTML report)
+    screenshot: 'only-on-failure',
     // A pause before every action, so a person can follow a visible run
     launchOptions: { slowMo },
   },
