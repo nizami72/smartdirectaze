@@ -27,6 +27,9 @@ public interface ProductService {
 
     void deleteProduct(Long shopId, Long productId);
 
+    /** In stock / out of stock: the switch on the product card. False when the product is not in this shop */
+    boolean setAvailability(Long shopId, Long productId, boolean available);
+
     ShopDto createShop(ShopDto shopDto);
 
     boolean isShopExist(Long botUuid);

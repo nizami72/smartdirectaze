@@ -235,6 +235,15 @@
             window.Telegram.WebApp.expand();
         }
 
+        // The in-stock switch on a product card: saved at once, the page reloads with the new label
+        function setProductAvailability(productId, available) {
+            const body = new URLSearchParams();
+            body.append('shopId', document.querySelector('input[name="shopId"]').value);
+            body.append('productId', productId);
+            body.append('isAvailable', available);
+            postToInventory('/webhooks/inventory/availability', body);
+        }
+
         function toggleAdvanced(btn) {
             const fields = btn.nextElementSibling;
             const icon = btn.querySelector('.fa-chevron-down');
@@ -577,7 +586,7 @@
                 </button>
             </li>
             <li class="nav-item ms-2" role="presentation">
-                <button class="nav-link fw-bold px-4 py-2 rounded-pill" id="delivery-tab" data-bs-toggle="pill" data-bs-target="#delivery-content-pane" type="button" role="tab" aria-controls="delivery-content-pane" aria-selected="false">
+                <button class="nav-link fw-bold px-4 py-2 rounded-pill" id="delivery-tab" data-testid="delivery-tab" data-bs-toggle="pill" data-bs-target="#delivery-content-pane" type="button" role="tab" aria-controls="delivery-content-pane" aria-selected="false">
                     <i class="fas fa-truck me-2"></i> [[#{inv.tabDelivery}]]
                 </button>
             </li>
@@ -604,7 +613,7 @@
                                     <i class="fas fa-redo-alt"></i>
                                 </button>
                             </div>
-                            <form th:action="@{/webhooks/inventory/add}" method="post" enctype="multipart/form-data">
+                            <form th:action="@{/webhooks/inventory/add}" method="post" enctype="multipart/form-data" data-testid="product-form">
                                 <input type="hidden" name="shopId" th:value="${shopId}">
                                 <div th:replace="~{fragments/product-list :: productFormFields}"></div>
                                 <div class="action-buttons d-flex gap-2 mt-4">
@@ -629,7 +638,7 @@
 
                         <div class="row row-cols-1 row-cols-md-2 g-3">
                             <div class="col" th:each="product : ${products}">
-                                <div class="card product-card">
+                                <div class="card product-card" data-testid="product-card">
                                     <div class="d-flex align-items-start gap-3">
                                         <img th:if="${product.mainImageUrl != null && !product.mainImageUrl.isEmpty()}"
                                              th:src="${product.mainImageUrl.startsWith('http') ? product.mainImageUrl : '/webhooks/api/products/photo/' + shopId + '/' + product.id + '/' + product.mainImageUrl}"
@@ -641,7 +650,9 @@
                                             <div class="badge-price mb-2 d-inline-block" th:text="${product.salePrice} + ' ' + ${product.currency}">0.00 AZN</div>
                                             <div class="form-check form-switch mb-0 d-flex align-items-center">
                                                 <input class="form-check-input" type="checkbox" role="switch"
-                                                       th:checked="${product.isAvailable}" th:id="'stockSwitch' + ${product.id}">
+                                                       th:checked="${product.isAvailable}" th:id="'stockSwitch' + ${product.id}"
+                                                       th:attr="data-product-id=${product.id}" data-testid="stock-switch"
+                                                       onchange="setProductAvailability(this.dataset.productId, this.checked)">
                                                 <label class="form-check-label small text-muted ps-2" th:for="'stockSwitch' + ${product.id}"
                                                        th:text="${product.isAvailable} ? #{inv.inStock} : #{inv.outOfStock}">Stokda var</label>
                                             </div>
@@ -672,7 +683,7 @@
                     <div class="col-lg-8">
                         <div class="form-panel shadow-sm">
                             <h5 class="fw-bold mb-4"><i class="fas fa-truck me-2 text-success"></i> [[#{inv.deliveryTitle}]]</h5>
-                            <form th:action="@{/webhooks/inventory/delivery-config}" method="post">
+                            <form th:action="@{/webhooks/inventory/delivery-config}" method="post" data-testid="delivery-form">
                                 <input type="hidden" name="shopId" th:value="${shopId}">
 
                                 <!-- Section 1: Basic Terms -->

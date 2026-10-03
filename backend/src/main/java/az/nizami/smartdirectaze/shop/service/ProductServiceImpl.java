@@ -104,6 +104,19 @@ class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
+    public boolean setAvailability(Long shopId, Long productId, boolean available) {
+        return productRepository.findById(productId)
+                .filter(entity -> entity.getShopId().equals(shopId))
+                .map(entity -> {
+                    entity.setIsAvailable(available);
+                    productRepository.save(entity);
+                    return true;
+                })
+                .orElse(false);
+    }
+
+    @Override
+    @Transactional
     public void deleteProduct(Long shopId, Long productId) {
         productRepository.findById(productId)
                 .ifPresent(entity -> {

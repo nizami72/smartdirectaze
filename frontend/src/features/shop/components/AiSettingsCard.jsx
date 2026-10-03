@@ -141,6 +141,8 @@ const AiSettingsCard = ({ shopId }) => {
           <button
             key={mode.value}
             type="button"
+            data-testid={`ai-mode-${mode.value}`}
+            aria-pressed={settings.aiMode === mode.value}
             disabled={saving}
             onClick={() => {
               if (mode.value === 'ON' && settings.aiMode !== 'ON') { setConfirmOn(true); return; }
@@ -156,7 +158,7 @@ const AiSettingsCard = ({ shopId }) => {
         ))}
       </div>
       {confirmOn ? (
-        <div className="mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+        <div className="mt-3 bg-amber-50 border border-amber-200 rounded-2xl p-4" data-testid="ai-confirm-on">
           <p className="text-sm text-amber-900">
             {t('ai.confirmOnBefore')}{' '}
             {settings.connectedPhone
@@ -168,7 +170,7 @@ const AiSettingsCard = ({ shopId }) => {
             {t('ai.confirmOnWarning')}
           </p>
           <div className="flex flex-wrap gap-2 mt-3">
-            <button type="button" disabled={saving}
+            <button type="button" disabled={saving} data-testid="ai-confirm-on-yes"
                     onClick={() => { setConfirmOn(false); save({ ...settings, aiMode: 'ON' }); }}
                     className="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-sm font-semibold">
               {t('ai.confirmOnYes')}
@@ -180,7 +182,7 @@ const AiSettingsCard = ({ shopId }) => {
           </div>
         </div>
       ) : (
-        <p className="text-sm text-slate-500 mt-3">{currentMode && t(currentMode.hint)}</p>
+        <p className="text-sm text-slate-500 mt-3" data-testid="ai-mode-hint">{currentMode && t(currentMode.hint)}</p>
       )}
 
       {settings.aiMode === 'TEST' && (
@@ -191,7 +193,7 @@ const AiSettingsCard = ({ shopId }) => {
           )}
           <div className="flex flex-wrap gap-2 mb-3">
             {settings.testPhones.map(phone => (
-              <span key={phone} title={normalizePhone(phone) === phone ? '' : t('ai.invalidPhone')}
+              <span key={phone} data-testid="test-phone" title={normalizePhone(phone) === phone ? '' : t('ai.invalidPhone')}
                     className={`inline-flex items-center gap-1 rounded-full pl-3 pr-1 py-1 text-sm ${
                       normalizePhone(phone) === phone ? 'bg-slate-100 text-slate-700' : 'bg-red-50 text-red-700 ring-1 ring-red-200'
                     }`}>
@@ -206,18 +208,19 @@ const AiSettingsCard = ({ shopId }) => {
           <form onSubmit={addPhone} className="flex gap-2">
             <input
               type="tel"
+              data-testid="test-phone-input"
               value={newPhone}
               onChange={e => { setNewPhone(e.target.value); setPhoneError(''); }}
               placeholder="+994 55 123 45 67"
               className="flex-1 min-w-0 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
-            <button type="submit" disabled={saving || !newPhone.trim()}
+            <button type="submit" data-testid="test-phone-add" disabled={saving || !newPhone.trim()}
                     className="inline-flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white rounded-xl px-4 py-2 text-sm font-semibold">
               <Plus className="w-4 h-4" />
               {t('ai.add')}
             </button>
           </form>
-          {phoneError && <p className="text-sm text-red-600 mt-2">{phoneError}</p>}
+          {phoneError && <p className="text-sm text-red-600 mt-2" data-testid="test-phone-error">{phoneError}</p>}
         </div>
       )}
 

@@ -93,3 +93,19 @@ export async function expectLoggedIn(page: Page, email: string) {
   await expect(page.getByTestId('register-error').or(page.getByTestId('login-error'))).toHaveCount(0);
   await expect(page.getByTestId('account-email')).toHaveText(email, { timeout: 15_000 });
 }
+
+/** Creates a shop through the real form and opens its dashboard; returns the shop id */
+export async function createShopAndOpenDashboard(page: Page, name = `E2E Shop ${Date.now()}`) {
+  await page.goto('/shops/new');
+  await page.locator('#shopName').fill(name);
+  await page.locator('#deliveryPrice').fill('3');
+  await page.getByTestId('create-shop-submit').click();
+  await expect(page).toHaveURL(/\/shops\/\d+\/catalog$/);
+  const shopId = page.url().match(/\/shops\/(\d+)\//)![1];
+
+  await page.goto(`/shops/${shopId}`);
+  await expect(page.getByTestId('shop-name')).toHaveText(name);
+  // The "Products and delivery" part is a server page loaded into the dashboard
+  await expect(page.getByTestId('product-form')).toBeVisible({ timeout: 15_000 });
+  return shopId;
+}

@@ -102,6 +102,20 @@ public class InventoryController {
         return "redirect:/api/v1/dashboard/inventory?shopId=" + shopId;
     }
 
+    // The in-stock switch on the product card: saved at once, without opening the product form
+    @PostMapping("/webhooks/inventory/availability")
+    public String setAvailability(@RequestParam("shopId") Long shopId,
+                                  @AuthenticationPrincipal UserDetails userDetails,
+                                  @RequestParam(value = "initData", required = false) String initData,
+                                  @RequestParam("productId") Long productId,
+                                  @RequestParam("isAvailable") boolean isAvailable) {
+        verifyShopAccess(shopId, userDetails, initData);
+        if (!productService.setAvailability(shopId, productId, isAvailable)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found");
+        }
+        return "redirect:/api/v1/dashboard/inventory?shopId=" + shopId;
+    }
+
     @PostMapping("/webhooks/inventory/delete")
     public String deleteProduct(@RequestParam("shopId") Long shopId,
                              @AuthenticationPrincipal UserDetails userDetails,
