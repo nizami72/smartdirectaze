@@ -41,7 +41,8 @@ if [ -z "$CONFIRM" ]; then
 fi
 [ "$CONFIRM" = "$SITE" ] || { echo "Not confirmed, nothing changed."; exit 1; }
 
-"${SSH[@]}" "$SERVER" bash -s -- "$REMOTE_DIR/$NAME" <<'REMOTE'
+# The server part goes over as a file, not on stdin: docker exec -i would read stdin and swallow the rest of it
+"${SSH[@]}" "$SERVER" "cat > /tmp/smartdirect-restore.sh" <<'REMOTE'
 set -euo pipefail
 DUMP=$1
 PSQL="docker exec -i smartdirect-db psql -q -v ON_ERROR_STOP=1 -U smartdirect"
@@ -55,15 +56,15 @@ echo "stopping the site..."
 systemctl stop smartdirect
 # Whatever happens below, the site is started again
 trap 'systemctl start smartdirect' EXIT
-$PSQL -d postgres -c "DROP DATABASE smartdirect_db WITH (FORCE)" -c "CREATE DATABASE smartdirect_db OWNER smartdirect"
+$PSQL -d postgres -c "DROP DATABASE smartdirect_db WITH (FORCE)" -c "CREATE DATABASE smartdirect_db OWNER smartdirect" </dev/null
 if ! gunzip -c "$DUMP" | $PSQL -d smartdirect_db >/dev/null; then
   echo "RESTORE FAILED: putting the previous database back from $SAFETY"
-  $PSQL -d postgres -c "DROP DATABASE smartdirect_db WITH (FORCE)" -c "CREATE DATABASE smartdirect_db OWNER smartdirect"
+  $PSQL -d postgres -c "DROP DATABASE smartdirect_db WITH (FORCE)" -c "CREATE DATABASE smartdirect_db OWNER smartdirect" </dev/null
   gunzip -c "$SAFETY" | $PSQL -d smartdirect_db >/dev/null
   exit 1
 fi
 echo "restored from $(basename "$DUMP"): $(docker exec smartdirect-db psql -U smartdirect -d smartdirect_db -Atc \
-  "select (select count(*) from users) || ' users, ' || (select count(*) from shops) || ' shops, ' || (select count(*) from products) || ' products, ' || (select count(*) from orders) || ' orders'")"
+  "select (select count(*) from users) || ' users, ' || (select count(*) from shops) || ' shops, ' || (select count(*) from products) || ' products, ' || (select count(*) from orders) || ' orders'" </dev/null)"
 
 echo -n "starting the site"
 trap - EXIT
@@ -74,3 +75,4 @@ for i in $(seq 1 60); do
 done
 echo; echo "site did not start in 2 minutes:"; journalctl -u smartdirect -n 30 --no-pager; exit 1
 REMOTE
+"${SSH[@]}" "$SERVER" "bash /tmp/smartdirect-restore.sh '$REMOTE_DIR/$NAME'; rc=\$?; rm -f /tmp/smartdirect-restore.sh; exit \$rc"
