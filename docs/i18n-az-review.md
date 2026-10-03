@@ -81,6 +81,7 @@
 | `connect.preparingText` | Мы готовим подключение WhatsApp для вашего магазина — обычно в течение рабочего дня. Когда всё будет готово, на этой странице появится QR-код. | Mağazanız üçün WhatsApp qoşulmasını hazırlayırıq — adətən bir iş günü ərzində. Hazır olanda bu səhifədə QR-kod görünəcək. | |
 | `connect.preparingHint` | А пока можно добавить товары и проверить продавца в панели магазина. | Bu vaxt mağaza panelində məhsullar əlavə edib satıcını yoxlaya bilərsiniz. | |
 | `connect.support` | Написать в поддержку | Dəstəyə yazın | |
+| `connect.supportMessage` | Здравствуйте! Жду подключения WhatsApp для магазина №{{shopId}}. | Salam! №{{shopId}} mağazası üçün WhatsApp qoşulmasını gözləyirəm. | |
 | `connect.bindInstance` | Привязать инстанс (админ) | İnstansı bağla (admin) | |
 | `connect.riskTitle` | Перед подключением | Qoşulmadan əvvəl | |
 | `connect.riskText` | SmartDirect подключается к WhatsApp как связанное устройство — так же, как WhatsApp Web на компьютере. Это не официальный сервис WhatsApp, поэтому есть небольшой риск, что WhatsApp ограничит или заблокирует номер. | SmartDirect WhatsApp-a əlaqəli cihaz kimi qoşulur — kompüterdəki WhatsApp Web kimi. Bu, WhatsApp-ın rəsmi xidməti deyil, ona görə WhatsApp-ın nömrəni məhdudlaşdırması və ya bloklaması üçün kiçik risk var. | |

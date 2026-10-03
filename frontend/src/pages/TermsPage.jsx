@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { prettyPhone } from '../utils/utils';
 
 // Version of the text below; stored with each registration. Change it whenever the text changes.
 export const TERMS_VERSION = '2026-10-02.2';
 
 // Who runs SmartDirect and how to reach them (shown in the text as is)
 const OPERATOR = 'Nizami';
-const CONTACT = 'WhatsApp +994 50 467 99 33';
+// Same number as the "Write to support" button (VITE_SUPPORT_WHATSAPP in .env.production)
+const CONTACT = `WhatsApp ${prettyPhone(import.meta.env.VITE_SUPPORT_WHATSAPP || '994504679933')}`;
 const PILOT_DAYS = 30;
 const DELETE_DAYS = 30;
 

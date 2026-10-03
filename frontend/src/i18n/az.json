@@ -102,7 +102,8 @@
     "updating": "Status yenilənir...",
     "title": "WhatsApp-ı qoşun",
     "subtitle": "AI-nin müştərilərinizə cavab verməyə başlaması üçün son addım.",
-    "later": "Sonra qoşaram — mağaza panelinə keç"
+    "later": "Sonra qoşaram — mağaza panelinə keç",
+    "supportMessage": "Salam! №{{shopId}} mağazası üçün WhatsApp qoşulmasını gözləyirəm."
   },
   "ai": {
     "modeOff": "Söndürülüb",

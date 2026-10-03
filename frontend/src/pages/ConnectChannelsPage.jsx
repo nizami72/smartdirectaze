@@ -176,7 +176,7 @@ const ConnectChannelsPage = () => {
                 {t('connect.preparingHint')}
               </p>
               {SUPPORT_WHATSAPP && (
-                <a href={`https://wa.me/${SUPPORT_WHATSAPP}`} target="_blank" rel="noopener noreferrer"
+                <a href={`https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(t('connect.supportMessage', { shopId }))}`} target="_blank" rel="noopener noreferrer"
                    className="mt-6 inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba56] text-white px-6 py-3 rounded-xl font-bold transition-all">
                   <MessageSquare className="w-5 h-5" />
                   {t('connect.support')}
