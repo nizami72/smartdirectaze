@@ -54,3 +54,9 @@ Full description and rules: [docs/backups.md](../docs/backups.md).
 `bash deploy/install-fetch-dump.sh` once: a systemd user timer runs `deploy/fetch-dump.sh` after login and hourly;
 it takes the newest nightly dump into `~/.dumps/smartdirectaze/` once a day (a day starts at 00:00) and shows a
 desktop notification. By hand: `bash deploy/fetch-dump.sh --force`. Log: `journalctl --user -u smartdirect-fetch-dump`.
+
+## Restore the database
+
+`bash deploy/restore-db.sh` lists the dumps (server and laptop); `bash deploy/restore-db.sh <file>` restores one after
+typing the site name. The current database is dumped first (`before-restore_*`), the site is down ~15-30 s.
+Details: [docs/how-to.md, section 12](../docs/how-to.md#restore).

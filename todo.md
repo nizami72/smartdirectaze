@@ -21,7 +21,7 @@
 - [ ] Проверить на телефонах изменения из docs/blocker-fixes-pilot.md
 - [ ] Перед реальными клиентами удалить `/etc/smartdirect/allow-reset`
 - [ ] Копия бэкапов за пределами сервера (Storage Box или другой сервер)
-- [ ] Проверить восстановление базы из бэкапа (команды в docs/how-to.md, раздел 11)
+- [ ] Проверить восстановление базы из бэкапа (`bash deploy/restore-db.sh`, docs/how-to.md, раздел 12)
 - [ ] Сменить пароль админа на длинный
 - [ ] Добавить reset-password.sh и healthcheck.sh в deploy/README.md
 
