@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/api.ts';
-import { ArrowLeft, Loader2, MapPin, MessageCircle, Package, Phone, Wallet } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, Loader2, MapPin, MessageCircle, Package, Phone, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { formatShortDateTime } from '../i18n';
 
@@ -19,6 +19,54 @@ const formatDate = formatShortDateTime;
 
 // wa.me needs digits only
 const whatsappLink = (phone) => `https://wa.me/${(phone || '').replace(/\D/g, '')}`;
+
+// Status picker. Not a native <select>: in Chrome on Linux it opens over the field and selects whatever
+// is under the cursor when the mouse button is released, so one click could silently change the status.
+// Here a click only opens the list, a second click picks; a click outside or Esc closes it unchanged.
+const StatusMenu = ({ status, disabled, onChange }) => {
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const current = ORDER_STATUSES.find(s => s.value === status) || ORDER_STATUSES[0];
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = (e) => {
+      if (e.type === 'keydown' ? e.key === 'Escape' : !ref.current?.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', close);
+    document.addEventListener('keydown', close);
+    return () => {
+      document.removeEventListener('mousedown', close);
+      document.removeEventListener('keydown', close);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative flex-1">
+      <button type="button" disabled={disabled} onClick={() => setOpen(o => !o)} data-testid="order-status"
+              aria-haspopup="listbox" aria-expanded={open}
+              className="w-full flex items-center justify-between gap-2 border border-slate-200 rounded-xl px-3 py-2 bg-white hover:bg-slate-50 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${current.className}`}>{t(current.label)}</span>
+        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <ul role="listbox" className="absolute z-20 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg py-1">
+          {ORDER_STATUSES.map(s => (
+            <li key={s.value} role="option" aria-selected={s.value === status}>
+              <button type="button" data-testid={`order-status-${s.value}`}
+                      onClick={() => { setOpen(false); if (s.value !== status) onChange(s.value); }}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-left hover:bg-slate-50 ${s.value === status ? 'font-semibold' : ''}`}>
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${s.className}`}>{t(s.label)}</span>
+                {s.value === status && <Check className="w-4 h-4 text-emerald-600" />}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
 
 const OrderCard = ({ order, onStatusChange, saving }) => {
   const { t } = useTranslation();
@@ -66,14 +114,11 @@ const OrderCard = ({ order, onStatusChange, saving }) => {
         )}
       </div>
 
-      <label className="mt-4 flex items-center gap-2 text-sm">
+      <div className="mt-4 flex items-center gap-2 text-sm">
         <span className="text-slate-500">{t('orders.status')}</span>
-        <select value={order.status} disabled={saving} onChange={e => onStatusChange(order.id, e.target.value)}
-                className="flex-1 border border-slate-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
-          {ORDER_STATUSES.map(s => <option key={s.value} value={s.value}>{t(s.label)}</option>)}
-        </select>
+        <StatusMenu status={order.status} disabled={saving} onChange={status => onStatusChange(order.id, status)} />
         {saving && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
-      </label>
+      </div>
     </div>
   );
 };
