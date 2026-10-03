@@ -21,6 +21,7 @@ const formatDate = formatShortDateTime;
 const whatsappLink = (phone) => `https://wa.me/${(phone || '').replace(/\D/g, '')}`;
 
 const OrderCard = ({ order, onStatusChange, saving }) => {
+  const { t } = useTranslation();
   const status = ORDER_STATUSES.find(s => s.value === order.status) || ORDER_STATUSES[0];
   return (
     <div className="bg-white rounded-2xl border border-slate-200 p-5 text-left">

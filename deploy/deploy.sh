@@ -31,6 +31,10 @@ fi
 JAR=$(ls "$BUILD"/backend/target/smartdirectaze-*.jar | grep -v plain | head -1)
 
 echo "== frontend"
+# An undefined name (e.g. t() without useTranslation) only breaks the page at runtime: stop before shipping it
+if (cd "$ROOT/frontend" && npx eslint src -f unix 2>/dev/null) | grep "no-undef"; then
+  echo "Undefined names in the frontend (above), nothing deployed."; exit 1
+fi
 rsync -a --exclude node_modules --exclude dist "$ROOT/frontend/" "$BUILD/frontend/"
 ln -s "$ROOT/frontend/node_modules" "$BUILD/frontend/node_modules"
 # Same origin on the server: API calls go to /api on the same host
