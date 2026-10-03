@@ -56,7 +56,9 @@ const LoginPage = () => {
       return;
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.status === 401 || !err.response?.data?.message ? t('login.invalid') : err.response.data.message);
+      // 429 = too many attempts from this address (nginx limit), not a wrong password
+      setError(err.response?.status === 429 ? t('login.tooMany')
+        : err.response?.status === 401 || !err.response?.data?.message ? t('login.invalid') : err.response.data.message);
     } finally {
       setLoading(false);
     }

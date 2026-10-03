@@ -28,7 +28,8 @@
     "invalid": "E-poçt və ya şifrə yanlışdır",
     "noAccount": "Hesabınız yoxdur?",
     "register": "Qeydiyyatdan keçin",
-    "chooseShop": "Mağaza seçin"
+    "chooseShop": "Mağaza seçin",
+    "tooMany": "Çox sayda giriş cəhdi. Bir dəqiqə gözləyin və yenidən cəhd edin."
   },
   "register": {
     "step": "Hesabın yaradılması",
@@ -42,7 +43,8 @@
     "termsLink": "pilot şərtlərini",
     "acceptTermsEnd": "qəbul edirəm",
     "failed": "Qeydiyyat zamanı xəta baş verdi. Yenidən cəhd edin.",
-    "haveAccount": "Artıq hesabınız var?"
+    "haveAccount": "Artıq hesabınız var?",
+    "tooMany": "Çox sayda qeydiyyat cəhdi. Bir dəqiqə gözləyin və yenidən cəhd edin."
   },
   "shops": {
     "title": "Mağazalarım",

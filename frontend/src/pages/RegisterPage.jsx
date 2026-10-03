@@ -66,7 +66,7 @@ const RegisterPage = () => {
       return;
     } catch (err) {
       console.error('Registration error:', err);
-      setError(err.response?.data?.message || t('register.failed'));
+      setError(err.response?.status === 429 ? t('register.tooMany') : err.response?.data?.message || t('register.failed'));
     } finally {
       setLoading(false);
     }
