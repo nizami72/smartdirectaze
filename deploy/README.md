@@ -49,6 +49,8 @@ Another catalog: `bash deploy/seed-demo-shop.sh <shop id> deploy/demo/<file>.sql
 
 ## Backups on the laptop
 
+Full description and rules: [docs/backups.md](../docs/backups.md).
+
 `bash deploy/install-fetch-dump.sh` once: a systemd user timer runs `deploy/fetch-dump.sh` after login and hourly;
 it takes the newest nightly dump into `~/.dumps/smartdirectaze/` once a day (a day starts at 00:00) and shows a
 desktop notification. By hand: `bash deploy/fetch-dump.sh --force`. Log: `journalctl --user -u smartdirect-fetch-dump`.
